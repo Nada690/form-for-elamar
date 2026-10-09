@@ -1,0 +1,23 @@
+# ==============================================================================
+# Security & Directory Hardening Configuration
+# ==============================================================================
+
+# 1. منع استعراض محتويات المجلدات تماماً
+Options -Indexes
+
+# 2. حماية الملفات الحساسة ومنع الوصول المباشر إليها عبر المتصفح
+<FilesMatch "^(db\.php|\.env|\.git|\.htaccess|.*\.sql|.*\.log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 3. إعدادات ترميز الحروف التلقائي لمنع مشاكل اللغة العربية
+AddDefaultCharset UTF-8
+DefaultLanguage ar
+
+# 4. تفعيل حماية المتصفح الأساسية (Security Headers)
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
