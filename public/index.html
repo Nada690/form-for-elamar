@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>استبيان واستيفاء بيانات التعاقد | مشاريع شورز الساحلية</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Canvas Confetti Library for celebration effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Optional Backend API URL configuration -->
+  <script src="config.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'Cairo', 'sans-serif'],
+            mono: ['Plus Jakarta Sans', 'monospace'],
+          },
+          colors: {
+            navy: {
+              950: '#040b14',
+              900: '#071220',
+              850: '#0b1c31',
+              800: '#102540',
+              700: '#173458',
+            },
+            gold: {
+              300: '#ffe082',
+              400: '#e5c158',
+              500: '#d4af37',
+              600: '#b89428',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { 
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    
+    html[dir="rtl"] { font-family: 'Cairo', sans-serif; }
+    html[dir="ltr"] { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* Eye-friendly comfortable luxury palette (neither pitch dark nor blinding white) */
+    .bg-luxury-mesh {
+      background-color: #121c2b;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(212, 175, 55, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.15) 0px, transparent 45%),
+        radial-gradient(at 50% 100%, rgba(18, 28, 43, 0.95) 0px, transparent 65%);
+      background-attachment: fixed;
+    }
+
+    .glass-card {
+      background: rgba(22, 34, 52, 0.94);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1.5px solid rgba(212, 175, 55, 0.32);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 25px rgba(212, 175, 55, 0.08);
+    }
+
+    .section-card {
+      background: rgba(16, 26, 41, 0.75);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .glass-input {
+      background: rgba(12, 20, 32, 0.88);
+      border: 1.5px solid rgba(148, 163, 184, 0.25);
+      color: #f8fafc;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-input:focus {
+      outline: none;
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25), 0 0 15px rgba(212, 175, 55, 0.15);
+      background: rgba(16, 26, 42, 0.96);
+    }
+    .glass-input.valid {
+      border-color: #10b981;
+    }
+    .glass-input.invalid {
+      border-color: #ef4444;
+    }
+
+    .custom-check-box {
+      cursor: pointer;
+      background: rgba(14, 23, 37, 0.75);
+      border: 1.5px solid rgba(148, 163, 184, 0.25);
+      color: #f1f5f9;
+      transition: all 0.25s ease;
+    }
+    .custom-check-box:hover {
+      border-color: #d4af37;
+      background: rgba(212, 175, 55, 0.1);
+    }
+    .custom-check-box.active {
+      border-color: #d4af37;
+      background: rgba(212, 175, 55, 0.22);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+    }
+
+    /* Pulse animation */
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(0.995); }
+    }
+    .subtle-pulse {
+      animation: subtlePulse 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-luxury-mesh text-slate-100 flex flex-col relative selection:bg-amber-500/30 selection:text-amber-200">
+
+  <!-- Ambient Light Orbs -->
+  <div class="fixed top-10 right-10 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-10 left-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="border-b border-amber-500/25 bg-[#121c2b]/90 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
+
+      <!-- Logo + Brand (محدد ومبروز بإطار ذهبي أنيق) -->
+      <div class="flex items-center gap-3.5">
+        <div class="p-2 rounded-2xl bg-gradient-to-br from-amber-500/20 via-amber-400/10 to-[#121c2b] border-2 border-amber-400 shadow-[0_0_20px_rgba(212,175,55,0.45)] flex items-center justify-center">
+          <img src="logo.png" alt="Logo" class="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+        </div>
+        <div>
+          <div class="text-white font-black text-base sm:text-lg tracking-wide leading-tight" data-i18n="brandName">
+            مجموعة العمار للتطوير العقاري
+          </div>
+          <div class="text-amber-400 text-[10px] sm:text-xs font-black tracking-widest uppercase drop-shadow-[0_1px_4px_rgba(212,175,55,0.25)]" data-i18n="brandSlogan">
+            SHORES ONLY • الساحل الشمالي
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls & Language Toggle -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Language Switcher Button -->
+        <button 
+          id="langToggleBtn" 
+          type="button"
+          onclick="toggleLanguage()" 
+          class="px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-amber-400/40 text-amber-300 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-md cursor-pointer hover:border-amber-400"
+          title="Switch Language / تبديل اللغة"
+        >
+          <span class="text-sm">🌐</span>
+          <span id="langBtnText">English</span>
+        </button>
+
+        <!-- Admin Shortcut (Hidden unless authorized) -->
+        <a id="adminDashboardBtn" href="view_clients.php" class="hidden items-center gap-1.5 text-amber-300 text-xs px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 hover:bg-amber-500/25 transition-all font-bold">
+          🔒 <span data-i18n="adminLink">لوحة المسؤول</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main class="flex-1 flex items-center justify-center px-3 sm:px-6 py-8 sm:py-14 relative z-10">
+    <div class="w-full max-w-2xl">
+
+      <!-- Header Banner & Sales Consultant VIP Tag -->
+      <div class="text-center mb-6 sm:mb-8 space-y-3">
+        
+        <!-- Dynamic VIP Sales Badge (Shown if slug is valid) -->
+        <div id="vipSalesBadgeContainer" class="hidden inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-500/20 border-2 border-amber-400/60 text-amber-300 text-xs sm:text-sm font-black shadow-[0_0_20px_rgba(212,175,55,0.25)] subtle-pulse">
+          <span class="text-base">💎</span>
+          <span data-i18n="vipSalesIntro">استمارة معتمدة بإشراف المستشار العقاري:</span>
+          <span id="vipSalesAdvisorName" class="text-white bg-amber-500/30 px-2.5 py-0.5 rounded-lg border border-amber-400/40 font-bold"></span>
+        </div>
+
+        <!-- Default Survey Tag (Shown if no sales slug) -->
+        <div id="defaultSurveyTag" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/50 text-amber-300 text-xs font-bold shadow-sm" data-i18n="officialSurveyTag">
+          🏖️ استبيان واستيفاء بيانات عقود الشاليهات الساحلية (Shores Only)
+        </div>
+
+        <h1 id="pageTitle" class="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-400 bg-clip-text text-transparent tracking-tight drop-shadow-[0_2px_12px_rgba(212,175,55,0.25)]" data-i18n="pageTitle">
+          استمارة بيانات العقد والوحدة
+        </h1>
+        <p id="pageSubtitle" class="text-slate-300 text-xs sm:text-sm max-w-lg mx-auto font-medium" data-i18n="pageSubtitle">
+          يرجى تسجيل وتدقيق بيانات العقد بدقة لضمان سرعة إتمام الإجراءات وتجهيز وثائق الملكية
+        </p>
+
+        <div class="h-0.5 w-32 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto pt-1"></div>
+      </div>
+
+      <!-- ═══════════════ FORM CARD ═══════════════ -->
+      <div class="glass-card rounded-3xl shadow-2xl overflow-hidden relative">
+        <div class="h-1.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+
+        <div class="p-5 sm:p-8 md:p-10">
+
+          <form id="contractForm" novalidate class="space-y-7" enctype="multipart/form-data">
+            
+            <!-- Hidden Sales ID to lock the consultation attribution -->
+            <input type="hidden" name="sales_id" id="hiddenSalesId" value="">
+
+            <!-- ── SECTION 1: أطراف العقد والشركاء ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+              <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
+                <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">01</span>
+                <span data-i18n="sec1Title">بيانات أطراف العقد والشركاء</span>
+              </div>
+
+              <div id="namesContainer" class="space-y-3">
+                <div class="form-group">
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5" for="primaryName">
+                    <span data-i18n="labelPrimaryName">اسم العميل كما هو مدون في العقد</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="primaryName"
+                    name="names[]"
+                    data-i18n-placeholder="phPrimaryName"
+                    placeholder="اكتب الاسم كاملاً ومطابقاً للبطاقة أو العقد"
+                    class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
+                    oninput="validateField(this, val => val.length >= 3)"
+                  />
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPrimaryName" data-i18n="errPrimaryName">اسم العميل كما هو مدون في العقد مطلوب</p>
+                </div>
+              </div>
+
+              <!-- زر إضافة شريك -->
+              <button 
+                type="button" 
+                onclick="addPartnerNameField()" 
+                class="text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm"
+              >
+                <span>➕</span>
+                <span data-i18n="btnAddPartner">إضافة اسم شريك / طرف آخر بالعقد</span>
+              </button>
+            </div>
+
+            <!-- ── SECTION 2: بيانات الاتصال والبريد ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+              <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
+                <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">02</span>
+                <span data-i18n="sec2Title">بيانات الاتصال والتواصل</span>
+              </div>
+
+              <!-- الهواتف -->
+              <div id="phonesContainer" class="space-y-3">
+                <div class="form-group">
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5" for="primaryPhone">
+                    <span data-i18n="labelPrimaryPhone">رقم الهاتف الأساسي (يدعم واتساب)</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+                  <div class="flex gap-2 dir-ltr">
+                    <select name="phone_codes[]" class="glass-input px-3 py-3 rounded-xl text-amber-300 text-xs font-bold w-28 text-center">
+                      <option value="+20">🇪🇬 +20</option>
+                      <option value="+966">🇸🇦 +966</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+965">🇰🇼 +965</option>
+                      <option value="+974">🇶🇦 +974</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                    </select>
+                    <input
+                      type="tel"
+                      id="primaryPhone"
+                      name="phone_numbers[]"
+                      placeholder="10xxxxxxxx"
+                      class="glass-input flex-1 px-4 py-3 rounded-xl text-emerald-300 placeholder-slate-500 text-sm font-mono tracking-wider text-left"
+                      oninput="validateField(this, val => val.replace(/\D/g,'').length >= 8)"
+                    />
+                  </div>
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPrimaryPhone" data-i18n="errPrimaryPhone">رقم الهاتف مطلوب وبصيغة صحيحة</p>
+                </div>
+              </div>
+
+              <!-- زر إضافة هاتف إضافي -->
+              <button 
+                type="button" 
+                onclick="addExtraPhoneField()" 
+                class="text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-1.5 rounded-xl flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <span>📞</span>
+                <span data-i18n="btnAddPhone">+ إضافة رقم هاتف إضافي</span>
+              </button>
+
+              <!-- البريد الإلكتروني حصرياً Gmail -->
+              <div class="form-group pt-2 border-t border-slate-800/80">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="clientEmail">
+                  <span data-i18n="labelEmail">البريد الإلكتروني (مخصص حصرياً لـ Gmail)</span>
+                  <span class="text-amber-400 font-bold">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="email"
+                    id="clientEmail"
+                    name="email"
+                    placeholder="example@gmail.com"
+                    class="glass-input w-full px-4 py-3 rounded-xl text-cyan-300 placeholder-slate-500 text-sm font-mono dir-ltr text-right"
+                    oninput="validateGmail(this)"
+                  />
+                  <span class="absolute left-3.5 top-3.5 text-xs text-slate-500 font-mono">@gmail.com</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1" id="hintEmail" data-i18n="hintEmail">
+                  يجب أن ينتهي البريد بـ @gmail.com لضمان وصول الإشعارات الرسمية
+                </p>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errEmail" data-i18n="errEmail">يرجى إدخال بريد Gmail صحيح (name@gmail.com)</p>
+              </div>
+
+            </div>
+
+            <!-- ── SECTION 3: إثبات الهوية والعنوان ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+              <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
+                <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">03</span>
+                <span data-i18n="sec3Title">إثبات الشخصية والعنوان الوطني</span>
+              </div>
+
+              <!-- نوع الهوية والرقم -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div class="sm:col-span-5">
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="labelIdType">نوع الوثيقة</label>
+                  <select name="id_type" id="idType" class="glass-input w-full px-3 py-3 rounded-xl text-white text-xs font-bold">
+                    <option value="national_id" data-i18n="optNatId">بطاقة الرقم القومي (14 رقم)</option>
+                    <option value="passport" data-i18n="optPassport">جواز السفر (Passport)</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-7 form-group">
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5" for="idNumber">
+                    <span data-i18n="labelIdNumber">رقم بطاقة الرقم القومي أو جواز السفر</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="idNumber"
+                    name="id_number"
+                    data-i18n-placeholder="phIdNumber"
+                    placeholder="أدخل الرقم كما هو بالوثيقة"
+                    class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-mono tracking-wider"
+                    oninput="validateField(this, val => val.length >= 6)"
+                  />
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errIdNumber" data-i18n="errIdNumber">رقم إثبات الهوية مطلوب</p>
+                </div>
+              </div>
+
+              <!-- العنوان بالتفصيل -->
+              <div class="form-group">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="primaryAddress">
+                  <span data-i18n="labelAddress">العنوان الحالي المعتمد بالتفصيل</span>
+                  <span class="text-amber-400 font-bold">*</span>
+                </label>
+                <textarea
+                  id="primaryAddress"
+                  name="addresses[]"
+                  rows="2"
+                  data-i18n-placeholder="phAddress"
+                  placeholder="المحافظة، المدينة، اسم الشارع، رقم العقار والشقة"
+                  class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
+                  oninput="validateField(this, val => val.length >= 5)"
+                ></textarea>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errAddress" data-i18n="errAddress">العنوان بالتفصيل مطلوب</p>
+              </div>
+
+            </div>
+
+            <!-- ── SECTION 4: بيانات الوحدة والتعاقد ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+              <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
+                <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">04</span>
+                <span data-i18n="sec4Title">بيانات الوحدة ونظام التعاقد</span>
+              </div>
+
+              <!-- كود الوحدة -->
+              <div class="form-group">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="unitCode">
+                  <span class="text-amber-300 font-bold" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
+                  <span class="text-amber-400 font-bold">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="unitCode"
+                  name="unit_code"
+                  placeholder="مثال: nn-13 أو B2-104"
+                  data-i18n-placeholder="phUnitCode"
+                  class="glass-input w-full px-4 py-3 rounded-xl text-amber-300 placeholder-slate-500 text-sm font-mono font-extrabold tracking-widest text-center uppercase border-amber-500/40 focus:border-amber-400"
+                  oninput="validateField(this, val => val.length >= 2)"
+                />
+                <p class="text-[11px] text-slate-400 mt-1" id="hintUnitCode" data-i18n="hintUnitCode">كود فريد يحدد وحدتك في المخطط العام</p>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errUnitCode" data-i18n="errUnitCode">كود الوحدة مطلوب</p>
+              </div>
+
+              <!-- مكان التعاقد (قائمة منسدلة List كما طُلِب) -->
+              <div class="form-group">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="contractLocation">
+                  <span class="text-amber-300 font-bold" data-i18n="labelLocation">مكان التعاقد (الفرع المفضل لإنهاء الإجراءات)</span>
+                  <span class="text-amber-400 font-bold">*</span>
+                </label>
+                <select 
+                  name="contract_location" 
+                  id="contractLocation" 
+                  class="glass-input w-full px-4 py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400" 
+                  onchange="validateField(this, val => val !== '')"
+                >
+                  <option value="" data-i18n="optSelectLocation">اختر فرع التعاقد...</option>
+                  <option value="القاهرة" selected data-i18n="branchCairo">🏛️ فرع القاهرة (المقر الرئيسي)</option>
+                  <option value="الإسكندرية" data-i18n="branchAlex">🌊 فرع الإسكندرية (الفرع الساحلي)</option>
+                </select>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errLocation" data-i18n="errLocation">مكان التعاقد مطلوب</p>
+              </div>
+
+              <!-- فترة السداد (تحت مكان التعاقد مباشرة) -->
+              <div class="form-group">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="paymentPeriod">
+                  <span class="text-amber-300 font-bold" data-i18n="labelPeriod">فترة السداد المتفق عليها</span>
+                  <span class="text-amber-400 font-bold">*</span>
+                </label>
+                <select 
+                  name="payment_period" 
+                  id="paymentPeriod" 
+                  class="glass-input w-full px-4 py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400" 
+                  onchange="validateField(this, val => val !== '')"
+                >
+                  <option value="" data-i18n="optSelectPeriod">اختر فترة السداد...</option>
+                  <option value="كاش" data-i18n="optCash">كاش (Cash)</option>
+                  <option value="سنة واحدة" data-i18n="opt1Yr">سنة واحدة</option>
+                  <option value="سنتان" data-i18n="opt2Yr">سنتان</option>
+                  <option value="3 سنوات" data-i18n="opt3Yr">3 سنوات</option>
+                  <option value="4 سنوات" data-i18n="opt4Yr">4 سنوات</option>
+                  <option value="5 سنوات" data-i18n="opt5Yr">5 سنوات</option>
+                  <option value="6 سنوات" data-i18n="opt6Yr">6 سنوات</option>
+                  <option value="7 سنوات" data-i18n="opt7Yr">7 سنوات</option>
+                </select>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPeriod" data-i18n="errPeriod">فترة السداد مطلوبة</p>
+              </div>
+
+              <!-- هل تم سداد نسبة الـ 5%؟ (تحت فترة السداد مباشرة) -->
+              <div class="form-group">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                  <span class="text-amber-300 font-bold" data-i18n="label5Percent">هل تم سداد نسبة الـ 5%؟</span> <span class="text-amber-400 font-bold">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                  <label class="custom-check-box active rounded-xl py-3 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white" id="boxYes">
+                    <input type="radio" name="paid_5_percent" value="نعم" checked class="hidden" onchange="togglePaidBox(this)">
+                    <span>✓</span> <span data-i18n="optYesPaid">نعم (تم السداد)</span>
+                  </label>
+                  <label class="custom-check-box rounded-xl py-3 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white" id="boxNo">
+                    <input type="radio" name="paid_5_percent" value="لا" class="hidden" onchange="togglePaidBox(this)">
+                    <span>✕</span> <span data-i18n="optNoPaid">لا (لم يتم)</span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── SECTION 5: المستندات والملاحظات ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
+                  <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">05</span>
+                  <span data-i18n="sec5Title">المستندات والمرفقات (اختياري / موصى به)</span>
+                </div>
+                <span class="text-[11px] text-slate-400" data-i18n="fileTypesHint">PDF أو صور</span>
+              </div>
+
+              <!-- رفع المستندات (Upload Zone) -->
+              <div 
+                id="dropZone" 
+                class="border-2 border-dashed border-amber-500/35 hover:border-amber-400 rounded-2xl p-6 text-center transition-all bg-slate-900/40 hover:bg-amber-500/5 cursor-pointer shadow-sm"
+                onclick="document.getElementById('fileInput').click()"
+              >
+                <input 
+                  type="file" 
+                  id="fileInput" 
+                  multiple 
+                  accept="image/*,.pdf" 
+                  class="hidden" 
+                  onchange="handleFilesSelected(this.files)"
+                >
+                <div class="text-3xl mb-2">📁</div>
+                <div class="font-bold text-xs sm:text-sm text-slate-200" data-i18n="dropTitle">
+                  اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا
+                </div>
+                <div class="text-[11px] text-slate-400 mt-1" data-i18n="dropSubtitle">
+                  (صور البطاقة الشخصية، جواز السفر، إيصالات السداد، أو مستندات الشركاء)
+                </div>
+              </div>
+
+              <!-- المعاينات الحية للملفات المرفوعة -->
+              <div id="fileListContainer" class="space-y-2 hidden">
+                <div class="text-xs font-bold text-amber-300" data-i18n="selectedFilesHeading">المعاينات المرفقة للإرسال:</div>
+                <div id="fileItemsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+              </div>
+
+              <!-- الملاحظات أو طلبات خاصة (تحت رفع المستندات مباشرة وبحد أقصى 250 حرف) -->
+              <div class="form-group pt-4 border-t border-slate-800/80">
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-bold text-slate-300" for="clientNotes">
+                    <span class="text-amber-300 font-bold" data-i18n="labelNotes">ملاحظات أو طلبات خاصة (اختياري)</span>
+                  </label>
+                  <span id="notesCounter" class="text-[11px] font-mono font-bold text-amber-300 bg-amber-500/15 px-2.5 py-0.5 rounded-lg border border-amber-400/40 transition-colors shadow-sm">
+                    <span id="currentNotesChars">0</span> / 250 <span data-i18n="charLabel">حرف</span>
+                  </span>
+                </div>
+                <textarea
+                  id="clientNotes"
+                  name="notes"
+                  rows="3"
+                  maxlength="250"
+                  data-i18n-placeholder="phNotes"
+                  placeholder="أي ملاحظات إضافية تود تسجيلها مع استمارة التعاقد (الحد الأقصى 250 حرف)..."
+                  class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm focus:border-amber-400 transition-all resize-y"
+                  oninput="updateNotesCounter(this)"
+                ></textarea>
+                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                  <span data-i18n="hintNotes">يمكنك كتابة تفاصيل محددة ترغب في توثيقها مع الطلب</span>
+                  <span id="notesRemainingText" class="text-[10px] text-slate-400 font-mono">المتبقي: 250 حرف</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── زر التأكيد والإرسال ── -->
+            <div class="pt-2">
+              <button
+                type="submit"
+                id="submitBtn"
+                class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-base shadow-[0_4px_25px_rgba(212,175,55,0.35)] border border-amber-300/40 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>🔒</span>
+                <span data-i18n="submitBtnText">استيفاء وتسجيل بيانات التعاقد رسمياً</span>
+              </button>
+              <p class="text-[11px] text-slate-400 text-center mt-2.5" data-i18n="securityNotice">
+                بالضغط على تسجيل، يتم حفظ بياناتك بأمان في قاعدة بيانات مجموعة العمار وتوثيقها رسمياً
+              </p>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════ LOADING OVERLAY ═══════════════ -->
+  <div id="loadingOverlay" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center hidden">
+    <div class="w-16 h-16 border-4 border-amber-500/20 border-t-amber-400 rounded-full animate-spin mb-4"></div>
+    <div class="font-black text-white text-base" data-i18n="loadingTitle">جارٍ حفظ وتأكيد بيانات العقد...</div>
+    <div class="text-xs text-amber-400 mt-1 font-mono" data-i18n="loadingSub">يرجى الانتظار ثوانٍ معدودة</div>
+  </div>
+
+  <!-- ═══════════════ SUCCESS MODAL ═══════════════ -->
+  <div id="successModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-3xl border border-amber-500/40 text-center shadow-2xl relative">
+      <div class="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-3xl mx-auto mb-4 text-emerald-400 animate-bounce">
+        ✓
+      </div>
+
+      <h3 class="text-xl sm:text-2xl font-black text-white mb-2" data-i18n="successTitle">
+        تم استيفاء وتسجيل بياناتك بنجاح!
+      </h3>
+
+      <p class="text-xs sm:text-sm text-slate-300 mb-6" data-i18n="successDesc">
+        تم تسجيل بيانات التعاقد وحفظها في المنظومة بنجاح، وسيقوم فريق المبيعات بالتواصل معكم لاستكمال الإجراءات الرسمية.
+      </p>
+
+      <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs mb-6 text-right space-y-2">
+        <div class="flex justify-between">
+          <span class="text-slate-400" data-i18n="lblUnitRef">كود الوحدة:</span>
+          <span class="font-mono text-amber-300 font-bold uppercase" id="modalUnitCode">-</span>
+        </div>
+        <div id="modalAdvisorRow" class="hidden flex justify-between border-t border-slate-800 pt-1.5">
+          <span class="text-slate-400" data-i18n="lblAdvisor">المستشار العقاري:</span>
+          <span id="modalAdvisorName" class="text-emerald-400 font-bold"></span>
+        </div>
+        <div class="flex justify-between border-t border-slate-800 pt-1.5">
+          <span class="text-slate-400" data-i18n="lblStatus">حالة الطلب:</span>
+          <span class="text-emerald-400 font-bold" data-i18n="valApproved">معتمد وموثق</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onclick="location.reload()"
+        class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl text-sm shadow-lg cursor-pointer"
+        data-i18n="btnAnotherForm"
+      >
+        حسناً، تسجيل استمارة أخرى
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCRIPT LOGIC (BILINGUAL I18N + INTERACTIVITY) ═══════════════ -->
+  <script>
+    // ── BILINGUAL DICTIONARY ──
+    const translations = {
+      ar: {
+        brandName: "مجموعة العمار للتطوير العقاري",
+        brandSlogan: "SHORES ONLY • الساحل الشمالي",
+        adminLink: "لوحة المسؤول",
+        vipSalesIntro: "استمارة معتمدة بإشراف المستشار العقاري:",
+        officialSurveyTag: "🏖️ استبيان واستيفاء بيانات عقود الشاليهات الساحلية (Shores Only)",
+        pageTitle: "استمارة بيانات العقد والوحدة",
+        pageSubtitle: "يرجى تسجيل وتدقيق بيانات العقد بدقة لضمان سرعة إتمام الإجراءات وتجهيز وثائق الملكية",
+        sec1Title: "بيانات أطراف العقد والشركاء",
+        labelPrimaryName: "اسم العميل كما هو مدون في العقد",
+        phPrimaryName: "اكتب الاسم كاملاً ومطابقاً للبطاقة أو العقد",
+        errPrimaryName: "اسم العميل كما هو مدون في العقد مطلوب",
+        btnAddPartner: "إضافة اسم شريك / طرف آخر بالعقد",
+        sec2Title: "بيانات الاتصال والتواصل",
+        labelPrimaryPhone: "رقم الهاتف الأساسي (يدعم واتساب)",
+        errPrimaryPhone: "رقم الهاتف مطلوب وبصيغة صحيحة",
+        btnAddPhone: "+ إضافة رقم هاتف إضافي",
+        labelEmail: "البريد الإلكتروني (مخصص حصرياً لـ Gmail)",
+        hintEmail: "يجب أن ينتهي البريد بـ @gmail.com لضمان وصول الإشعارات الرسمية",
+        errEmail: "يرجى إدخال بريد Gmail صحيح (name@gmail.com)",
+        sec3Title: "إثبات الشخصية والعنوان الوطني",
+        labelIdType: "نوع الوثيقة",
+        optNatId: "بطاقة الرقم القومي (14 رقم)",
+        optPassport: "جواز السفر (Passport)",
+        labelIdNumber: "رقم بطاقة الرقم القومي أو جواز السفر",
+        phIdNumber: "أدخل الرقم كما هو بالوثيقة",
+        errIdNumber: "رقم إثبات الهوية مطلوب",
+        labelAddress: "العنوان الحالي المعتمد بالتفصيل",
+        phAddress: "المحافظة، المدينة، اسم الشارع، رقم العقار والشقة",
+        errAddress: "العنوان بالتفصيل مطلوب",
+        sec4Title: "بيانات الوحدة ونظام التعاقد",
+        labelUnitCode: "كود الوحدة (الرقم الكودي الخاص بالوحدة)",
+        phUnitCode: "مثال: nn-13 أو B2-104",
+        hintUnitCode: "كود فريد يحدد وحدتك في المخطط العام",
+        errUnitCode: "كود الوحدة مطلوب",
+        labelLocation: "مكان التعاقد (الفرع المفضل لإنهاء الإجراءات)",
+        optSelectLocation: "اختر فرع التعاقد...",
+        branchCairo: "🏛️ فرع القاهرة (المقر الرئيسي)",
+        branchAlex: "🌊 فرع الإسكندرية (الفرع الساحلي)",
+        errLocation: "مكان التعاقد مطلوب",
+        labelPeriod: "فترة السداد المتفق عليها",
+        optSelectPeriod: "اختر فترة السداد...",
+        optCash: "كاش (Cash)",
+        opt1Yr: "سنة واحدة",
+        opt2Yr: "سنتان",
+        opt3Yr: "3 سنوات",
+        opt4Yr: "4 سنوات",
+        opt5Yr: "5 سنوات",
+        opt6Yr: "6 سنوات",
+        opt7Yr: "7 سنوات",
+        errPeriod: "فترة السداد مطلوبة",
+        label5Percent: "هل تم سداد نسبة الـ 5%؟",
+        optYesPaid: "نعم (تم السداد)",
+        optNoPaid: "لا (لم يتم)",
+        sec5Title: "المستندات والمرفقات (اختياري / موصى به)",
+        fileTypesHint: "PDF أو صور",
+        dropTitle: "اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا",
+        dropSubtitle: "(صور البطاقة الشخصية، جواز السفر، إيصالات السداد، أو مستندات الشركاء)",
+        selectedFilesHeading: "المعاينات المرفقة للإرسال:",
+        submitBtnText: "استيفاء وتسجيل بيانات التعاقد رسمياً",
+        securityNotice: "بالضغط على تسجيل، يتم حفظ بياناتك بأمان في قاعدة بيانات مجموعة العمار وتوثيقها رسمياً",
+        loadingTitle: "جارٍ حفظ وتأكيد بيانات العقد...",
+        loadingSub: "يرجى الانتظار ثوانٍ معدودة",
+        successTitle: "تم استيفاء وتسجيل بياناتك بنجاح!",
+        successDesc: "تم تسجيل بيانات التعاقد وحفظها في المنظومة بنجاح، وسيقوم فريق المبيعات بالتواصل معكم لاستكمال الإجراءات الرسمية.",
+        lblUnitRef: "كود الوحدة:",
+        lblAdvisor: "المستشار العقاري:",
+        lblStatus: "حالة الطلب:",
+        valApproved: "معتمد وموثق",
+        btnAnotherForm: "حسناً، تسجيل استمارة أخرى",
+        partnerPlaceholder: "اسم الشريك بالكامل كما هو بالعقد",
+        labelNotes: "ملاحظات أو طلبات خاصة (اختياري)",
+        phNotes: "أي ملاحظات إضافية تود تسجيلها مع استمارة التعاقد (الحد الأقصى 250 حرف)...",
+        hintNotes: "يمكنك كتابة تفاصيل محددة ترغب في توثيقها مع الطلب",
+        charLabel: "حرف"
+      },
+      en: {
+        brandName: "Al Amar Real Estate Development",
+        brandSlogan: "SHORES ONLY • NORTH COAST",
+        adminLink: "Admin Dashboard",
+        vipSalesIntro: "Certified Form Supervised by Property Consultant:",
+        officialSurveyTag: "🏖️ Official Shores Coastal Units Survey & Contract Verification",
+        pageTitle: "Contract & Unit Registration Form",
+        pageSubtitle: "Please review and enter contract information accurately for formal processing & official registry",
+        sec1Title: "Contract Parties & Partners",
+        labelPrimaryName: "Client Name as in Contract",
+        phPrimaryName: "Full client name exactly as in ID or contract",
+        errPrimaryName: "Client name as in contract is required",
+        btnAddPartner: "+ Add Partner Name to Contract",
+        sec2Title: "Contact & Email Details",
+        labelPrimaryPhone: "Primary Phone (WhatsApp Supported)",
+        errPrimaryPhone: "Valid phone number is required",
+        btnAddPhone: "+ Add Additional Phone Number",
+        labelEmail: "Email Address (Gmail Exclusive)",
+        hintEmail: "Must end with @gmail.com for official contract notifications",
+        errEmail: "Please provide a valid Gmail address (@gmail.com)",
+        sec3Title: "Identity Verification & Address",
+        labelIdType: "ID Document Type",
+        optNatId: "National ID (14 digits)",
+        optPassport: "Passport",
+        labelIdNumber: "National ID or Passport Number",
+        phIdNumber: "Enter document number accurately",
+        errIdNumber: "Identification document number is required",
+        labelAddress: "Detailed Residential Address",
+        phAddress: "Governorate, City, Street, Building & Apt No.",
+        errAddress: "Detailed address is required",
+        sec4Title: "Unit Specifications & Payment Plan",
+        labelUnitCode: "Unit Code (e.g. nn-13)",
+        phUnitCode: "e.g. nn-13 or B2-104",
+        hintUnitCode: "Unique unit identifier in master plan",
+        errUnitCode: "Unit code is required",
+        labelLocation: "Contract Location Branch",
+        optSelectLocation: "Select contract branch...",
+        branchCairo: "🏛️ Cairo Branch (Headquarters)",
+        branchAlex: "🌊 Alexandria Branch (Coastal)",
+        errLocation: "Contract branch location is required",
+        labelPeriod: "Agreed Payment Period",
+        optSelectPeriod: "Select payment plan...",
+        optCash: "Cash",
+        opt1Yr: "1 Year",
+        opt2Yr: "2 Years",
+        opt3Yr: "3 Years",
+        opt4Yr: "4 Years",
+        opt5Yr: "5 Years",
+        opt6Yr: "6 Years",
+        opt7Yr: "7 Years",
+        errPeriod: "Payment period is required",
+        label5Percent: "Has 5% Deposit Been Paid?",
+        optYesPaid: "Yes (Paid)",
+        optNoPaid: "No (Pending)",
+        sec5Title: "Document Attachments (Recommended)",
+        fileTypesHint: "PDF or Images",
+        dropTitle: "Click to browse files or drag and drop here",
+        dropSubtitle: "(National ID, Passport, deposit receipts, or partner docs)",
+        selectedFilesHeading: "Attached File Previews:",
+        submitBtnText: "Complete & Register Contract Form",
+        securityNotice: "By submitting, your contract data is securely encrypted in Al Amar Real Estate records",
+        loadingTitle: "Securing & Registering Contract Data...",
+        loadingSub: "Please wait a few seconds",
+        successTitle: "Contract Information Submitted Successfully!",
+        successDesc: "Your contract data has been successfully verified and saved. Our sales management team will contact you shortly.",
+        lblUnitRef: "Unit Code:",
+        lblAdvisor: "Property Consultant:",
+        lblStatus: "Status:",
+        valApproved: "Certified & Registered",
+        btnAnotherForm: "Register Another Form",
+        partnerPlaceholder: "Partner's full name as in contract",
+        labelNotes: "Notes or Special Requests (Optional)",
+        phNotes: "Any additional notes or specific requests (max 250 characters)...",
+        hintNotes: "You can specify any special notes to document with this request",
+        charLabel: "chars"
+      }
+    };
+
+    let currentLang = 'ar';
+    const baseUrl = (window.BACKEND_URL || '').replace(/\/$/, '');
+
+    // ── Check Slug from Query String ──
+    const urlParams = new URLSearchParams(window.location.search);
+    const slugParam = urlParams.get('slug');
+
+    if (slugParam) {
+      fetch(`${baseUrl}/api/public.php?slug=${encodeURIComponent(slugParam)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res && res.success && res.data) {
+            document.getElementById('hiddenSalesId').value = res.data.sales_id;
+            document.getElementById('vipSalesAdvisorName').textContent = res.data.sales_name;
+            document.getElementById('modalAdvisorName').textContent = res.data.sales_name;
+            document.getElementById('vipSalesBadgeContainer').classList.remove('hidden');
+            document.getElementById('defaultSurveyTag').classList.add('hidden');
+            document.getElementById('modalAdvisorRow').classList.remove('hidden');
+          }
+        })
+        .catch(err => console.log('Slug resolution fallback'));
+    }
+
+    // ── Language Toggle Handler ──
+    function toggleLanguage() {
+      currentLang = currentLang === 'ar' ? 'en' : 'ar';
+      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = currentLang;
+      document.getElementById('langBtnText').innerText = currentLang === 'ar' ? 'English' : 'العربية';
+      applyTranslations(currentLang);
+    }
+
+    function applyTranslations(lang) {
+      const dict = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) el.placeholder = dict[key];
+      });
+    }
+
+    // ── Dynamic Partners Management ──
+    function addPartnerNameField() {
+      const container = document.getElementById('namesContainer');
+      const div = document.createElement('div');
+      div.className = 'flex items-center gap-2 mt-2';
+      const plh = translations[currentLang].partnerPlaceholder;
+      div.innerHTML = `
+        <input
+          type="text"
+          name="names[]"
+          placeholder="${plh}"
+          class="glass-input flex-1 px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
+          oninput="validateField(this, val => val.length >= 3)"
+        />
+        <button
+          type="button"
+          onclick="this.parentElement.remove()"
+          class="p-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 cursor-pointer"
+          title="حذف هذا الشريك"
+        >
+          🗑️
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    // ── Dynamic Phone Numbers Management ──
+    function addExtraPhoneField() {
+      const container = document.getElementById('phonesContainer');
+      const div = document.createElement('div');
+      div.className = 'flex gap-2 dir-ltr items-center mt-2';
+      div.innerHTML = `
+        <select name="phone_codes[]" class="glass-input px-3 py-3 rounded-xl text-amber-300 text-xs font-bold w-28 text-center">
+          <option value="+20">🇪🇬 +20</option>
+          <option value="+966">🇸🇦 +966</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+965">🇰🇼 +965</option>
+          <option value="+974">🇶🇦 +974</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+        </select>
+        <input
+          type="tel"
+          name="phone_numbers[]"
+          placeholder="10xxxxxxxx"
+          class="glass-input flex-1 px-4 py-3 rounded-xl text-emerald-300 placeholder-slate-500 text-sm font-mono tracking-wider text-left"
+          oninput="validateField(this, val => val.replace(/\\D/g,'').length >= 8)"
+        />
+        <button
+          type="button"
+          onclick="this.parentElement.remove()"
+          class="p-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 cursor-pointer"
+          title="حذف هذا الرقم"
+        >
+          🗑️
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    // ── 5% Paid Checkbox Box Toggle ──
+    function togglePaidBox(radio) {
+      document.querySelectorAll('input[name="paid_5_percent"]').forEach(r => {
+        r.closest('label').classList.remove('active');
+      });
+      radio.closest('label').classList.add('active');
+    }
+
+    // ── Field Validation Helpers ──
+    function validateField(input, testFn) {
+      const isValid = testFn(input.value.trim());
+      if (isValid) {
+        input.classList.remove('invalid');
+        input.classList.add('valid');
+      } else {
+        input.classList.remove('valid');
+        input.classList.add('invalid');
+      }
+      return isValid;
+    }
+
+    function validateGmail(input) {
+      const email = input.value.trim();
+      const isValid = /^[a-z0-9._%+-]+@gmail\.com$/i.test(email);
+      const err = document.getElementById('errEmail');
+      if (isValid || email === '') {
+        input.classList.remove('invalid');
+        if (isValid) input.classList.add('valid');
+        err.classList.add('hidden');
+      } else {
+        input.classList.remove('valid');
+        input.classList.add('invalid');
+        err.classList.remove('hidden');
+      }
+      return isValid;
+    }
+
+    // ── Notes Live Character Counter (Max 250) ──
+    function updateNotesCounter(textarea) {
+      const max = 250;
+      let len = textarea.value.length;
+      if (len > max) {
+        textarea.value = textarea.value.substring(0, max);
+        len = max;
+      }
+      const charEl = document.getElementById('currentNotesChars');
+      const remEl = document.getElementById('notesRemainingText');
+      const badge = document.getElementById('notesCounter');
+      
+      if (charEl) charEl.textContent = len;
+      if (remEl) {
+        const rem = max - len;
+        remEl.textContent = (currentLang === 'ar') ? `المتبقي: ${rem} حرف` : `Remaining: ${rem} chars`;
+      }
+      if (len >= 240) {
+        badge.classList.remove('text-amber-300', 'bg-amber-500/15', 'border-amber-400/40');
+        badge.classList.add('text-red-300', 'bg-red-500/20', 'border-red-400/60');
+      } else {
+        badge.classList.remove('text-red-300', 'bg-red-500/20', 'border-red-400/60');
+        badge.classList.add('text-amber-300', 'bg-amber-500/15', 'border-amber-400/40');
+      }
+    }
+
+    // ── Drag & Drop File Uploads Management ──
+    let selectedFiles = [];
+
+    function handleFilesSelected(files) {
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        if (selectedFiles.some(existing => existing.name === f.name && existing.size === f.size)) continue;
+        selectedFiles.push(f);
+      }
+      renderFilePreviews();
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderFilePreviews();
+    }
+
+    function renderFilePreviews() {
+      const container = document.getElementById('fileListContainer');
+      const list = document.getElementById('fileItemsList');
+      list.innerHTML = '';
+
+      if (selectedFiles.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+
+      selectedFiles.forEach((file, index) => {
+        const isPdf = file.name.toLowerCase().endsWith('.pdf');
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+
+        const card = document.createElement('div');
+        card.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-between gap-2 shadow-sm text-xs';
+        card.innerHTML = `
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="text-base">${isPdf ? '📄' : '🖼️'}</span>
+            <div class="overflow-hidden">
+              <div class="text-slate-200 font-bold truncate max-w-[140px] sm:max-w-[180px]">${file.name}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${sizeMb} MB</div>
+            </div>
+          </div>
+          <button type="button" onclick="removeFile(${index})" class="p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/30 text-red-400 text-xs cursor-pointer">
+            ✕
+          </button>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // Drag events
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-amber-400', 'bg-amber-500/10');
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-amber-400', 'bg-amber-500/10');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFilesSelected(e.dataTransfer.files);
+      }
+    });
+
+    // ── Form Submit Handler ──
+    document.getElementById('contractForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      let hasError = false;
+      document.querySelectorAll('.error-msg').forEach(el => el.classList.add('hidden'));
+
+      // 1. Primary Name
+      const primaryName = document.getElementById('primaryName').value.trim();
+      if (!primaryName || primaryName.length < 3) {
+        document.getElementById('errPrimaryName').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 2. Phone
+      const primaryPhone = document.getElementById('primaryPhone').value.replace(/\D/g, '');
+      if (!primaryPhone || primaryPhone.length < 8) {
+        document.getElementById('errPrimaryPhone').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 3. Gmail
+      const email = document.getElementById('clientEmail').value.trim();
+      const gmailRegex = /^[a-z0-9._%+-]+@gmail\.com$/i;
+      if (!email || !gmailRegex.test(email)) {
+        document.getElementById('errEmail').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 4. ID Number
+      const idNumber = document.getElementById('idNumber').value.trim();
+      if (!idNumber) {
+        document.getElementById('errIdNumber').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 5. Address
+      const address = document.getElementById('primaryAddress').value.trim();
+      if (!address) {
+        document.getElementById('errAddress').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 6. Unit Code
+      const unitCode = document.getElementById('unitCode').value.trim();
+      if (!unitCode) {
+        document.getElementById('errUnitCode').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 6.1. Contract Location
+      const location = document.getElementById('contractLocation').value;
+      if (!location) {
+        document.getElementById('errLocation').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 7. Payment Period
+      const period = document.getElementById('paymentPeriod').value;
+      if (!period) {
+        document.getElementById('errPeriod').classList.remove('hidden');
+        hasError = true;
+      }
+
+      if (hasError) {
+        const firstErr = document.querySelector('.error-msg:not(.hidden)');
+        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Show Loading
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+
+      const formData = new FormData(this);
+      formData.append('lang', currentLang);
+
+      // Append selected files
+      selectedFiles.forEach(file => {
+        formData.append('attachments[]', file, file.name);
+      });
+
+      try {
+        const submitUrl = `${baseUrl}/submit.php`;
+        const res = await fetch(submitUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        document.getElementById('loadingOverlay').classList.add('hidden');
+
+        if (data.status === 'success') {
+          document.getElementById('modalUnitCode').innerText = unitCode;
+          document.getElementById('successModal').classList.remove('hidden');
+
+          // Trigger Confetti Celebration Blast!
+          if (typeof confetti === 'function') {
+            confetti({
+              particleCount: 120,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          }
+        } else {
+          if (data.field === 'unitCode' || data.field === 'eoiNumber') {
+            document.getElementById('errUnitCode').innerText = data.message;
+            document.getElementById('errUnitCode').classList.remove('hidden');
+            document.getElementById('unitCode').focus();
+          } else if (data.field === 'email') {
+            document.getElementById('errEmail').innerText = data.message;
+            document.getElementById('errEmail').classList.remove('hidden');
+            document.getElementById('clientEmail').focus();
+          } else {
+            alert('Error: ' + (data.message || 'Error occurred while saving contract.'));
+          }
+        }
+      } catch (err) {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        alert('Server connection error. Please ensure Backend is running on Render/Railway.');
+      }
+    });
+
+    // Check admin session to show shortcut button if authorized
+    fetch(`${baseUrl}/check_auth.php`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.is_admin === true) {
+          const btn = document.getElementById('adminDashboardBtn');
+          if (btn) {
+            btn.classList.remove('hidden');
+            btn.classList.add('flex');
+          }
+        }
+      })
+      .catch(() => {});
+  </script>
+
+</body>
+</html>
