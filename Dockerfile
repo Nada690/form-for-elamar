@@ -11,6 +11,10 @@ RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
+# Configure Apache to listen on $PORT dynamically (supported by Apache via ${PORT})
+ENV PORT=80
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+
 WORKDIR /var/www/html
 
 # Copy project files
@@ -19,8 +23,6 @@ COPY . /var/www/html/
 # Create uploads directory and set permissions
 RUN mkdir -p /var/www/html/uploads && chmod -R 777 /var/www/html/uploads
 
-# Configure port dynamically (Render and Railway assign PORT via env)
-ENV PORT=80
 EXPOSE 80
 
-CMD sed -i "s/80/$PORT/g" /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf && apache2-foreground
+CMD ["apache2-foreground"]
