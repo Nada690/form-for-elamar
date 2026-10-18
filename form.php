@@ -70,7 +70,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 <html lang="ar" dir="rtl" class="overflow-x-hidden">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>استبيان واستيفاء بيانات التعاقد | مشاريع شورز الساحلية</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
@@ -296,8 +296,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
   </header>
 
   <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
-  <main class="flex-1 flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12 relative z-10 w-full">
-    <div class="w-full max-w-2xl mx-auto">
+  <main class="flex-1 flex items-center justify-center px-2.5 sm:px-6 py-6 sm:py-12 relative z-10 w-full">
+    <div class="w-full max-w-3xl lg:max-w-4xl mx-auto">
 
       <!-- Header Banner & Sales Consultant VIP Tag -->
       <div class="text-center mb-6 sm:mb-8 space-y-2 sm:space-y-3">
@@ -327,7 +327,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       <div class="glass-card rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden relative w-full">
         <div class="h-1.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
 
-        <div class="p-4 sm:p-7 md:p-9">
+        <div class="p-3.5 sm:p-6 md:p-8 lg:p-10">
 
           <form id="contractForm" novalidate class="space-y-6 sm:space-y-7" enctype="multipart/form-data">
             
