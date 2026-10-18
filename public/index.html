@@ -339,7 +339,7 @@
                           id="paymentDate"
                           name="payment_date"
                           class="glass-input w-full px-3.5 py-2 rounded-xl text-white text-xs sm:text-sm font-mono border-amber-500/40 focus:border-amber-400"
-                          value="2026-10-18"
+                          value="2026-10-19"
                         />
                         <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPaymentDate" data-i18n="errPaymentDate">تاريخ الدفع مطلوب</p>
                       </div>
@@ -349,8 +349,8 @@
                   <!-- رسالة التوقف عند اختيار "لا" في استكمال المقدم -->
                   <div id="advanceNoticeNo" class="hidden p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-center space-y-2 my-2 animate-pulse">
                     <div class="text-2xl">⚠️</div>
-                    <h4 class="text-amber-300 font-bold text-sm sm:text-base">سداد المقدم مطلوب لإتمام التعاقد</h4>
-                    <p class="text-xs text-slate-300 leading-relaxed max-w-lg mx-auto">
+                    <h4 class="text-amber-300 font-bold text-sm sm:text-base" data-i18n="advanceNoticeTitle">سداد المقدم مطلوب لإتمام التعاقد</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed max-w-lg mx-auto" data-i18n="advanceNoticeDesc">
                       عفواً، لا يمكن استكمال تسجيل التعاقد وحجز الوحدة إلا بعد استكمال سداد قيمة المقدم رسمياً. يُرجى مراجعة إدارة المبيعات لسداد المقدم أولاً للمتابعة.
                     </p>
                   </div>
@@ -428,14 +428,14 @@
                         class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400 bg-slate-900/80 cursor-pointer" 
                         onchange="handlePeriodChange(this); validateField(this, val => val !== '')"
                       >
-                        <option value="">اختر فترة السداد (Select Payment Period)...</option>
+                        <option value="" data-i18n="optSelectPeriod">اختر فترة السداد...</option>
                         <option value="7 Years">7 Years</option>
                         <option value="8 Years">8 Years</option>
                         <option value="9 Years">9 Years</option>
                         <option value="10 Years">10 Years</option>
                       </select>
                       <input type="hidden" name="payment_period" id="paymentPeriod" value="">
-                      <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPeriod">فترة السداد مطلوبة</p>
+                      <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPeriod" data-i18n="errPeriod">فترة السداد مطلوبة</p>
                     </div>
 
                     <!-- حقل النسبة (Rate) - يظهر دائماً عند اختيار أي فترة -->
@@ -449,9 +449,9 @@
                         class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400 bg-slate-900/80 cursor-pointer"
                         onchange="handleRateChange(this)"
                       >
-                        <option value="">اختر النسبة...</option>
+                        <option value="" data-i18n="optSelectRate">اختر النسبة...</option>
                       </select>
-                      <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errRateSelect">يرجى اختيار النسبة</p>
+                      <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errRateSelect" data-i18n="errRateSelect">يرجى اختيار النسبة</p>
                     </div>
 
                     <!-- حقل النسبة النهائي المخفي للباك إند وقاعدة البيانات -->
@@ -656,76 +656,91 @@
         officialSurveyTag: "🏖️ استبيان واستيفاء بيانات عقود الشاليهات الساحلية (Shores Only)",
         pageTitle: "استمارة بيانات العقد والوحدة",
         pageSubtitle: "يرجى تسجيل وتدقيق بيانات العقد بدقة لضمان سرعة إتمام الإجراءات وتجهيز وثائق الملكية",
-        sec1Title: "قسم البيانات الشخصية وبيانات العميل",
+        sec1Title: "بيانات أطراف العقد والشركاء (بيانات العملاء)",
+        btnAddClientCard: "+ إضافة شريك / عميل جديد بالعقد",
+        badgePrimaryParty: "الطرف الأساسي",
+        badgePartnerParty: "شريك بالعقد",
+        btnRemovePartner: "حذف هذا الشريك",
         labelPrimaryName: "اسم العميل كما هو في البطاقة الشخصية",
         phPrimaryName: "(الاسم كاملاً ومطابقاً للهوية الشخصية)",
         errPrimaryName: "اسم العميل كما هو في البطاقة الشخصية مطلوب",
-        btnAddPartner: "إضافة اسم شريك / طرف آخر بالعقد",
-        sec2Title: "رقم الهاتف والتواصل والبريد",
-        labelPrimaryPhone: "رقم الهاتف والتواصل (يدعم الأرقام المحلية والدولية)",
+        labelPrimaryPhone: "أرقام الهواتف والتواصل (يدعم الأرقام المحلية والدولية)",
         phSearchCountry: "بحث عن الدولة أو الكود...",
         errPrimaryPhone: "رقم الهاتف مطلوب وبصيغة صحيحة",
         btnAddPhone: "+ إضافة رقم هاتف إضافي",
+        btnRemovePhone: "حذف هذا الرقم",
         labelEmail: "البريد الإلكتروني (متاح للتواصل والمراسلات الرسمية)",
-        hintEmail: "يرجى إدخال بريد إلكتروني نشط ومتاح لتلقي الإشعارات والمراسلات الرسمية الخاصة بالعقد",
         phEmail: "example@domain.com",
         errEmail: "يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com)",
-        sec3Title: "إثبات الشخصية ومحل الإقامة والعنوان والمرفقات",
+        btnAddEmail: "+ إضافة بريد إلكتروني إضافي",
+        btnRemoveEmail: "حذف هذا البريد",
         labelIdType: "نوع الوثيقة",
         optNatId: "بطاقة الرقم القومي (14 رقم)",
         optPassport: "جواز السفر (Passport)",
         labelIdNumber: "رقم بطاقة الرقم القومي أو جواز السفر",
         phIdNumber: "أدخل 14 رقماً بالضبط للبطاقة الشخصية",
+        phPassportNumber: "أدخل من 6 إلى 9 أحرف وأرقام للجواز",
         errIdNumberNational: "رقم البطاقة الشخصية يجب أن يتكون من 14 رقماً بالضبط",
         errIdNumberPassport: "رقم جواز السفر يجب أن يتكون من 6 إلى 9 أحرف وأرقام بدون رموز خاصة",
         labelResidenceCountry: "مكان الإقامة الحالي:",
         optInsideEgypt: "داخل جمهورية مصر العربية",
         optOutsideEgypt: "خارج جمهورية مصر العربية",
         labelIdAddress: "العنوان كما هو مسجل في إثبات الهوية الشخصية",
-        phIdAddress: "المحافظة، المدينة، اسم الشارع، رقم العقار كما في البطاقة أو الجواز",
-        errIdAddress: "العنوان كما هو مسجل في إثبات الهوية الشخصية مطلوب",
+        subIdAddress: "اختر المحافظة والمدينة واكتب باقي التفاصيل",
+        lblGovernorate: "المحافظة",
+        optSelectGov: "اختر المحافظة...",
+        lblCity: "المدينة / الحي / المركز",
+        optSelectGovFirst: "اختر المحافظة أولاً...",
+        optSelectCity: "اختر المدينة / الحي / المركز...",
+        optOtherArea: "أخرى / منطقة أخرى",
+        lblStreetDetails: "باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)",
+        phStreetDetails: "اسم الشارع، رقم العمارة، رقم الشقة، علامة مميزة...",
+        errIdAddressSelect: "يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان",
         labelCorrespondenceAddress: "العنوان المعتمد بالتفصيل للمراسلات",
-        phCorrespondenceAddress: "اسم الشارع، رقم المبنى، الشقة للمراسلات الرسمية",
-        errCorrespondenceAddress: "العنوان المعتمد للمراسلات مطلوب بالتفصيل",
+        lblCorrStreetDetails: "باقي تفاصيل العنوان للمراسلات",
+        phCorrStreetDetails: "اسم الشارع، رقم المبنى والشقة للمراسلات الرسمية",
+        errCorrespondenceAddress: "العنوان المعتمد للمراسلات مطلوب",
         secAttachmentsTitle: "المستندات والمرفقات المطلوبة",
         docNoticeInside: "للعملاء المقيمين داخل مصر: يُشترط رفع صورة واضحة لبطاقة الرقم القومي (الوجهين: الأمامي والخلفي).",
         docNoticeOutside: "للعملاء المقيمين خارج مصر: يُشترط رفع صورة واضحة لجواز السفر الساري + صورة بطاقة الإقامة السارية.",
         dropTitle: "اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا",
         dropSubtitleInside: "(مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)",
-        dropSubtitleOutside: "(مطلوب إجباري: جواز السفر الساري + الإقامة)",
-        selectedFilesHeading: "المعاينات المرفقة للإرسال:",
+        dropSubtitleOutside: "(مطلوب إجباري: جواز سفر ساري + إقامة سارية)",
+        selectedFilesHeading: "المعاينات المرفقة لهذا الطرف:",
         errAttachments: "المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه",
-        sec4Title: "بيانات الوحدة ونظام التعاقد والخيارات الشرطية",
-        labelUnitCode: "كود الوحدة (الرقم الكودي الخاص بالوحدة)",
-        phUnitCode: "مثال: nn-13 أو B2-104",
-        errUnitCode: "كود الوحدة مطلوب",
-        labelPeriod: "فترة السداد",
-        labelRate: "النسبة (Rate)",
-        errRateSelect: "يرجى اختيار النسبة",
-        optSelectPeriod: "اختر فترة السداد...",
-        opt3Yr: "3 سنوات",
-        opt4Yr: "4 سنوات",
-        opt5Yr: "5 سنوات",
-        opt6Yr: "6 سنوات",
-        opt7Yr: "7 سنوات",
-        opt8Yr: "8 سنوات",
-        opt9Yr: "9 سنوات",
-        opt10Yr: "10 سنوات",
-        errPeriod: "فترة السداد مطلوبة",
+        sec2TitleUnit: "بيانات الوحدة ونظام التعاقد وخطة السداد",
+        unitMainTitle: "بيانات الوحدة الأساسية (الوحدة 1)",
         labelAdvanceQuestion: "هل تم استكمال قيمة المقدم؟",
         optYesPaid: "نعم",
         optNoPaid: "لا",
         labelPaymentDate: "📅 تاريخ الدفع:",
-        hintPaymentDate: "حدد تاريخ استكمال سداد قيمة المقدم",
         errPaymentDate: "تاريخ الدفع مطلوب",
+        advanceNoticeTitle: "سداد المقدم مطلوب لإتمام التعاقد",
+        advanceNoticeDesc: "عفواً، لا يمكن استكمال تسجيل التعاقد وحجز الوحدة إلا بعد استكمال سداد قيمة المقدم رسمياً. يُرجى مراجعة إدارة المبيعات لسداد المقدم أولاً للمتابعة.",
+        advanceNoticeExtraTitle: "استكمال سداد المقدم مطلوب لحجز هذه الوحدة",
+        advanceNoticeExtraDesc: "لا يمكن تسجيل هذه الوحدة وحجزها بدون استكمال سداد المقدم.",
+        labelUnitCode: "كود الوحدة (الرقم الكودي الخاص بالوحدة)",
+        phSelectUnit: "اختر كود الوحدة من القائمة...",
+        phSearchUnit: "ابحث عن كود الوحدة (مثال: N1-001)...",
+        errUnitCode: "كود الوحدة مطلوب",
+        labelPeriod: "فترة السداد",
+        optSelectPeriod: "اختر فترة السداد...",
+        errPeriod: "فترة السداد مطلوبة",
+        labelRate: "النسبة (Rate)",
+        optSelectRate: "اختر النسبة...",
+        errRateSelect: "يرجى اختيار النسبة",
+        labelPlanExceptions: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام",
+        phPlanExceptions: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...",
+        optOptional: "(اختياري)",
+        btnAddUnit: "إضافة وحدة أخرى (اختياري)",
+        btnRemoveUnit: "حذف هذه الوحدة",
         labelLocation: "المكان الأقرب لتوثيق العقد",
         optSelectLocation: "اختر المكان الأقرب لتوثيق العقد...",
         branchCairoClean: "القاهرة",
         branchAlexClean: "الإسكندرية",
         errLocation: "المكان الأقرب لتوثيق العقد مطلوب",
-        labelPlanExceptions: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام",
-        phPlanExceptions: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...",
-        optOptional: "(اختياري)",
+        labelGeneralNotes: "هل لديك أي ملاحظات تود إخبارنا بها؟",
+        phGeneralNotes: "اكتب هنا أي ملاحظات أو استفسارات إضافية تود إخبارنا بها...",
         submitBtnText: "استيفاء وتسجيل بيانات التعاقد رسمياً",
         securityNotice: "بالضغط على تسجيل، يتم حفظ بياناتك بأمان في قاعدة بيانات مجموعة العمار وتوثيقها رسمياً",
         loadingTitle: "جارٍ حفظ وتأكيد بيانات العقد...",
@@ -736,18 +751,7 @@
         lblAdvisor: "المستشار العقاري:",
         lblStatus: "حالة الطلب:",
         valApproved: "معتمد وموثق",
-        btnAddUnit: "إضافة وحدة أخرى (اختياري)",
-        labelGeneralNotes: "هل لديك أي ملاحظات تود إخبارنا بها؟",
-        phGeneralNotes: "اكتب هنا أي ملاحظات أو استفسارات إضافية تود إخبارنا بها...",
-        unitMainTitle: "بيانات الوحدة الأساسية (الوحدة 1)",
-        labelUnitPrice: "قيمة / سعر الوحدة (EGP)",
-        phUnitPrice: "مثال: 4,500,000",
-        partnerPlaceholder: "اسم الشريك بالكامل كما هو بالهوية الشخصية",
-        phSelectUnit: "اختر كود الوحدة من القائمة...",
-        phSearchUnit: "ابحث عن كود الوحدة (مثال: N1-001)...",
-        noUnitsFound: "لا توجد وحدة مطابقة لبحثك",
-        showingCount: "عرض {count} من {total} وحدة",
-        allUnitsCount: "عرض أول {count} وحدة"
+        btnAnotherForm: "حسناً، تسجيل استمارة أخرى"
       },
       en: {
         brandName: "Al Amar Real Estate Development",
@@ -757,76 +761,91 @@
         officialSurveyTag: "🏖️ Official Shores Coastal Units Survey & Contract Verification",
         pageTitle: "Contract & Unit Registration Form",
         pageSubtitle: "Please review and enter contract information accurately for formal processing & official registry",
-        sec1Title: "Personal Details & Client Information",
-        labelPrimaryName: "Client Name as in National ID",
+        sec1Title: "Contract Parties & Partners Information (Client Data)",
+        btnAddClientCard: "+ Add Partner / New Contract Client",
+        badgePrimaryParty: "Primary Party",
+        badgePartnerParty: "Contract Partner",
+        btnRemovePartner: "Remove Partner",
+        labelPrimaryName: "Client Name as in ID",
         phPrimaryName: "(Full name matching National ID or Passport)",
         errPrimaryName: "Client name as in ID is required",
-        btnAddPartner: "+ Add Partner Name to Contract",
-        sec2Title: "Contact Phone, International Code & Email",
-        labelPrimaryPhone: "Phone & Contact Number (Local & International)",
+        labelPrimaryPhone: "Phone & Contact Numbers (Supports Local & International)",
         phSearchCountry: "Search country or dialing code...",
-        errPrimaryPhone: "Valid phone number is required",
+        errPrimaryPhone: "Phone number is required in a valid format",
         btnAddPhone: "+ Add Additional Phone Number",
+        btnRemovePhone: "Remove phone",
         labelEmail: "Email (Official Correspondence & Notices)",
-        hintEmail: "Please provide an active email for official contract notices and correspondence",
         phEmail: "example@domain.com",
-        errEmail: "Please provide a valid email for correspondence (example@domain.com)",
-        sec3Title: "Identity Proof, Residence, Address & Attachments",
+        errEmail: "Please provide a valid email (example@domain.com)",
+        btnAddEmail: "+ Add Additional Email",
+        btnRemoveEmail: "Remove email",
         labelIdType: "ID Document Type",
         optNatId: "National ID (14 digits)",
         optPassport: "Passport",
         labelIdNumber: "National ID or Passport Number",
         phIdNumber: "Enter exactly 14 digits for National ID",
+        phPassportNumber: "Enter 6 to 9 alphanumeric characters",
         errIdNumberNational: "National ID must be exactly 14 digits",
-        errIdNumberPassport: "Passport number must be 6 to 9 alphanumeric characters without special symbols",
+        errIdNumberPassport: "Passport number must be 6 to 9 alphanumeric characters",
         labelResidenceCountry: "Current Residence Place:",
         optInsideEgypt: "Inside Arab Republic of Egypt",
         optOutsideEgypt: "Outside Arab Republic of Egypt",
         labelIdAddress: "Address as registered in Personal ID",
-        phIdAddress: "Governorate, City, Street, Building No. as in ID or Passport",
-        errIdAddress: "Address as in ID is required",
+        subIdAddress: "Select Gov & City + Street details",
+        lblGovernorate: "Governorate",
+        optSelectGov: "Select Governorate...",
+        lblCity: "City / District / Area",
+        optSelectGovFirst: "Select Governorate first...",
+        optSelectCity: "Select City / District...",
+        optOtherArea: "Other district / area",
+        lblStreetDetails: "Street, Building & Apt No. Details",
+        phStreetDetails: "Street name, building number, apartment number, landmark...",
+        errIdAddressSelect: "Please select governorate, city and enter street address details",
         labelCorrespondenceAddress: "Approved Correspondence Address in Detail",
-        phCorrespondenceAddress: "Street name, building number, apartment number for official mail",
-        errCorrespondenceAddress: "Approved correspondence address is required in detail",
+        lblCorrStreetDetails: "Street, Building & Apt No. Details",
+        phCorrStreetDetails: "Street name, building number, apartment number for official mail",
+        errCorrespondenceAddress: "Approved correspondence address is required",
         secAttachmentsTitle: "Required Documents & Attachments",
         docNoticeInside: "For clients residing inside Egypt: Uploading both sides of the National ID is mandatory.",
         docNoticeOutside: "For clients residing outside Egypt: Uploading valid Passport + Residence permit is mandatory.",
-        dropTitle: "Click to upload documents or drag & drop files here",
+        dropTitle: "Click to select documents or drag & drop files here",
         dropSubtitleInside: "(Mandatory: National ID card both sides)",
         dropSubtitleOutside: "(Mandatory: Valid Passport + Residence Permit)",
         selectedFilesHeading: "Attached Files Preview:",
         errAttachments: "Required documents are mandatory. Please attach the required files.",
-        sec4Title: "Unit Information, Payment Term & Conditional Options",
-        labelUnitCode: "Unit Code (Unit Identification Code)",
-        phUnitCode: "e.g. nn-13 or B2-104",
-        errUnitCode: "Unit code is required",
-        labelPeriod: "Payment Term",
-        labelRate: "Rate",
-        errRateSelect: "Please select a rate",
-        optSelectPeriod: "Select payment term...",
-        opt3Yr: "3 Years",
-        opt4Yr: "4 Years",
-        opt5Yr: "5 Years",
-        opt6Yr: "6 Years",
-        opt7Yr: "7 Years",
-        opt8Yr: "8 Years",
-        opt9Yr: "9 Years",
-        opt10Yr: "10 Years",
-        errPeriod: "Payment term selection is required",
+        sec2TitleUnit: "Unit Information, Contract System & Payment Plan",
+        unitMainTitle: "Primary Unit Information (Unit 1)",
         labelAdvanceQuestion: "Was the down payment completed?",
         optYesPaid: "Yes",
         optNoPaid: "No",
         labelPaymentDate: "📅 Payment Date:",
-        hintPaymentDate: "Specify the date the down payment was made",
         errPaymentDate: "Payment date is required",
+        advanceNoticeTitle: "Down payment is required to complete the contract",
+        advanceNoticeDesc: "Registration cannot proceed without completing the down payment. Please contact sales management to settle the down payment first.",
+        advanceNoticeExtraTitle: "Down payment is required to register this unit",
+        advanceNoticeExtraDesc: "Cannot proceed with registering this unit without completing down payment.",
+        labelUnitCode: "Unit Code (Unit Identification Code)",
+        phSelectUnit: "Select unit code from list...",
+        phSearchUnit: "Search unit code (e.g. N1-001)...",
+        errUnitCode: "Unit code is required",
+        labelPeriod: "Payment Term",
+        optSelectPeriod: "Select payment term...",
+        errPeriod: "Payment term is required",
+        labelRate: "Rate",
+        optSelectRate: "Select Rate...",
+        errRateSelect: "Please select a rate",
+        labelPlanExceptions: "Write any proposed payment plan you wish to record freely without obligation",
+        phPlanExceptions: "Write any proposed payment plan you wish to record freely without obligation...",
+        optOptional: "(Optional)",
+        btnAddUnit: "Add Another Unit (Optional)",
+        btnRemoveUnit: "Remove this unit",
         labelLocation: "Nearest Branch for Contract Signing",
         optSelectLocation: "Select contract branch...",
         branchCairoClean: "Cairo",
         branchAlexClean: "Alexandria",
         errLocation: "Contract branch is required",
-        labelPlanExceptions: "Write any proposed payment plan you wish to record freely without obligation",
-        phPlanExceptions: "Write any proposed payment plan you wish to record freely without obligation...",
-        optOptional: "(Optional)",
+        labelGeneralNotes: "Do you have any notes or inquiries you'd like to tell us?",
+        phGeneralNotes: "Write any additional notes or inquiries you'd like to share with us...",
         submitBtnText: "Submit & Officially Register Contract",
         securityNotice: "By clicking submit, your data is securely stored and registered with Al Amar Group",
         loadingTitle: "Saving and confirming contract details...",
@@ -837,18 +856,7 @@
         lblAdvisor: "Property Consultant:",
         lblStatus: "Application Status:",
         valApproved: "Certified & Logged",
-        btnAddUnit: "Add Another Unit (Optional)",
-        labelGeneralNotes: "Do you have any notes or inquiries you'd like to tell us?",
-        phGeneralNotes: "Write any additional notes or inquiries you'd like to share with us...",
-        unitMainTitle: "Primary Unit Information (Unit 1)",
-        labelUnitPrice: "Unit Price (EGP)",
-        phUnitPrice: "e.g. 4,500,000",
-        partnerPlaceholder: "Full partner name as in ID",
-        phSelectUnit: "Select unit code from list...",
-        phSearchUnit: "Search unit code (e.g. N1-001)...",
-        noUnitsFound: "No matching units found",
-        showingCount: "Showing {count} of {total} units",
-        allUnitsCount: "Showing first {count} units"
+        btnAnotherForm: "Done, register another form"
       }
     };
 
@@ -922,7 +930,8 @@
       html.dir = (lang === 'ar') ? 'rtl' : 'ltr';
       html.lang = lang;
 
-      document.getElementById('langBtnText').innerText = (lang === 'ar') ? 'English' : 'العربية';
+      const langBtn = document.getElementById('langBtnText');
+      if (langBtn) langBtn.innerText = (lang === 'ar') ? 'English' : 'العربية';
 
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -938,19 +947,162 @@
         }
       });
 
+      if (typeof updateAllDynamicCardsLanguage === 'function') {
+        updateAllDynamicCardsLanguage(lang);
+      }
       if (typeof reNumberClientCards === 'function') {
         reNumberClientCards();
       }
       if (typeof updateClientsCountBadge === 'function') {
         updateClientsCountBadge();
       }
-      if (typeof activeClientIds !== 'undefined' && Array.isArray(activeClientIds)) {
-        activeClientIds.forEach(cId => {
-          if (typeof initClientAddressFields === 'function') {
-            initClientAddressFields(cId);
-          }
-        });
+      if (typeof updateAllExtraUnitsLanguage === 'function') {
+        updateAllExtraUnitsLanguage(lang);
       }
+
+      // Update static primary unit picker placeholder if empty
+      const primarySelected = document.getElementById('unitPickerSelectedText');
+      const primaryHidden = document.getElementById('unitCode');
+      if (primarySelected && (!primaryHidden || !primaryHidden.value)) {
+        primarySelected.innerHTML = `<span class="text-slate-500 font-sans font-normal tracking-normal text-xs" data-i18n="phSelectUnit">${translations[lang].phSelectUnit}</span>`;
+      }
+    }
+
+    function updateAllDynamicCardsLanguage(lang) {
+      const isEn = (lang === 'en');
+      const t = translations[lang] || {};
+
+      if (typeof activeClientIds === 'undefined' || !Array.isArray(activeClientIds)) return;
+
+      activeClientIds.forEach((cId, idx) => {
+        const card = document.getElementById(`clientCard_${cId}`);
+        if (!card) return;
+
+        // 1. Badge & Delete button
+        const badge = card.querySelector('.card-badge');
+        if (badge) {
+          badge.innerText = (idx === 0) ? (t.badgePrimaryParty || 'Primary Party') : (t.badgePartnerParty || 'Contract Partner');
+        }
+        const delBtn = card.querySelector('.card-delete-btn');
+        if (delBtn) {
+          delBtn.setAttribute('title', t.btnRemovePartner || 'Remove Partner');
+          const spanText = delBtn.querySelector('span:last-child');
+          if (spanText) spanText.innerText = t.btnRemovePartner || 'Remove Partner';
+        }
+
+        // 2. ID document placeholder depending on type
+        const idTypeSelect = card.querySelector('.client-id-type');
+        const idInput = card.querySelector('.client-id-number');
+        if (idTypeSelect && idInput) {
+          if (idTypeSelect.value === 'passport') {
+            idInput.placeholder = t.phPassportNumber || 'Enter 6 to 9 alphanumeric characters';
+          } else {
+            idInput.placeholder = t.phIdNumber || 'Enter exactly 14 digits';
+          }
+        }
+
+        // 3. Notice text and drop subtitle according to residence
+        const resVal = clientResidenceMap[cId] || 'داخل جمهورية مصر العربية';
+        const isAbroad = resVal.includes('خارج');
+        const noticeEl = card.querySelector('.client-doc-notice-text');
+        const subEl = card.querySelector('.client-drop-subtitle');
+        if (noticeEl) {
+          noticeEl.innerText = isAbroad ? t.docNoticeOutside : t.docNoticeInside;
+        }
+        if (subEl) {
+          subEl.innerText = isAbroad ? t.dropSubtitleOutside : t.dropSubtitleInside;
+        }
+
+        // 4. Update address dropdowns (Governorate & City)
+        const govSelect = card.querySelector('.client-gov-select');
+        const corrGovSelect = card.querySelector('.client-corr-gov-select');
+        populateGovernorateOptions(govSelect);
+        populateGovernorateOptions(corrGovSelect);
+
+        const citySelect = card.querySelector('.client-city-select');
+        if (citySelect) {
+          const firstOpt = citySelect.options[0];
+          if (firstOpt && firstOpt.value === '') {
+            firstOpt.textContent = citySelect.disabled 
+              ? (t.optSelectGovFirst || 'Select Governorate first...') 
+              : (t.optSelectCity || 'Select City / District...');
+          }
+          for (let opt of citySelect.options) {
+            if (opt.value === 'أخرى / منطقة أخرى' || opt.value === 'Other district / area') {
+              opt.textContent = t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى');
+              opt.value = opt.textContent;
+            }
+          }
+        }
+        const corrCitySelect = card.querySelector('.client-corr-city-select');
+        if (corrCitySelect) {
+          const firstOpt = corrCitySelect.options[0];
+          if (firstOpt && firstOpt.value === '') {
+            firstOpt.textContent = corrCitySelect.disabled 
+              ? (t.optSelectGovFirst || 'Select Governorate first...') 
+              : (t.optSelectCity || 'Select City / District...');
+          }
+          for (let opt of corrCitySelect.options) {
+            if (opt.value === 'أخرى / منطقة أخرى' || opt.value === 'Other district / area') {
+              opt.textContent = t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى');
+              opt.value = opt.textContent;
+            }
+          }
+        }
+
+        // 5. Phone rows: placeholders and delete button titles and country list
+        card.querySelectorAll('.phone-row').forEach(pRow => {
+          const pInput = pRow.querySelector('.phone-input');
+          const codeVal = pRow.querySelector('.country-code-val')?.value || '+20';
+          if (pInput) updatePhonePlaceholderAndConfig(pInput, codeVal);
+          const delPhoneBtn = pRow.querySelector('button[onclick^="removePhoneRow"]');
+          if (delPhoneBtn) delPhoneBtn.setAttribute('title', t.btnRemovePhone || 'Remove phone');
+          const picker = pRow.querySelector('.country-picker');
+          if (picker) buildCountryList(picker);
+        });
+
+        // 6. Email rows: delete button titles
+        card.querySelectorAll('.email-row').forEach(eRow => {
+          const delEmailBtn = eRow.querySelector('button[onclick^="removeEmailRow"]');
+          if (delEmailBtn) delEmailBtn.setAttribute('title', t.btnRemoveEmail || 'Remove email');
+        });
+      });
+    }
+
+    function updateAllExtraUnitsLanguage(lang) {
+      const isEn = (lang === 'en');
+      const t = translations[lang] || {};
+
+      const extraBlocks = document.querySelectorAll('#unitsContainer .unit-block:not(:first-child)');
+      extraBlocks.forEach((blk, idx) => {
+        const uNum = idx + 2;
+        const titleSpan = blk.querySelector('.unit-block-title');
+        if (titleSpan) {
+          titleSpan.innerText = isEn ? `Additional Unit (Unit ${uNum})` : `بيانات الوحدة الإضافية (الوحدة ${uNum})`;
+        }
+        const delBtn = blk.querySelector('button[onclick^="removeExtraUnit"]');
+        if (delBtn) {
+          delBtn.setAttribute('title', t.btnRemoveUnit || (isEn ? 'Remove this unit' : 'حذف هذه الوحدة'));
+          const delSpan = delBtn.querySelector('span:last-child');
+          if (delSpan) delSpan.innerText = t.btnRemoveUnit || (isEn ? 'Remove this unit' : 'حذف هذه الوحدة');
+        }
+
+        const pSel = blk.querySelector('select[name="extra_payment_periods[]"]');
+        if (pSel && pSel.options[0] && pSel.options[0].value === '') {
+          pSel.options[0].textContent = t.optSelectPeriod || (isEn ? 'Select payment term...' : 'اختر فترة السداد...');
+        }
+
+        const rSel = blk.querySelector('select[name="extra_final_rates[]"]');
+        if (rSel && rSel.options[0] && rSel.options[0].value === '') {
+          rSel.options[0].textContent = t.optSelectRate || (isEn ? 'Select Rate...' : 'اختر النسبة...');
+        }
+
+        const pickerSelected = blk.querySelector('.unit-picker .selected-text');
+        const hiddenUnit = blk.querySelector('input[name="extra_unit_codes[]"]');
+        if (pickerSelected && (!hiddenUnit || !hiddenUnit.value)) {
+          pickerSelected.innerHTML = `<span class="text-slate-500 font-sans font-normal tracking-normal text-xs" data-i18n="phSelectUnit">${t.phSelectUnit || 'Select unit code from list...'}</span>`;
+        }
+      });
     }
 
     // ── Country Dropdown Builder with Clean Formatting ──
@@ -1535,7 +1687,7 @@
       const cNum = extraUnitCounter;
 
       const unitTitle = (currentLang === 'en') ? `Additional Unit (Unit ${cNum})` : `بيانات الوحدة الإضافية (الوحدة ${cNum})`;
-      const removeTitle = (currentLang === 'en') ? 'Remove this unit' : 'حذف هذه الوحدة';
+      const removeTitle = translations[currentLang]?.btnRemoveUnit || (currentLang === 'en' ? 'Remove this unit' : 'حذف هذه الوحدة');
       const labelUnitCode = translations[currentLang]?.labelUnitCode || (currentLang === 'en' ? 'Unit Code' : 'كود الوحدة (الرقم الكودي الخاص بالوحدة)');
       const phSelectUnit = translations[currentLang]?.phSelectUnit || (currentLang === 'en' ? 'Select unit code from list...' : 'اختر كود الوحدة من القائمة...');
       const phSearchUnit = translations[currentLang]?.phSearchUnit || (currentLang === 'en' ? 'Search unit code...' : 'ابحث عن كود الوحدة...');
@@ -1543,14 +1695,14 @@
       const labelRate = translations[currentLang]?.labelRate || (currentLang === 'en' ? 'Rate' : 'النسبة (Rate)');
       const labelProposal = translations[currentLang]?.labelPlanExceptions || (currentLang === 'en' ? 'Write any proposed payment plan you wish to record freely without obligation' : 'اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام');
       const phProposal = translations[currentLang]?.phPlanExceptions || (currentLang === 'en' ? 'Write any proposed payment plan you wish to record freely without obligation...' : 'اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...');
-      const optOptional = (currentLang === 'en') ? '(Optional)' : '(اختياري)';
+      const optOptional = translations[currentLang]?.optOptional || (currentLang === 'en' ? '(Optional)' : '(اختياري)');
 
       div.innerHTML = `
         <div class="flex items-center justify-between pb-1 border-b border-slate-800/80">
           <div class="flex items-center gap-2 text-amber-300 font-bold text-xs sm:text-sm">
             <span>🏢</span>
-            <span>${unitTitle}</span>
-            <span class="text-slate-400 text-[10px] font-normal">${optOptional}</span>
+            <span class="unit-block-title">${unitTitle}</span>
+            <span class="text-slate-400 text-[10px] font-normal" data-i18n="optOptional">${optOptional}</span>
           </div>
           <button 
             type="button" 
@@ -1569,17 +1721,17 @@
             <!-- السؤال وخيارات نعم / لا -->
             <div class="space-y-1.5 flex-1">
               <label class="block text-xs font-bold text-slate-300">
-                <span class="text-amber-300 font-bold">${currentLang === 'en' ? 'Was the down payment completed?' : 'هل تم استكمال قيمة المقدم؟'}</span> 
+                <span class="text-amber-300 font-bold" data-i18n="labelAdvanceQuestion">${currentLang === 'en' ? 'Was the down payment completed?' : 'هل تم استكمال قيمة المقدم؟'}</span> 
                 <span class="text-amber-400 font-bold">*</span>
               </label>
               <div class="flex items-center gap-2 max-w-[220px]">
                 <label class="custom-check-box active flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white transition-all text-center extra-box-yes" id="extraBoxYes_${cNum}">
                   <input type="radio" name="extra_paid_5_percent_${cNum}" value="نعم" checked class="hidden" onchange="toggleExtraAdvancePaidBox(${cNum}, this)">
-                  <span>✓</span> <span>${currentLang === 'en' ? 'Yes' : 'نعم'}</span>
+                  <span>✓</span> <span data-i18n="optYesPaid">${currentLang === 'en' ? 'Yes' : 'نعم'}</span>
                 </label>
                 <label class="custom-check-box flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white transition-all text-center extra-box-no" id="extraBoxNo_${cNum}">
                   <input type="radio" name="extra_paid_5_percent_${cNum}" value="لا" class="hidden" onchange="toggleExtraAdvancePaidBox(${cNum}, this)">
-                  <span>✕</span> <span>${currentLang === 'en' ? 'No' : 'لا'}</span>
+                  <span>✕</span> <span data-i18n="optNoPaid">${currentLang === 'en' ? 'No' : 'لا'}</span>
                 </label>
               </div>
             </div>
@@ -1587,7 +1739,7 @@
             <!-- حقل تاريخ الدفع -->
             <div id="extraPaymentDateContainer_${cNum}" class="space-y-1.5 sm:w-60 w-full transition-all">
               <label class="block text-xs font-bold text-slate-300" for="extraPaymentDate_${cNum}">
-                <span class="text-amber-300 font-bold">📅 ${currentLang === 'en' ? 'Payment Date:' : 'تاريخ الدفع:'}</span>
+                <span class="text-amber-300 font-bold" data-i18n="labelPaymentDate">📅 ${currentLang === 'en' ? 'Payment Date:' : 'تاريخ الدفع:'}</span>
                 <span class="text-amber-400 font-bold">*</span>
               </label>
               <input
@@ -1595,9 +1747,9 @@
                 id="extraPaymentDate_${cNum}"
                 name="extra_payment_dates[]"
                 class="glass-input w-full px-3.5 py-2 rounded-xl text-white text-xs sm:text-sm font-mono border-amber-500/40 focus:border-amber-400"
-                value="2026-10-18"
+                value="2026-10-19"
               />
-              <p class="error-msg text-red-400 text-xs mt-1 hidden extra-payment-date-error">${currentLang === 'en' ? 'Payment date is required' : 'تاريخ الدفع مطلوب'}</p>
+              <p class="error-msg text-red-400 text-xs mt-1 hidden extra-payment-date-error" data-i18n="errPaymentDate">${currentLang === 'en' ? 'Payment date is required' : 'تاريخ الدفع مطلوب'}</p>
             </div>
           </div>
         </div>
@@ -1605,15 +1757,15 @@
         <!-- رسالة التوقف للوحدة الإضافية عند اختيار "لا" -->
         <div id="extraAdvanceNoticeNo_${cNum}" class="hidden p-3 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-center space-y-1.5 my-2 animate-pulse">
           <div class="text-xl">⚠️</div>
-          <p class="text-xs text-amber-300 font-bold">${currentLang === 'en' ? 'Down payment is required to register this unit' : 'استكمال سداد المقدم مطلوب لحجز هذه الوحدة'}</p>
-          <p class="text-[11px] text-slate-300">${currentLang === 'en' ? 'Cannot proceed with registering this unit without completing down payment.' : 'لا يمكن تسجيل هذه الوحدة وحجزها بدون استكمال سداد المقدم.'}</p>
+          <p class="text-xs text-amber-300 font-bold" data-i18n="advanceNoticeExtraTitle">${currentLang === 'en' ? 'Down payment is required to register this unit' : 'استكمال سداد المقدم مطلوب لحجز هذه الوحدة'}</p>
+          <p class="text-[11px] text-slate-300" data-i18n="advanceNoticeExtraDesc">${currentLang === 'en' ? 'Cannot proceed with registering this unit without completing down payment.' : 'لا يمكن تسجيل هذه الوحدة وحجزها بدون استكمال سداد المقدم.'}</p>
         </div>
 
         <div id="extraUnitDetailsContainer_${cNum}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
           <!-- كود الوحدة الإضافية (مطابق تماماً للوحدة 1) -->
           <div class="sm:col-span-12 form-group">
             <label class="block text-xs font-bold text-slate-300 mb-1.5">
-              <span class="text-amber-300 font-bold">${labelUnitCode}</span>
+              <span class="text-amber-300 font-bold" data-i18n="labelUnitCode">${labelUnitCode}</span>
               <span class="text-amber-400 font-bold">*</span>
             </label>
             <div class="relative unit-picker" id="${pickerId}">
@@ -1624,7 +1776,7 @@
                 onclick="toggleUnitDropdown('${pickerId}')"
               >
                 <span class="truncate font-extrabold text-amber-300 tracking-widest uppercase selected-text">
-                  <span class="text-slate-500 font-sans font-normal tracking-normal text-xs">${phSelectUnit}</span>
+                  <span class="text-slate-500 font-sans font-normal tracking-normal text-xs" data-i18n="phSelectUnit">${phSelectUnit}</span>
                 </span>
                 <span class="text-amber-400 text-xs transition-transform duration-200 chevron-icon mr-2">▼</span>
               </button>
@@ -1634,6 +1786,7 @@
                   <input
                     type="text"
                     placeholder="${phSearchUnit}"
+                    data-i18n-placeholder="phSearchUnit"
                     dir="ltr"
                     autocomplete="off"
                     class="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700/80 text-amber-300 placeholder-slate-500 text-xs font-mono font-bold uppercase focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all"
@@ -1644,13 +1797,13 @@
                 <div class="unit-scroll max-h-56 overflow-y-auto space-y-1 pr-1 unit-items-list"></div>
               </div>
             </div>
-            <p class="error-msg text-red-400 text-xs mt-1 hidden extra-unit-error">${currentLang === 'en' ? 'Unit code is required' : 'كود الوحدة مطلوب'}</p>
+            <p class="error-msg text-red-400 text-xs mt-1 hidden extra-unit-error" data-i18n="errUnitCode">${currentLang === 'en' ? 'Unit code is required' : 'كود الوحدة مطلوب'}</p>
           </div>
 
           <!-- فترة السداد للوحدة الإضافية (مطابقة تماماً للوحدة 1) -->
           <div class="sm:col-span-6 form-group">
             <label class="block text-xs font-bold text-slate-300 mb-1.5" for="extraPeriod_${cNum}">
-              <span class="text-amber-300 font-bold">${labelPeriod}</span>
+              <span class="text-amber-300 font-bold" data-i18n="labelPeriod">${labelPeriod}</span>
               <span class="text-amber-400 font-bold">*</span>
             </label>
             <select 
@@ -1659,19 +1812,19 @@
               class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400 bg-slate-900/80 cursor-pointer" 
               onchange="handleExtraPeriodChange(${cNum}, this)"
             >
-              <option value="">${currentLang === 'en' ? 'Select Payment Term...' : 'اختر فترة السداد...'}</option>
+              <option value="" data-i18n="optSelectPeriod">${currentLang === 'en' ? 'Select Payment Term...' : 'اختر فترة السداد...'}</option>
               <option value="7 Years">7 Years</option>
               <option value="8 Years">8 Years</option>
               <option value="9 Years">9 Years</option>
               <option value="10 Years">10 Years</option>
             </select>
-            <p class="error-msg text-red-400 text-xs mt-1 hidden extra-period-error">${currentLang === 'en' ? 'Payment term is required' : 'فترة السداد مطلوبة'}</p>
+            <p class="error-msg text-red-400 text-xs mt-1 hidden extra-period-error" data-i18n="errPeriod">${currentLang === 'en' ? 'Payment term is required' : 'فترة السداد مطلوبة'}</p>
           </div>
 
           <!-- حقل النسبة للوحدة الإضافية (يظهر عند اختيار الفترة، ويعرض النسبة فوراً حتى لو وحيدة) -->
           <div class="sm:col-span-6 form-group hidden" id="extraRateContainer_${cNum}">
             <label class="block text-xs font-bold text-slate-300 mb-1.5" for="extraRateSelect_${cNum}">
-              <span class="text-amber-300 font-bold">${labelRate}</span>
+              <span class="text-amber-300 font-bold" data-i18n="labelRate">${labelRate}</span>
               <span class="text-amber-400 font-bold">*</span>
             </label>
             <select 
@@ -1680,22 +1833,23 @@
               class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400 bg-slate-900/80 cursor-pointer"
               onchange="handleExtraRateChange(${cNum}, this)"
             >
-              <option value="">${currentLang === 'en' ? 'Select Rate...' : 'اختر النسبة...'}</option>
+              <option value="" data-i18n="optSelectRate">${currentLang === 'en' ? 'Select Rate...' : 'اختر النسبة...'}</option>
             </select>
-            <p class="error-msg text-red-400 text-xs mt-1 hidden extra-rate-error">${currentLang === 'en' ? 'Please select a rate' : 'يرجى اختيار النسبة'}</p>
+            <p class="error-msg text-red-400 text-xs mt-1 hidden extra-rate-error" data-i18n="errRateSelect">${currentLang === 'en' ? 'Please select a rate' : 'يرجى اختيار النسبة'}</p>
           </div>
 
           <!-- مقترح نظام السداد للوحدة الإضافية (مطابق تماماً للوحدة 1) -->
           <div class="sm:col-span-12 form-group pt-2">
             <label class="block text-xs font-bold text-slate-300 mb-1.5" for="extraNotes_${cNum}">
-              <span class="text-amber-300 font-bold">${labelProposal}</span>
-              <span class="text-slate-400 text-[10px] font-normal">${optOptional}</span>
+              <span class="text-amber-300 font-bold" data-i18n="labelPlanExceptions">${labelProposal}</span>
+              <span class="text-slate-400 text-[10px] font-normal" data-i18n="optOptional">${optOptional}</span>
             </label>
             <textarea
               id="extraNotes_${cNum}"
               name="extra_notes[]"
               rows="2"
               placeholder="${phProposal}"
+              data-i18n-placeholder="phPlanExceptions"
               class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm focus:border-amber-400 transition-all resize-y"
             ></textarea>
           </div>
@@ -2078,18 +2232,18 @@
         : (currentLang === 'en' ? `Partner / Contract Party (${index + 1})` : `بيانات الشريك / الطرف (${index + 1})`);
 
       const cardBadge = isPrimary
-        ? `<span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold">${currentLang === 'en' ? 'Primary Party' : 'الطرف الأساسي'}</span>`
-        : `<span class="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold">${currentLang === 'en' ? 'Contract Partner' : 'شريك بالعقد'}</span>`;
+        ? `<span class="card-badge px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold" data-i18n="badgePrimaryParty">${currentLang === 'en' ? 'Primary Party' : 'الطرف الأساسي'}</span>`
+        : `<span class="card-badge px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold" data-i18n="badgePartnerParty">${currentLang === 'en' ? 'Contract Partner' : 'شريك بالعقد'}</span>`;
 
       const deleteBtn = isPrimary ? '' : `
         <button 
           type="button" 
           onclick="removeClientCard(${clientId})" 
-          class="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-          title="${currentLang === 'en' ? 'Remove this partner' : 'حذف هذا الشريك'}"
+          class="card-delete-btn text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          title="${currentLang === 'en' ? 'Remove Partner' : 'حذف هذا الشريك'}"
         >
           <span>🗑️</span>
-          <span>${currentLang === 'en' ? 'Remove Partner' : 'حذف هذا الشريك'}</span>
+          <span data-i18n="btnRemovePartner">${currentLang === 'en' ? 'Remove Partner' : 'حذف هذا الشريك'}</span>
         </button>
       `;
 
@@ -2107,23 +2261,24 @@
         <!-- 1. اسم العميل كما هو في البطاقة الشخصية -->
         <div class="form-group w-full">
           <label class="block text-xs font-bold text-slate-300 mb-1.5">
-            <span>${currentLang === 'en' ? 'Client Name as in ID' : 'اسم العميل كما هو في البطاقة الشخصية'}</span>
+            <span data-i18n="labelPrimaryName">${currentLang === 'en' ? 'Client Name as in ID' : 'اسم العميل كما هو في البطاقة الشخصية'}</span>
             <span class="text-red-400">*</span>
           </label>
           <input
             type="text"
             placeholder="${currentLang === 'en' ? '(Full name matching National ID or Passport)' : '(الاسم كاملاً ومطابقاً للهوية الشخصية)'}"
+            data-i18n-placeholder="phPrimaryName"
             class="client-name-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm font-semibold"
             oninput="validateField(this, val => val.length >= 3)"
           />
-          <p class="error-msg text-red-400 text-xs mt-1 hidden">${currentLang === 'en' ? 'Client name as in ID is required' : 'اسم العميل كما هو في البطاقة الشخصية مطلوب'}</p>
+          <p class="error-msg text-red-400 text-xs mt-1 hidden" data-i18n="errPrimaryName">${currentLang === 'en' ? 'Client name as in ID is required' : 'اسم العميل كما هو في البطاقة الشخصية مطلوب'}</p>
         </div>
 
         <!-- 2. أرقام الهواتف والتواصل (Dynamic Array / List) -->
         <div class="space-y-2.5 pt-2 border-t border-slate-800/80">
           <div class="flex items-center justify-between">
             <label class="block text-xs font-bold text-slate-300">
-              <span>${currentLang === 'en' ? 'Phone & Contact Number (Local & International)' : 'أرقام الهواتف والتواصل (يدعم الأرقام المحلية والدولية)'}</span>
+              <span data-i18n="labelPrimaryPhone">${currentLang === 'en' ? 'Phone & Contact Numbers (Supports Local & International)' : 'أرقام الهواتف والتواصل (يدعم الأرقام المحلية والدولية)'}</span>
               <span class="text-red-400">*</span>
             </label>
           </div>
@@ -2134,7 +2289,7 @@
             class="text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
           >
             <span>📞</span>
-            <span>${currentLang === 'en' ? '+ Add Additional Phone Number' : '+ إضافة رقم هاتف إضافي'}</span>
+            <span data-i18n="btnAddPhone">${currentLang === 'en' ? '+ Add Additional Phone Number' : '+ إضافة رقم هاتف إضافي'}</span>
           </button>
         </div>
 
@@ -2142,7 +2297,7 @@
         <div class="space-y-2.5 pt-2 border-t border-slate-800/80">
           <div class="flex items-center justify-between">
             <label class="block text-xs font-bold text-slate-300">
-              <span>${currentLang === 'en' ? 'Official Correspondence Email' : 'البريد الإلكتروني (متاح للتواصل والمراسلات الرسمية)'}</span>
+              <span data-i18n="labelEmail">${currentLang === 'en' ? 'Email (Official Correspondence & Notices)' : 'البريد الإلكتروني (متاح للتواصل والمراسلات الرسمية)'}</span>
               <span class="text-red-400">*</span>
             </label>
           </div>
@@ -2153,28 +2308,28 @@
             class="text-xs font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
           >
             <span>✉️</span>
-            <span>${currentLang === 'en' ? '+ Add Additional Email' : '+ إضافة بريد إلكتروني إضافي'}</span>
+            <span data-i18n="btnAddEmail">${currentLang === 'en' ? '+ Add Additional Email' : '+ إضافة بريد إلكتروني إضافي'}</span>
           </button>
         </div>
 
         <!-- 4. إثبات الهوية والرقم القومي / جواز السفر -->
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-slate-800/80">
           <div class="sm:col-span-5">
-            <label class="block text-xs font-bold text-slate-300 mb-1.5">${currentLang === 'en' ? 'ID Document Type' : 'نوع الوثيقة'}</label>
+            <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="labelIdType">${currentLang === 'en' ? 'ID Document Type' : 'نوع الوثيقة'}</label>
             <select onchange="handleClientIdTypeChange(${clientId}, this.value)" class="client-id-type glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white text-xs font-bold">
-              <option value="national_id">${currentLang === 'en' ? 'National ID (14 digits)' : 'بطاقة الرقم القومي (14 رقم)'}</option>
-              <option value="passport">${currentLang === 'en' ? 'Passport' : 'جواز السفر (Passport)'}</option>
+              <option value="national_id" data-i18n="optNatId">${currentLang === 'en' ? 'National ID (14 digits)' : 'بطاقة الرقم القومي (14 رقم)'}</option>
+              <option value="passport" data-i18n="optPassport">${currentLang === 'en' ? 'Passport' : 'جواز السفر (Passport)'}</option>
             </select>
           </div>
           <div class="sm:col-span-7 form-group">
             <label class="block text-xs font-bold text-slate-300 mb-1.5">
-              <span>${currentLang === 'en' ? 'National ID or Passport Number' : 'رقم بطاقة الرقم القومي أو جواز السفر'}</span>
+              <span data-i18n="labelIdNumber">${currentLang === 'en' ? 'National ID or Passport Number' : 'رقم بطاقة الرقم القومي أو جواز السفر'}</span>
               <span class="text-amber-400 font-bold">*</span>
             </label>
             <input
               type="text"
               maxlength="14"
-              placeholder="${currentLang === 'en' ? 'Enter exactly 14 digits' : 'أدخل 14 رقماً بالضبط للبطاقة الشخصية'}"
+              placeholder="${currentLang === 'en' ? 'Enter exactly 14 digits for National ID' : 'أدخل 14 رقماً بالضبط للبطاقة الشخصية'}"
               class="client-id-number glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm font-mono tracking-wider"
               oninput="validateClientIdNumber(this, ${clientId})"
             />
@@ -2185,19 +2340,19 @@
         <!-- 5. مكان الإقامة الحالي (داخل مصر / خارج مصر) -->
         <div class="form-group pt-2 border-t border-slate-800/80">
           <label class="block text-xs font-bold text-amber-300 mb-2">
-            <span>${currentLang === 'en' ? 'Current Residence Place:' : 'مكان الإقامة الحالي:'}</span>
+            <span data-i18n="labelResidenceCountry">${currentLang === 'en' ? 'Current Residence Place:' : 'مكان الإقامة الحالي:'}</span>
             <span class="text-amber-400 font-bold">*</span>
           </label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <label class="residence-box-egypt custom-check-box active rounded-2xl py-3 px-3 sm:px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-bold text-white shadow-sm" onclick="setClientResidence(${clientId}, 'داخل جمهورية مصر العربية')">
               <input type="radio" name="client_residence_${clientId}" value="داخل جمهورية مصر العربية" checked class="hidden">
               <span class="text-base">🇪🇬</span>
-              <span>${currentLang === 'en' ? 'Inside Arab Republic of Egypt' : 'داخل جمهورية مصر العربية'}</span>
+              <span data-i18n="optInsideEgypt">${currentLang === 'en' ? 'Inside Arab Republic of Egypt' : 'داخل جمهورية مصر العربية'}</span>
             </label>
             <label class="residence-box-abroad custom-check-box rounded-2xl py-3 px-3 sm:px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-bold text-white shadow-sm" onclick="setClientResidence(${clientId}, 'خارج جمهورية مصر العربية')">
               <input type="radio" name="client_residence_${clientId}" value="خارج جمهورية مصر العربية" class="hidden">
               <span class="text-base">🌍</span>
-              <span>${currentLang === 'en' ? 'Outside Arab Republic of Egypt' : 'خارج جمهورية مصر العربية'}</span>
+              <span data-i18n="optOutsideEgypt">${currentLang === 'en' ? 'Outside Arab Republic of Egypt' : 'خارج جمهورية مصر العربية'}</span>
             </label>
           </div>
         </div>
@@ -2209,36 +2364,36 @@
           <div class="client-id-address-group space-y-2.5">
             <div class="flex items-center justify-between">
               <label class="block text-xs font-bold text-slate-300">
-                <span>📍 ${currentLang === 'en' ? 'Address as registered in Personal ID' : 'العنوان كما هو مسجل في إثبات الهوية الشخصية'}</span>
+                <span>📍 <span data-i18n="labelIdAddress">${currentLang === 'en' ? 'Address as registered in Personal ID' : 'العنوان كما هو مسجل في إثبات الهوية الشخصية'}</span></span>
                 <span class="text-amber-400 font-bold">*</span>
               </label>
-              <span class="text-[10px] text-amber-300/80 font-mono">${currentLang === 'en' ? 'Select Gov & City + Street details' : 'اختر المحافظة والمدينة واكتب باقي التفاصيل'}</span>
+              <span class="text-[10px] text-amber-300/80 font-mono" data-i18n="subIdAddress">${currentLang === 'en' ? 'Select Gov & City + Street details' : 'اختر المحافظة والمدينة واكتب باقي التفاصيل'}</span>
             </div>
 
             <!-- صف الاختيار: المحافظة والمدينة -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div>
                 <label class="block text-[11px] font-semibold text-slate-400 mb-1">
-                  ${currentLang === 'en' ? 'Governorate' : 'المحافظة'} <span class="text-amber-400">*</span>
+                  <span data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-amber-400">*</span>
                 </label>
                 <select
                   class="client-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer"
                   onchange="handleClientGovChange(${clientId}, this.value, 'id')"
                 >
-                  <option value="">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
+                  <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
                 </select>
               </div>
 
               <div>
                 <label class="block text-[11px] font-semibold text-slate-400 mb-1">
-                  ${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'} <span class="text-amber-400">*</span>
+                  <span data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-amber-400">*</span>
                 </label>
                 <select
                   class="client-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled
                   onchange="handleClientCityChange(${clientId}, this.value, 'id')"
                 >
-                  <option value="">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</option>
+                  <option value="" data-i18n="optSelectGovFirst">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</option>
                 </select>
               </div>
             </div>
@@ -2246,11 +2401,12 @@
             <!-- حقل كتابة باقي تفاصيل العنوان (الشارع، رقم العقار، الشقة) -->
             <div>
               <label class="block text-[11px] font-semibold text-slate-400 mb-1">
-                ${currentLang === 'en' ? 'Street, Building & Apt No. Details' : 'باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)'} <span class="text-amber-400">*</span>
+                <span data-i18n="lblStreetDetails">${currentLang === 'en' ? 'Street, Building & Apt No. Details' : 'باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)'}</span> <span class="text-amber-400">*</span>
               </label>
               <input
                 type="text"
                 placeholder="${currentLang === 'en' ? 'Street name, building number, apartment number, landmark...' : 'اسم الشارع، رقم العمارة، رقم الشقة، علامة مميزة...'}"
+                data-i18n-placeholder="phStreetDetails"
                 class="client-street-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm font-semibold"
                 oninput="handleClientStreetInput(${clientId}, 'id')"
               />
@@ -2258,14 +2414,14 @@
 
             <!-- الحقل المدمج النهائي للعنوان بالهوية (hidden) -->
             <input type="hidden" class="client-id-address" value="" />
-            <p class="error-msg client-id-address-error text-red-400 text-xs mt-1 hidden">${currentLang === 'en' ? 'Please select governorate, city and enter street address details' : 'يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان'}</p>
+            <p class="error-msg client-id-address-error text-red-400 text-xs mt-1 hidden" data-i18n="errIdAddressSelect">${currentLang === 'en' ? 'Please select governorate, city and enter street address details' : 'يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان'}</p>
           </div>
 
           <!-- عنوان المراسلات الرسمي -->
           <div class="client-corr-address-group space-y-2.5 pt-3 border-t border-slate-800/60">
             <div class="flex items-center justify-between flex-wrap gap-2">
               <label class="block text-xs font-bold text-slate-300">
-                <span>📬 ${currentLang === 'en' ? 'Approved Correspondence Address in Detail' : 'العنوان المعتمد بالتفصيل للمراسلات'}</span>
+                <span>📬 <span data-i18n="labelCorrespondenceAddress">${currentLang === 'en' ? 'Approved Correspondence Address in Detail' : 'العنوان المعتمد بالتفصيل للمراسلات'}</span></span>
                 <span class="text-amber-400 font-bold">*</span>
               </label>
             </div>
@@ -2275,37 +2431,38 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
                   <label class="block text-[11px] font-semibold text-slate-400 mb-1">
-                    ${currentLang === 'en' ? 'Governorate' : 'المحافظة'} <span class="text-amber-400">*</span>
+                    <span data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-amber-400">*</span>
                   </label>
                   <select
                     class="client-corr-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer"
                     onchange="handleClientGovChange(${clientId}, this.value, 'corr')"
                   >
-                    <option value="">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
+                    <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
                   </select>
                 </div>
 
                 <div>
                   <label class="block text-[11px] font-semibold text-slate-400 mb-1">
-                    ${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'} <span class="text-amber-400">*</span>
+                    <span data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-amber-400">*</span>
                   </label>
                   <select
                     class="client-corr-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled
                     onchange="handleClientCityChange(${clientId}, this.value, 'corr')"
                   >
-                    <option value="">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</option>
+                    <option value="" data-i18n="optSelectGovFirst">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label class="block text-[11px] font-semibold text-slate-400 mb-1">
-                  ${currentLang === 'en' ? 'Street, Building & Apt No. Details' : 'باقي تفاصيل العنوان للمراسلات'} <span class="text-amber-400">*</span>
+                  <span data-i18n="lblCorrStreetDetails">${currentLang === 'en' ? 'Street, Building & Apt No. Details' : 'باقي تفاصيل العنوان للمراسلات'}</span> <span class="text-amber-400">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="${currentLang === 'en' ? 'Street name, building number, apartment number for official mail' : 'اسم الشارع، رقم المبنى والشقة للمراسلات الرسمية'}"
+                  data-i18n-placeholder="phCorrStreetDetails"
                   class="client-corr-street-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm font-semibold"
                   oninput="handleClientStreetInput(${clientId}, 'corr')"
                 />
@@ -2314,7 +2471,7 @@
 
             <!-- الحقل المدمج النهائي لعنوان المراسلات (hidden) -->
             <input type="hidden" class="client-corr-address" value="" />
-            <p class="error-msg client-corr-address-error text-red-400 text-xs mt-1 hidden">${currentLang === 'en' ? 'Approved correspondence address is required' : 'العنوان المعتمد للمراسلات مطلوب'}</p>
+            <p class="error-msg client-corr-address-error text-red-400 text-xs mt-1 hidden" data-i18n="errCorrespondenceAddress">${currentLang === 'en' ? 'Approved correspondence address is required' : 'العنوان المعتمد للمراسلات مطلوب'}</p>
           </div>
         </div>
 
@@ -2323,7 +2480,7 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 text-amber-400 font-bold text-xs sm:text-sm">
               <span>📎</span>
-              <span>${currentLang === 'en' ? 'Required Documents & Attachments' : 'المستندات والمرفقات المطلوبة'}</span>
+              <span data-i18n="secAttachmentsTitle">${currentLang === 'en' ? 'Required Documents & Attachments' : 'المستندات والمرفقات المطلوبة'}</span>
               <span class="text-red-400">*</span>
             </div>
             <span class="text-[10px] text-slate-400 font-mono">PDF / JPG / PNG</span>
@@ -2347,7 +2504,7 @@
               onchange="handleClientFilesSelected(${clientId}, this.files)"
             >
             <div class="text-2xl mb-1 pointer-events-none">📁</div>
-            <div class="font-bold text-xs sm:text-sm text-slate-200 pointer-events-none">
+            <div class="font-bold text-xs sm:text-sm text-slate-200 pointer-events-none" data-i18n="dropTitle">
               ${currentLang === 'en' ? 'Click to select documents or drag & drop files here' : 'اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا'}
             </div>
             <div class="text-[11px] text-slate-400 mt-1 client-drop-subtitle pointer-events-none">
@@ -2357,10 +2514,10 @@
 
           <!-- قائمة الملفات المرفقة لهذا العميل -->
           <div class="client-files-container space-y-2 hidden">
-            <div class="text-xs font-bold text-amber-300">${currentLang === 'en' ? 'Attached Files Preview:' : 'المعاينات المرفقة لهذا الطرف:'}</div>
+            <div class="text-xs font-bold text-amber-300" data-i18n="selectedFilesHeading">${currentLang === 'en' ? 'Attached Files Preview:' : 'المعاينات المرفقة لهذا الطرف:'}</div>
             <div class="client-files-list grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
-          <p class="error-msg text-red-400 text-xs mt-1 hidden client-files-error">${currentLang === 'en' ? 'Required documents are mandatory. Please attach the required files.' : 'المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه'}</p>
+          <p class="error-msg text-red-400 text-xs mt-1 hidden client-files-error" data-i18n="errAttachments">${currentLang === 'en' ? 'Required documents are mandatory. Please attach the required files.' : 'المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه'}</p>
         </div>
       `;
 
@@ -2414,6 +2571,7 @@
             <div class="relative mb-2">
               <input 
                 type="text" 
+                data-i18n-placeholder="phSearchCountry"
                 placeholder="${currentLang === 'en' ? 'Search country or dialing code...' : 'بحث عن الدولة أو الكود...'}" 
                 oninput="filterCountryList(this)" 
                 class="country-search-input w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium"
@@ -2500,7 +2658,7 @@
             class="email-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-cyan-300 placeholder-slate-500 text-xs sm:text-sm font-mono dir-ltr text-right"
             oninput="validateGeneralEmail(this)"
           />
-          <p class="error-msg text-red-400 text-xs mt-1 hidden">${currentLang === 'en' ? 'Please provide a valid email (example@domain.com)' : 'يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com)'}</p>
+          <p class="error-msg text-red-400 text-xs mt-1 hidden" data-i18n="errEmail">${currentLang === 'en' ? 'Please provide a valid email (example@domain.com)' : 'يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com)'}</p>
         </div>
         ${deleteBtnHtml}
       `;
