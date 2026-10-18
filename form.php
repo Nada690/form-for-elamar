@@ -792,14 +792,23 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         labelIdAddress: "العنوان كما هو مسجل في إثبات الهوية الشخصية",
         subIdAddress: "اختر المحافظة والمدينة واكتب باقي التفاصيل",
         lblGovernorate: "المحافظة",
+        lblCountry: "الدولة",
         optSelectGov: "اختر المحافظة...",
+        optSelectCountry: "اختر الدولة...",
         lblCity: "المدينة / الحي / المركز",
+        lblCityAbroad: "المدينة / الولاية / المقاطعة",
         optSelectGovFirst: "اختر المحافظة أولاً...",
+        optSelectCountryFirst: "اختر الدولة أولاً...",
         optSelectCity: "اختر المدينة / الحي / المركز...",
+        optSelectCityAbroad: "اختر المدينة / الولاية / المقاطعة...",
         optOtherArea: "أخرى / منطقة أخرى",
+        optOtherCityAbroad: "أخرى / مدينة أخرى بالخارج",
+        subIdAddress: "اختر المحافظة والمدينة واكتب باقي التفاصيل",
+        subIdAddressAbroad: "اختر الدولة والمدينة واكتب باقي التفاصيل",
         lblStreetDetails: "باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)",
         phStreetDetails: "اسم الشارع، رقم العمارة، رقم الشقة، علامة مميزة...",
         errIdAddressSelect: "يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان",
+        errIdAddressSelectAbroad: "يرجى اختيار الدولة والمدينة وكتابة باقي تفاصيل العنوان",
         labelCorrespondenceAddress: "العنوان المعتمد بالتفصيل للمراسلات",
         lblCorrStreetDetails: "باقي تفاصيل العنوان للمراسلات",
         phCorrStreetDetails: "اسم الشارع، رقم المبنى والشقة للمراسلات الرسمية",
@@ -895,16 +904,24 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         optInsideEgypt: "Inside Arab Republic of Egypt",
         optOutsideEgypt: "Outside Arab Republic of Egypt",
         labelIdAddress: "Address as registered in Personal ID",
-        subIdAddress: "Select Gov & City + Street details",
         lblGovernorate: "Governorate",
+        lblCountry: "Country",
         optSelectGov: "Select Governorate...",
+        optSelectCountry: "Select Country...",
         lblCity: "City / District / Area",
+        lblCityAbroad: "City / State / Province",
         optSelectGovFirst: "Select Governorate first...",
+        optSelectCountryFirst: "Select Country first...",
         optSelectCity: "Select City / District...",
+        optSelectCityAbroad: "Select City / State / Province...",
         optOtherArea: "Other district / area",
+        optOtherCityAbroad: "Other city / area abroad",
+        subIdAddress: "Select Gov & City + Street details",
+        subIdAddressAbroad: "Select Country & City + Street details",
         lblStreetDetails: "Street, Building & Apt No. Details",
         phStreetDetails: "Street name, building number, apartment number, landmark...",
         errIdAddressSelect: "Please select governorate, city and enter street address details",
+        errIdAddressSelectAbroad: "Please select country, city and enter street address details",
         labelCorrespondenceAddress: "Approved Correspondence Address in Detail",
         lblCorrStreetDetails: "Street, Building & Apt No. Details",
         phCorrStreetDetails: "Street name, building number, apartment number for official mail",
@@ -1078,41 +1095,37 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           subEl.innerText = isAbroad ? t.dropSubtitleOutside : t.dropSubtitleInside;
         }
 
-        // 4. Update address dropdowns (Governorate & City)
+        // 4. Update address labels and dropdowns (Governorate/Country & City)
+        updateClientAddressLabels(cId);
+
         const govSelect = card.querySelector('.client-gov-select');
         const corrGovSelect = card.querySelector('.client-corr-gov-select');
-        populateGovernorateOptions(govSelect);
-        populateGovernorateOptions(corrGovSelect);
+        const curGovVal = govSelect ? govSelect.value : '';
+        const curCorrGovVal = corrGovSelect ? corrGovSelect.value : '';
+
+        populateRegionOptions(govSelect, isAbroad);
+        populateRegionOptions(corrGovSelect, isAbroad);
 
         const citySelect = card.querySelector('.client-city-select');
-        if (citySelect) {
-          const firstOpt = citySelect.options[0];
-          if (firstOpt && firstOpt.value === '') {
-            firstOpt.textContent = citySelect.disabled 
-              ? (t.optSelectGovFirst || 'Select Governorate first...') 
-              : (t.optSelectCity || 'Select City / District...');
-          }
-          for (let opt of citySelect.options) {
-            if (opt.value === 'أخرى / منطقة أخرى' || opt.value === 'Other district / area') {
-              opt.textContent = t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى');
-              opt.value = opt.textContent;
-            }
-          }
+        if (curGovVal) {
+          const curCity = citySelect ? citySelect.value : '';
+          handleClientRegionChange(cId, curGovVal, 'id');
+          if (citySelect && curCity) citySelect.value = curCity;
+        } else if (citySelect) {
+          citySelect.options[0].textContent = isAbroad 
+            ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
+            : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
         }
+
         const corrCitySelect = card.querySelector('.client-corr-city-select');
-        if (corrCitySelect) {
-          const firstOpt = corrCitySelect.options[0];
-          if (firstOpt && firstOpt.value === '') {
-            firstOpt.textContent = corrCitySelect.disabled 
-              ? (t.optSelectGovFirst || 'Select Governorate first...') 
-              : (t.optSelectCity || 'Select City / District...');
-          }
-          for (let opt of corrCitySelect.options) {
-            if (opt.value === 'أخرى / منطقة أخرى' || opt.value === 'Other district / area') {
-              opt.textContent = t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى');
-              opt.value = opt.textContent;
-            }
-          }
+        if (curCorrGovVal) {
+          const curCorrCity = corrCitySelect ? corrCitySelect.value : '';
+          handleClientRegionChange(cId, curCorrGovVal, 'corr');
+          if (corrCitySelect && curCorrCity) corrCitySelect.value = curCorrCity;
+        } else if (corrCitySelect) {
+          corrCitySelect.options[0].textContent = isAbroad 
+            ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
+            : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
         }
 
         // 5. Phone rows: placeholders and delete button titles and country list
@@ -2159,9 +2172,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       ],
       "الوادي الجديد": [
         "الخارجة", "الداخلة", "الفرافرة", "باريس", "بلاط"
-      ],
-      "خارج جمهورية مصر العربية / أخرى": [
-        "مدينة / منطقة بالخارج"
       ]
     };
 
@@ -2192,8 +2202,191 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       "قنا": "Qena",
       "الأقصر": "Luxor",
       "أسوان": "Aswan",
-      "الوادي الجديد": "New Valley",
-      "خارج جمهورية مصر العربية / أخرى": "Outside Egypt / Other"
+      "الوادي الجديد": "New Valley"
+    };
+
+    // ── World Countries & Major Cities Dataset for Dynamic Address Picker (Outside Egypt) ──
+    const worldCountriesAndCities = {
+      "المملكة العربية السعودية": [
+        "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر", "الظهران", 
+        "الأحساء (الهفوف والمبرز)", "الجبيل", "الطائف", "القصيم (بريدة وعنيزة)", "تبوك", 
+        "خميس مشيط", "أبها", "حائل", "نجران", "جازان", "ينبع", "حفر الباطن", "الخرج", "عرعر"
+      ],
+      "الإمارات العربية المتحدة": [
+        "دبي", "أبوظبي", "الشارقة", "عجمان", "رأس الخيمة", "الفجيرة", "أم القيوين", "العين", "خورفكان"
+      ],
+      "الكويت": [
+        "مدينة الكويت (العاصمة)", "حولي", "السالمية", "الفروانية", "الأحمدي", "الجهراء", "مبارك الكبير", "الفحيحيل", "خيطان"
+      ],
+      "قطر": [
+        "الدوحة", "الريان", "الوكرة", "الخور", "لوسيل", "أم صلال", "الظعاين", "الشحانية", "مسيعيد"
+      ],
+      "سلطنة عمان": [
+        "مسقط", "صلالة", "صحار", "نزوى", "صور", "السيب", "بوشر", "مطرح", "البريمي", "الرستاق"
+      ],
+      "البحرين": [
+        "المنامة", "المحرق", "الرفاع", "مدينة عيسى", "مدينة حمد", "سترة", "البديع", "الجفير", "سار"
+      ],
+      "الأردن": [
+        "عمان", "إربد", "الزرقاء", "العقبة", "السلط", "مادبا", "جرش", "الكرك", "المفرق"
+      ],
+      "العراق": [
+        "بغداد", "البصرة", "أربيل", "الموصل", "النجف", "كربلاء", "السليمانية", "كركوك", "الحلة"
+      ],
+      "لبنان": [
+        "بيروت", "طرابلس", "صيدا", "جونيه", "زحلة", "صور", "جبيل"
+      ],
+      "فلسطين": [
+        "القدس", "رام الله", "غزة", "نابلس", "الخليل", "بيت لحم", "جنين", "طولكرم", "أريحا"
+      ],
+      "السودان": [
+        "الخرطوم", "أم درمان", "الخرطوم بحري", "بورتسودان", "كسلا", "ود مدني", "عطبرة"
+      ],
+      "ليبيا": [
+        "طرابلس", "بنغازي", "مصراتة", "الزاوية", "البيضاء", "طبرق", "سرت", "سبها"
+      ],
+      "تونس": [
+        "تونس العاصمة", "صفاقس", "سوسة", "نابل", "المنستير", "بنزرت", "القيروان"
+      ],
+      "الجزائر": [
+        "الجزائر العاصمة", "وهران", "قسنطينة", "عنابة", "سطيف", "باتنة", "تلمسان", "البليدة"
+      ],
+      "المغرب": [
+        "الدار البيضاء", "الرباط", "مراكش", "طنجة", "فاس", "أكادير", "مكناس", "وجدة", "تطوان"
+      ],
+      "اليمن": [
+        "صنعاء", "عدن", "تعز", "الحديدة", "المكلا", "إب", "مأرب"
+      ],
+      "سوريا": [
+        "دمشق", "ريف دمشق", "حلب", "حمص", "اللاذقية", "طرطوس", "حماة"
+      ],
+      "موريتانيا": [
+        "نواكشوط", "نواذيبو", "روصو"
+      ],
+      "الولايات المتحدة الأمريكية (USA)": [
+        "نيويورك (New York)", "كاليفورنيا (California)", "تكساس (Texas)", "فلوريدا (Florida)", 
+        "إلينوي (Chicago - Illinois)", "واشنطن (Washington)", "نيوجيرسي (New Jersey)", 
+        "ماساتشوستس (Boston)", "فرجينيا (Virginia)", "بنسلفانيا (Pennsylvania)", 
+        "جورجيا (Atlanta)", "ميشيغان (Michigan)", "نورث كارولاينا", "أوهايو", "كولورادو"
+      ],
+      "كندا (Canada)": [
+        "تورونتو (Toronto)", "مونتريال (Montreal)", "فانكوفر (Vancouver)", "أوتاوا (Ottawa)", 
+        "كالغاري (Calgary)", "إدمونتون (Edmonton)", "كيبك سيتي (Quebec City)", "وينيبيغ"
+      ],
+      "المملكة المتحدة (بريطانيا - UK)": [
+        "لندن (London)", "مانشستر (Manchester)", "برمنغهام (Birmingham)", "ليفربول (Liverpool)", 
+        "ليدز (Leeds)", "إدنبرة (Edinburgh)", "غلاسكو (Glasgow)", "كارديف (Cardiff)", "بريستول", "نيوكاسل"
+      ],
+      "ألمانيا (Germany)": [
+        "برلين (Berlin)", "ميونخ (Munich)", "فرانكفورت (Frankfurt)", "هامبورغ (Hamburg)", 
+        "كولونيا (Cologne)", "شتوتغارت (Stuttgart)", "دوسلدورف (Dusseldorf)", "دورتموند", "لايبزيغ"
+      ],
+      "فرنسا (France)": [
+        "باريس (Paris)", "ليون (Lyon)", "مارسيليا (Marseille)", "نيس (Nice)", 
+        "تولوز (Toulouse)", "بوردو (Bordeaux)", "ستراسبورغ (Strasbourg)", "ليل (Lille)"
+      ],
+      "إيطاليا (Italy)": [
+        "روما (Rome)", "ميلانو (Milan)", "نابولي (Naples)", "تورينو (Turin)", 
+        "فلورنسا (Florence)", "بولونيا (Bologna)", "البندقية (Venice)", "جنوى"
+      ],
+      "إسبانيا (Spain)": [
+        "مدريد (Madrid)", "برشلونة (Barcelona)", "فالنسيا (Valencia)", "إشبيلية (Seville)", 
+        "سرقسطة (Zaragoza)", "مالقة (Malaga)", "بلباو (Bilbao)"
+      ],
+      "تركيا (Turkey)": [
+        "إسطنبول (Istanbul)", "أنقرة (Ankara)", "إزمير (Izmir)", "بورصة (Bursa)", 
+        "أنطاليا (Antalya)", "غازي عنتاب", "قونية", "طرابزون", "أضنة"
+      ],
+      "هولندا (Netherlands)": [
+        "أمستردام (Amsterdam)", "روتردام (Rotterdam)", "لاهاي (The Hague)", "أوترخت (Utrecht)", "أيندهوفن"
+      ],
+      "سويسرا (Switzerland)": [
+        "زيورخ (Zurich)", "جنيف (Geneva)", "بازل (Basel)", "برن (Bern)", "لوزان (Lausanne)"
+      ],
+      "السويد (Sweden)": [
+        "ستوكهولم (Stockholm)", "غوتنبرغ (Gothenburg)", "مالمو (Malmo)", "أوبسالا"
+      ],
+      "النمسا (Austria)": [
+        "فيينا (Vienna)", "غراتس (Graz)", "لينتس (Linz)", "سالزبورغ (Salzburg)", "إنسبروك"
+      ],
+      "بلجيكا (Belgium)": [
+        "بروكسل (Brussels)", "أنتويرب (Antwerp)", "غنت (Ghent)", "بروج (Bruges)", "لييج"
+      ],
+      "اليونان (Greece)": [
+        "أثينا (Athens)", "سالونيك (Thessaloniki)", "باتراس (Patras)", "هيراكليون"
+      ],
+      "البرتغال (Portugal)": [
+        "لشبونة (Lisbon)", "بورتو (Porto)", "براغا (Braga)", "كويمبرا"
+      ],
+      "روسيا (Russia)": [
+        "موسكو (Moscow)", "سانت بطرسبرغ (St. Petersburg)", "نوفوسيبيرسك", "يكاترينبورغ", "كازان"
+      ],
+      "أستراليا (Australia)": [
+        "سيدني (Sydney)", "ملبورن (Melbourne)", "بريزبان (Brisbane)", "بيرث (Perth)", 
+        "أديلايد (Adelaide)", "كانبرا (Canberra)", "جولد كوست"
+      ],
+      "الصين (China)": [
+        "بكين (Beijing)", "شنغهاي (Shanghai)", "قوانغتشو (Guangzhou)", "شنزن (Shenzhen)", "تشنغدو"
+      ],
+      "اليابان (Japan)": [
+        "طوكيو (Tokyo)", "أوساكا (Osaka)", "يوكوهاما (Yokohama)", "ناغويا (Nagoya)", "كيوتو (Kyoto)"
+      ],
+      "الهند (India)": [
+        "نيودلهي (New Delhi)", "مومباي (Mumbai)", "بنغالور (Bangalore)", "حيدر أباد", "تشيناي"
+      ],
+      "ماليزيا (Malaysia)": [
+        "كوالالمبور (Kuala Lumpur)", "بينانغ (Penang)", "جوهور بهرو", "سلاغور"
+      ],
+      "البرازيل (Brazil)": [
+        "ساو باولو (Sao Paulo)", "ريو دي جانيرو (Rio de Janeiro)", "برازيليا (Brasilia)"
+      ],
+      "دولة أخرى / غير مدرجة": [
+        "العاصمة / مدينة رئيسية", "مدينة / منطقة أخرى"
+      ]
+    };
+
+    const worldCountriesEn = {
+      "المملكة العربية السعودية": "Saudi Arabia",
+      "الإمارات العربية المتحدة": "United Arab Emirates",
+      "الكويت": "Kuwait",
+      "قطر": "Qatar",
+      "سلطنة عمان": "Oman",
+      "البحرين": "Bahrain",
+      "الأردن": "Jordan",
+      "العراق": "Iraq",
+      "لبنان": "Lebanon",
+      "فلسطين": "Palestine",
+      "السودان": "Sudan",
+      "ليبيا": "Libya",
+      "تونس": "Tunisia",
+      "الجزائر": "Algeria",
+      "المغرب": "Morocco",
+      "اليمن": "Yemen",
+      "سوريا": "Syria",
+      "موريتانيا": "Mauritania",
+      "الولايات المتحدة الأمريكية (USA)": "United States (USA)",
+      "كندا (Canada)": "Canada",
+      "المملكة المتحدة (بريطانيا - UK)": "United Kingdom (UK)",
+      "ألمانيا (Germany)": "Germany",
+      "فرنسا (France)": "France",
+      "إيطاليا (Italy)": "Italy",
+      "إسبانيا (Spain)": "Spain",
+      "تركيا (Turkey)": "Turkey",
+      "هولندا (Netherlands)": "Netherlands",
+      "سويسرا (Switzerland)": "Switzerland",
+      "السويد (Sweden)": "Sweden",
+      "النمسا (Austria)": "Austria",
+      "بلجيكا (Belgium)": "Belgium",
+      "اليونان (Greece)": "Greece",
+      "البرتغال (Portugal)": "Portugal",
+      "روسيا (Russia)": "Russia",
+      "أستراليا (Australia)": "Australia",
+      "الصين (China)": "China",
+      "اليابان (Japan)": "Japan",
+      "الهند (India)": "India",
+      "ماليزيا (Malaysia)": "Malaysia",
+      "البرازيل (Brazil)": "Brazil",
+      "دولة أخرى / غير مدرجة": "Other Country / Unlisted"
     };
 
     // ── Client Card Repeater State & Logic ──
@@ -2411,12 +2604,19 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <label class="residence-box-egypt custom-check-box active rounded-2xl py-3 px-3 sm:px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-black text-slate-950 shadow-sm" onclick="setClientResidence(${clientId}, 'داخل جمهورية مصر العربية')">
               <input type="radio" name="client_residence_${clientId}" value="داخل جمهورية مصر العربية" checked class="hidden">
-              <span class="text-base">🇪🇬</span>
+              <span class="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-xs border border-slate-300 flex-shrink-0">
+                <svg viewBox="0 0 3 2" class="w-full h-full">
+                  <rect width="3" height="0.67" y="0" fill="#ce1126"/>
+                  <rect width="3" height="0.67" y="0.67" fill="#ffffff"/>
+                  <rect width="3" height="0.67" y="1.34" fill="#000000"/>
+                  <circle cx="1.5" cy="1" r="0.22" fill="#c6a664"/>
+                </svg>
+              </span>
               <span data-i18n="optInsideEgypt">${currentLang === 'en' ? 'Inside Arab Republic of Egypt' : 'داخل جمهورية مصر العربية'}</span>
             </label>
             <label class="residence-box-abroad custom-check-box rounded-2xl py-3 px-3 sm:px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-black text-slate-950 shadow-sm" onclick="setClientResidence(${clientId}, 'خارج جمهورية مصر العربية')">
               <input type="radio" name="client_residence_${clientId}" value="خارج جمهورية مصر العربية" class="hidden">
-              <span class="text-base">🌍</span>
+              <span class="text-base flex-shrink-0">🌍</span>
               <span data-i18n="optOutsideEgypt">${currentLang === 'en' ? 'Outside Arab Republic of Egypt' : 'خارج جمهورية مصر العربية'}</span>
             </label>
           </div>
@@ -2432,18 +2632,18 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <span>📍 <span data-i18n="labelIdAddress">${currentLang === 'en' ? 'Address as registered in Personal ID' : 'العنوان كما هو مسجل في إثبات الهوية الشخصية'}</span></span>
                 <span class="text-red-500 font-bold">*</span>
               </label>
-              <span class="text-[10px] text-slate-700 font-bold font-mono" data-i18n="subIdAddress">${currentLang === 'en' ? 'Select Gov & City + Street details' : 'اختر المحافظة والمدينة واكتب باقي التفاصيل'}</span>
+              <span class="client-sub-id-addr text-[10px] text-slate-700 font-bold font-mono" data-i18n="subIdAddress">${currentLang === 'en' ? 'Select Gov & City + Street details' : 'اختر المحافظة والمدينة واكتب باقي التفاصيل'}</span>
             </div>
 
-            <!-- صف الاختيار: المحافظة والمدينة -->
+            <!-- صف الاختيار: المحافظة/الدولة والمدينة -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div>
                 <label class="block text-[11px] font-black text-slate-700 mb-1">
-                  <span data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
+                  <span class="client-lbl-gov-text" data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <select
                   class="client-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
-                  onchange="handleClientGovChange(${clientId}, this.value, 'id')"
+                  onchange="handleClientRegionChange(${clientId}, this.value, 'id')"
                 >
                   <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
                 </select>
@@ -2451,7 +2651,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
               <div>
                 <label class="block text-[11px] font-black text-slate-700 mb-1">
-                  <span data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
+                  <span class="client-lbl-city-text" data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <select
                   class="client-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2496,11 +2696,11 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
-                    <span data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
+                    <span class="client-corr-lbl-gov-text" data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
                   </label>
                   <select
                     class="client-corr-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
-                    onchange="handleClientGovChange(${clientId}, this.value, 'corr')"
+                    onchange="handleClientRegionChange(${clientId}, this.value, 'corr')"
                   >
                     <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
                   </select>
@@ -2508,7 +2708,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
                 <div>
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
-                    <span data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
+                    <span class="client-corr-lbl-city-text" data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
                   </label>
                   <select
                     class="client-corr-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2811,12 +3011,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (dropSubtitle) dropSubtitle.innerText = (currentLang === 'en')
           ? '(Mandatory: Valid Passport + Residence Permit)'
           : '(مطلوب إجباري: جواز سفر ساري + إقامة سارية)';
-
-        const govSelect = card.querySelector('.client-gov-select');
-        if (govSelect && (!govSelect.value || govSelect.value === 'القاهرة')) {
-          govSelect.value = 'خارج جمهورية مصر العربية / أخرى';
-          handleClientGovChange(clientId, 'خارج جمهورية مصر العربية / أخرى', 'id');
-        }
       } else {
         if (noticeText) noticeText.innerText = (currentLang === 'en')
           ? 'For clients residing inside Egypt: Uploading both sides of the National ID is mandatory.'
@@ -2824,15 +3018,59 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (dropSubtitle) dropSubtitle.innerText = (currentLang === 'en')
           ? '(Mandatory: National ID card both sides)'
           : '(مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)';
-
-        const govSelect = card.querySelector('.client-gov-select');
-        if (govSelect && govSelect.value === 'خارج جمهورية مصر العربية / أخرى') {
-          govSelect.value = '';
-          handleClientGovChange(clientId, '', 'id');
-        }
       }
 
+      // Update labels (المحافظة -> الدولة, etc.)
+      updateClientAddressLabels(clientId);
+
+      // Re-populate dropdowns
+      const govSelect = card.querySelector('.client-gov-select');
+      const corrGovSelect = card.querySelector('.client-corr-gov-select');
+
+      populateRegionOptions(govSelect, isOutside);
+      populateRegionOptions(corrGovSelect, isOutside);
+
+      // Reset city selects and combined addresses
+      handleClientRegionChange(clientId, '', 'id');
+      handleClientRegionChange(clientId, '', 'corr');
+
       updateContractLocationVisibility();
+    }
+
+    function updateClientAddressLabels(clientId) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
+      const isEn = (currentLang === 'en');
+      const t = translations[currentLang] || {};
+
+      const subIdAddr = card.querySelector('.client-sub-id-addr');
+      if (subIdAddr) {
+        subIdAddr.innerText = isOutside 
+          ? (t.subIdAddressAbroad || (isEn ? 'Select Country & City + Street details' : 'اختر الدولة والمدينة واكتب باقي التفاصيل'))
+          : (t.subIdAddress || (isEn ? 'Select Gov & City + Street details' : 'اختر المحافظة والمدينة واكتب باقي التفاصيل'));
+      }
+
+      const govLabelText = isOutside 
+        ? (t.lblCountry || (isEn ? 'Country' : 'الدولة'))
+        : (t.lblGovernorate || (isEn ? 'Governorate' : 'المحافظة'));
+
+      const cityLabelText = isOutside 
+        ? (t.lblCityAbroad || (isEn ? 'City / State / Province' : 'المدينة / الولاية / المقاطعة'))
+        : (t.lblCity || (isEn ? 'City / District / Area' : 'المدينة / الحي / المركز'));
+
+      const lblGov = card.querySelector('.client-lbl-gov-text');
+      if (lblGov) lblGov.innerText = govLabelText;
+
+      const lblCity = card.querySelector('.client-lbl-city-text');
+      if (lblCity) lblCity.innerText = cityLabelText;
+
+      const corrLblGov = card.querySelector('.client-corr-lbl-gov-text');
+      if (corrLblGov) corrLblGov.innerText = govLabelText;
+
+      const corrLblCity = card.querySelector('.client-corr-lbl-city-text');
+      if (corrLblCity) corrLblCity.innerText = cityLabelText;
     }
 
     function updateContractLocationVisibility() {
@@ -2848,64 +3086,95 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
     }
 
-    // ── Dynamic Address Picker (Governorate & City Dropdowns + Street Details) ──
+    // ── Dynamic Address Picker (Governorate/Country & City Dropdowns + Street Details) ──
     function initClientAddressFields(clientId) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
 
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
+      updateClientAddressLabels(clientId);
+
       const govSelect = card.querySelector('.client-gov-select');
       const corrGovSelect = card.querySelector('.client-corr-gov-select');
 
-      populateGovernorateOptions(govSelect);
-      populateGovernorateOptions(corrGovSelect);
+      populateRegionOptions(govSelect, isOutside);
+      populateRegionOptions(corrGovSelect, isOutside);
     }
 
-    function populateGovernorateOptions(selectEl) {
+    function populateRegionOptions(selectEl, isOutside) {
       if (!selectEl) return;
       const currentVal = selectEl.value;
-      selectEl.innerHTML = `<option value="">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>`;
+      const isEn = (currentLang === 'en');
+      const t = translations[currentLang] || {};
 
-      Object.keys(egyptGovernoratesAndCities).forEach(gov => {
-        const opt = document.createElement('option');
-        opt.value = gov;
-        opt.textContent = (currentLang === 'en' && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov;
-        opt.className = "bg-white text-slate-950 font-bold";
-        selectEl.appendChild(opt);
-      });
-
-      if (currentVal && egyptGovernoratesAndCities[currentVal]) {
-        selectEl.value = currentVal;
+      if (isOutside) {
+        selectEl.innerHTML = `<option value="">${t.optSelectCountry || (isEn ? 'Select Country...' : 'اختر الدولة...')}</option>`;
+        Object.keys(worldCountriesAndCities).forEach(cName => {
+          const opt = document.createElement('option');
+          opt.value = cName;
+          const display = (isEn && worldCountriesEn[cName]) ? worldCountriesEn[cName] : cName;
+          opt.textContent = display;
+          opt.className = "bg-white text-slate-950 font-bold";
+          selectEl.appendChild(opt);
+        });
+        if (currentVal && worldCountriesAndCities[currentVal]) {
+          selectEl.value = currentVal;
+        }
+      } else {
+        selectEl.innerHTML = `<option value="">${t.optSelectGov || (isEn ? 'Select Governorate...' : 'اختر المحافظة...')}</option>`;
+        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+          if (gov.includes('خارج')) return;
+          const opt = document.createElement('option');
+          opt.value = gov;
+          const display = (isEn && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov;
+          opt.textContent = display;
+          opt.className = "bg-white text-slate-950 font-bold";
+          selectEl.appendChild(opt);
+        });
+        if (currentVal && egyptGovernoratesAndCities[currentVal] && !currentVal.includes('خارج')) {
+          selectEl.value = currentVal;
+        }
       }
     }
 
-    function handleClientGovChange(clientId, govVal, type) {
+    function handleClientRegionChange(clientId, regionVal, type) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
+
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
+      const isEn = (currentLang === 'en');
+      const t = translations[currentLang] || {};
 
       const citySelect = (type === 'id') 
         ? card.querySelector('.client-city-select') 
         : card.querySelector('.client-corr-city-select');
 
       if (!citySelect) return;
-
       citySelect.innerHTML = '';
 
-      if (!govVal) {
+      if (!regionVal) {
         citySelect.disabled = true;
         const opt = document.createElement('option');
         opt.value = '';
-        opt.textContent = (currentLang === 'en') ? 'Select Governorate first...' : 'اختر المحافظة أولاً...';
+        opt.textContent = isOutside 
+          ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
+          : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
         opt.className = "bg-white text-slate-950 font-bold";
         citySelect.appendChild(opt);
       } else {
         citySelect.disabled = false;
         const defaultOpt = document.createElement('option');
         defaultOpt.value = '';
-        defaultOpt.textContent = (currentLang === 'en') ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...';
+        defaultOpt.textContent = isOutside
+          ? (t.optSelectCityAbroad || (isEn ? 'Select City / State / Province...' : 'اختر المدينة / الولاية / المقاطعة...'))
+          : (t.optSelectCity || (isEn ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...'));
         defaultOpt.className = "bg-white text-slate-950 font-bold";
         citySelect.appendChild(defaultOpt);
 
-        const cities = egyptGovernoratesAndCities[govVal] || [];
+        const cities = isOutside 
+          ? (worldCountriesAndCities[regionVal] || []) 
+          : (egyptGovernoratesAndCities[regionVal] || []);
+
         cities.forEach(city => {
           const opt = document.createElement('option');
           opt.value = city;
@@ -2914,16 +3183,23 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           citySelect.appendChild(opt);
         });
 
-        // خيار إضافي لأي حي أو مركز غير مدرج
+        // Other option
         const otherOpt = document.createElement('option');
-        otherOpt.value = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
-        otherOpt.textContent = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
+        const otherVal = isOutside
+          ? (t.optOtherCityAbroad || (isEn ? 'Other city / area abroad' : 'أخرى / مدينة أخرى بالخارج'))
+          : (t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى'));
+        otherOpt.value = otherVal;
+        otherOpt.textContent = otherVal;
         otherOpt.className = "bg-white text-slate-950 font-bold";
         citySelect.appendChild(otherOpt);
       }
 
       updateCombinedAddress(clientId, type);
     }
+
+    // Aliases for compatibility
+    const handleClientGovChange = handleClientRegionChange;
+    const populateGovernorateOptions = (sel) => populateRegionOptions(sel, false);
 
     function handleClientCityChange(clientId, cityVal, type) {
       updateCombinedAddress(clientId, type);
@@ -3269,7 +3545,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
 
         if (!cardIdAddrValid) {
-          idAddrErr?.classList.remove('hidden');
+          const isOutside = (clientResidenceMap[cId] || '').includes('خارج');
+          const isEn = (currentLang === 'en');
+          const t = translations[currentLang] || {};
+          if (idAddrErr) {
+            idAddrErr.innerText = isOutside
+              ? (t.errIdAddressSelectAbroad || (isEn ? 'Please select country, city and enter street address details' : 'يرجى اختيار الدولة والمدينة وكتابة باقي تفاصيل العنوان'))
+              : (t.errIdAddressSelect || (isEn ? 'Please select governorate, city and enter street address details' : 'يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان'));
+            idAddrErr.classList.remove('hidden');
+          }
           hasError = true;
         } else {
           idAddrErr?.classList.add('hidden');
@@ -3306,7 +3590,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
 
         if (!cardCorrValid) {
-          corrAddrErr?.classList.remove('hidden');
+          const isOutside = (clientResidenceMap[cId] || '').includes('خارج');
+          const isEn = (currentLang === 'en');
+          const t = translations[currentLang] || {};
+          if (corrAddrErr) {
+            corrAddrErr.innerText = isOutside
+              ? (t.errCorrespondenceAddressAbroad || (isEn ? 'Approved correspondence address abroad is required' : 'يرجى اختيار الدولة والمدينة وكتابة باقي تفاصيل عنوان المراسلات'))
+              : (t.errCorrespondenceAddress || (isEn ? 'Approved correspondence address is required' : 'العنوان المعتمد للمراسلات مطلوب'));
+            corrAddrErr.classList.remove('hidden');
+          }
           hasError = true;
         } else {
           corrAddrErr?.classList.add('hidden');
