@@ -771,7 +771,7 @@
 
   <!-- ═══════════════ SCRIPT LOGIC ═══════════════ -->
   <script>
-    const baseUrl = (window.BACKEND_API_URL || '').replace(/\/$/, '');
+    const baseUrl = (window.BACKEND_API_URL || window.BACKEND_URL || '').replace(/\/$/, '');
 
     const countryData = [
       { code: '+20', flag: '🇪🇬', nameAr: 'مصر', nameEn: 'Egypt', pinned: true },
