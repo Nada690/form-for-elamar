@@ -8,3 +8,5 @@ uploads/*
 !uploads/.gitkeep
 
 .vercel
+*.ps1
+build_excel.py

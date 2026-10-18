@@ -64,7 +64,15 @@ try {
         'addresses' => "TEXT NULL AFTER paid_5_percent",
         'notes' => "TEXT NULL AFTER addresses",
         'attachments' => "LONGTEXT NULL AFTER notes",
-        'sales_id' => "INT NULL AFTER attachments"
+        'sales_id' => "INT NULL AFTER attachments",
+        'residence_country' => "VARCHAR(100) DEFAULT 'inside_egypt' AFTER id_number",
+        'id_address' => "TEXT NULL AFTER addresses",
+        'correspondence_address' => "TEXT NULL AFTER id_address",
+        'payment_date' => "VARCHAR(50) NULL AFTER paid_5_percent",
+        'unit_price' => "DECIMAL(15,2) NULL AFTER payment_period",
+        'period' => "VARCHAR(50) NULL AFTER payment_period",
+        'final_rate' => "VARCHAR(50) NULL AFTER period",
+        'general_notes' => "TEXT NULL AFTER notes"
     ];
     foreach ($neededCols as $col => $def) {
         if (!in_array($col, $existingCols)) {
@@ -73,40 +81,93 @@ try {
         }
     }
 
-    // 5. إنشاء جدول sales_employees
-    $sqlSales = "CREATE TABLE IF NOT EXISTS sales_employees (
+    // 5. إنشاء جدول users الهرمي الموحد (RBAC)
+    $sqlUsers = "CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
-        slug VARCHAR(100) NOT NULL UNIQUE,
-        active TINYINT(1) DEFAULT 1,
+        password_hash VARCHAR(255) NOT NULL,
+        role ENUM('Admin', 'Manager', 'Sales') NOT NULL DEFAULT 'Sales',
+        manager_id INT NULL,
+        referral_code VARCHAR(100) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_slug (slug),
-        INDEX idx_active (active)
+        INDEX idx_role (role),
+        INDEX idx_manager (manager_id),
+        INDEX idx_ref (referral_code),
+        CONSTRAINT fk_users_manager FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    $pdo->exec($sqlSales);
-    echo "✓ تم إنشاء جدول sales_employees بنجاح{$nl}";
+    $pdo->exec($sqlUsers);
+    echo "✓ تم إنشاء جدول users بنجاح{$nl}";
 
-    // 6. إنشاء جدول admins
-    $sqlAdmins = "CREATE TABLE IF NOT EXISTS admins (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(100) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) DEFAULT 'admin',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    $pdo->exec($sqlAdmins);
-    echo "✓ تم إنشاء جدول admins بنجاح{$nl}";
+    // إضافة مستخدمين تجريبيين لكافة الرتب (Admin, Manager, Sales) إذا كان الجدول فارغاً
+    $checkUsers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    if ($checkUsers == 0) {
+        $defaultPass = password_hash('password123', PASSWORD_BCRYPT);
+        
+        // 1. مدير عام النظام (Admin)
+        $insAdmin = $pdo->prepare("INSERT INTO users (name, email, password_hash, role, manager_id, referral_code) VALUES (:name, :email, :pass, 'Admin', NULL, :ref)");
+        $insAdmin->execute([
+            ':name' => 'المدير التنفيذي (Admin)',
+            ':email' => 'admin@elamar.com',
+            ':pass' => $defaultPass,
+            ':ref' => 'admin'
+        ]);
+        $adminId = $pdo->lastInsertId();
 
-    // 7. إضافة مستخدم أدمن افتراضي إذا لم يكن موجوداً
-    $checkAdmin = $pdo->query("SELECT COUNT(*) FROM admins")->fetchColumn();
-    if ($checkAdmin == 0) {
-        $defaultUser = 'admin';
-        $defaultPass = 'admin123';
-        $hashedPass = password_hash($defaultPass, PASSWORD_BCRYPT);
-        $insertAdmin = $pdo->prepare("INSERT INTO admins (username, password, role) VALUES (:u, :p, 'admin')");
-        $insertAdmin->execute([':u' => $defaultUser, ':p' => $hashedPass]);
-        echo "✓ تم إنشاء حساب المسؤول الافتراضي بنجاح (المستخدم: {$defaultUser} | كلمة المرور: {$defaultPass}){$nl}";
+        // 2. مدير قطاع مبيعات (Manager)
+        $insManager = $pdo->prepare("INSERT INTO users (name, email, password_hash, role, manager_id, referral_code) VALUES (:name, :email, :pass, 'Manager', NULL, :ref)");
+        $insManager->execute([
+            ':name' => 'أحمد إبراهيم (مدير مبيعات)',
+            ':email' => 'manager@elamar.com',
+            ':pass' => $defaultPass,
+            ':ref' => 'mgr-ahmed'
+        ]);
+        $managerId = $pdo->lastInsertId();
+
+        // 3. موظفي مبيعات (Sales 1 & Sales 2) تابعين للمدير
+        $insSales = $pdo->prepare("INSERT INTO users (name, email, password_hash, role, manager_id, referral_code) VALUES (:name, :email, :pass, 'Sales', :mgr, :ref)");
+        $insSales->execute([
+            ':name' => 'كريم محمود (مستشار مبيعات)',
+            ':email' => 'sales1@elamar.com',
+            ':pass' => $defaultPass,
+            ':mgr' => $managerId,
+            ':ref' => 'karim101'
+        ]);
+        $insSales->execute([
+            ':name' => 'سارة الشريف (مستشار مبيعات)',
+            ':email' => 'sales2@elamar.com',
+            ':pass' => $defaultPass,
+            ':mgr' => $managerId,
+            ':ref' => 'sara102'
+        ]);
+
+        // 4. مدير مبيعات آخر وموظف تابع له لاختبار الفصل التام بين المديرين
+        $insManager2 = $pdo->prepare("INSERT INTO users (name, email, password_hash, role, manager_id, referral_code) VALUES (:name, :email, :pass, 'Manager', NULL, :ref)");
+        $insManager2->execute([
+            ':name' => 'محمود كمال (مدير قطاع 2)',
+            ':email' => 'manager2@elamar.com',
+            ':pass' => $defaultPass,
+            ':ref' => 'mgr-kamal'
+        ]);
+        $manager2Id = $pdo->lastInsertId();
+
+        $insSales->execute([
+            ':name' => 'ياسر العلي (مستشار قطاع 2)',
+            ':email' => 'sales3@elamar.com',
+            ':pass' => $defaultPass,
+            ':mgr' => $manager2Id,
+            ':ref' => 'yasser103'
+        ]);
+
+        echo "✓ تم إنشاء مستخدمين افتراضيين بنجاح لكافة الصلاحيات (Admin, Manager, Sales){$nl}";
+    }
+
+    // 6. ربط جدول clients بـ users(id) إذا رغبنا وتعديل المفتاح الأجنبي
+    try {
+        $pdo->exec("ALTER TABLE clients ADD CONSTRAINT fk_clients_sales FOREIGN KEY (sales_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE");
+        echo "✓ تم ربط sales_id في جدول clients كـ Foreign Key لجدول users{$nl}";
+    } catch (Exception $e) {
+        // إذا كان المفتاح موجوداً مسبقاً نتخطى
     }
 
     // 8. التأكد من وجود مجلد uploads وتصريحاته

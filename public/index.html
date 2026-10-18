@@ -51,7 +51,6 @@
     html[dir="rtl"] { font-family: 'Cairo', sans-serif; }
     html[dir="ltr"] { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    /* Eye-friendly comfortable luxury palette (neither pitch dark nor blinding white) */
     .bg-luxury-mesh {
       background-color: #121c2b;
       background-image: 
@@ -111,13 +110,39 @@
       box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
     }
 
-    /* Pulse animation */
     @keyframes subtlePulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.85; transform: scale(0.995); }
     }
     .subtle-pulse {
       animation: subtlePulse 3s infinite ease-in-out;
+    }
+
+    .country-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .country-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+    }
+    .country-scroll::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.4);
+      border-radius: 8px;
+    }
+    .country-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 175, 55, 0.7);
+    }
+    input[type="date"] {
+      color-scheme: dark;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.8) sepia(100%) saturate(300%) hue-rotate(5deg);
+      cursor: pointer;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
     }
   </style>
 </head>
@@ -132,7 +157,7 @@
   <header class="border-b border-amber-500/25 bg-[#121c2b]/90 backdrop-blur-xl sticky top-0 z-50">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
 
-      <!-- Logo + Brand (محدد ومبروز بإطار ذهبي أنيق) -->
+      <!-- Logo + Brand -->
       <div class="flex items-center gap-3.5">
         <div class="p-2 rounded-2xl bg-gradient-to-br from-amber-500/20 via-amber-400/10 to-[#121c2b] border-2 border-amber-400 shadow-[0_0_20px_rgba(212,175,55,0.45)] flex items-center justify-center">
           <img src="logo.png" alt="Logo" class="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
@@ -149,7 +174,6 @@
 
       <!-- Controls & Language Toggle -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Language Switcher Button -->
         <button 
           id="langToggleBtn" 
           type="button"
@@ -161,7 +185,6 @@
           <span id="langBtnText">English</span>
         </button>
 
-        <!-- Admin Shortcut (Hidden unless authorized) -->
         <a id="adminDashboardBtn" href="view_clients.php" class="hidden items-center gap-1.5 text-amber-300 text-xs px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 hover:bg-amber-500/25 transition-all font-bold">
           🔒 <span data-i18n="adminLink">لوحة المسؤول</span>
         </a>
@@ -174,18 +197,9 @@
   <main class="flex-1 flex items-center justify-center px-3 sm:px-6 py-8 sm:py-14 relative z-10">
     <div class="w-full max-w-2xl">
 
-      <!-- Header Banner & Sales Consultant VIP Tag -->
+      <!-- Header Banner -->
       <div class="text-center mb-6 sm:mb-8 space-y-3">
-        
-        <!-- Dynamic VIP Sales Badge (Shown if slug is valid) -->
-        <div id="vipSalesBadgeContainer" class="hidden inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-500/20 border-2 border-amber-400/60 text-amber-300 text-xs sm:text-sm font-black shadow-[0_0_20px_rgba(212,175,55,0.25)] subtle-pulse">
-          <span class="text-base">💎</span>
-          <span data-i18n="vipSalesIntro">استمارة معتمدة بإشراف المستشار العقاري:</span>
-          <span id="vipSalesAdvisorName" class="text-white bg-amber-500/30 px-2.5 py-0.5 rounded-lg border border-amber-400/40 font-bold"></span>
-        </div>
-
-        <!-- Default Survey Tag (Shown if no sales slug) -->
-        <div id="defaultSurveyTag" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/50 text-amber-300 text-xs font-bold shadow-sm" data-i18n="officialSurveyTag">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/50 text-amber-300 text-xs font-bold shadow-sm" data-i18n="officialSurveyTag">
           🏖️ استبيان واستيفاء بيانات عقود الشاليهات الساحلية (Shores Only)
         </div>
 
@@ -207,32 +221,32 @@
 
           <form id="contractForm" novalidate class="space-y-7" enctype="multipart/form-data">
             
-            <!-- Hidden Sales ID to lock the consultation attribution -->
-            <input type="hidden" name="sales_id" id="hiddenSalesId" value="">
+            <input type="hidden" name="sales_id" id="salesIdHidden" value="">
 
-            <!-- ── SECTION 1: أطراف العقد والشركاء ── -->
+            <!-- ── SECTION 1: بيانات أطراف العقد والشركاء ── -->
             <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
               <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
                 <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">01</span>
-                <span data-i18n="sec1Title">بيانات أطراف العقد والشركاء</span>
+                <span data-i18n="sec1Title">قسم البيانات الشخصية وبيانات العميل</span>
               </div>
 
+              <!-- اسم العميل كما هو في البطاقة الشخصية -->
               <div id="namesContainer" class="space-y-3">
                 <div class="form-group">
                   <label class="block text-xs font-bold text-slate-300 mb-1.5" for="primaryName">
-                    <span data-i18n="labelPrimaryName">اسم العميل كما هو مدون في العقد</span>
-                    <span class="text-amber-400 font-bold">*</span>
+                    <span data-i18n="labelPrimaryName">اسم العميل كما هو في البطاقة الشخصية</span>
+                    <span class="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
                     id="primaryName"
                     name="names[]"
                     data-i18n-placeholder="phPrimaryName"
-                    placeholder="اكتب الاسم كاملاً ومطابقاً للبطاقة أو العقد"
+                    placeholder="(الاسم كاملاً ومطابقاً للهوية الشخصية)"
                     class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
                     oninput="validateField(this, val => val.length >= 3)"
                   />
-                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPrimaryName" data-i18n="errPrimaryName">اسم العميل كما هو مدون في العقد مطلوب</p>
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPrimaryName" data-i18n="errPrimaryName">اسم العميل كما هو في البطاقة الشخصية مطلوب</p>
                 </div>
               </div>
 
@@ -247,37 +261,62 @@
               </button>
             </div>
 
-            <!-- ── SECTION 2: بيانات الاتصال والبريد ── -->
+            <!-- ── SECTION 2: بيانات الاتصال والتواصل ── -->
             <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
               <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
                 <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">02</span>
-                <span data-i18n="sec2Title">بيانات الاتصال والتواصل</span>
+                <span data-i18n="sec2Title">رقم الهاتف والتواصل والبريد</span>
               </div>
 
-              <!-- الهواتف -->
+              <!-- أرقام الهواتف والتواصل مع القائمة المنسدلة والبحث -->
               <div id="phonesContainer" class="space-y-3">
                 <div class="form-group">
                   <label class="block text-xs font-bold text-slate-300 mb-1.5" for="primaryPhone">
-                    <span data-i18n="labelPrimaryPhone">رقم الهاتف الأساسي (يدعم واتساب)</span>
-                    <span class="text-amber-400 font-bold">*</span>
+                    <span data-i18n="labelPrimaryPhone">رقم الهاتف والتواصل (يدعم الأرقام المحلية والدولية)</span>
+                    <span class="text-red-400">*</span>
                   </label>
                   <div class="flex gap-2 dir-ltr">
-                    <select name="phone_codes[]" class="glass-input px-3 py-3 rounded-xl text-amber-300 text-xs font-bold w-28 text-center">
-                      <option value="+20">🇪🇬 +20</option>
-                      <option value="+966">🇸🇦 +966</option>
-                      <option value="+971">🇦🇪 +971</option>
-                      <option value="+965">🇰🇼 +965</option>
-                      <option value="+974">🇶🇦 +974</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+44">🇬🇧 +44</option>
-                    </select>
+                    
+                    <!-- Searchable Country Dropdown Trigger -->
+                    <div class="country-picker relative w-36 sm:w-40 flex-shrink-0" id="primaryPickerContainer">
+                      <button 
+                        type="button" 
+                        onclick="toggleCountryDropdown(this)" 
+                        class="country-btn glass-input w-full px-2.5 py-3 rounded-xl text-amber-300 text-xs font-bold flex items-center justify-between cursor-pointer hover:border-amber-400 transition-all"
+                      >
+                        <span class="country-display flex items-center gap-1.5 truncate">
+                          <span class="text-base">🇪🇬</span>
+                          <span class="font-mono">+20</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400">▼</span>
+                      </button>
+                      
+                      <input type="hidden" name="phone_codes[]" value="+20" class="country-code-val">
+
+                      <!-- Dropdown Menu -->
+                      <div class="country-dropdown hidden absolute top-full mt-1.5 left-0 z-50 w-72 bg-slate-900/98 border border-amber-500/40 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                        <div class="relative mb-2">
+                          <input 
+                            type="text" 
+                            placeholder="بحث عن الدولة أو الكود..." 
+                            data-i18n-placeholder="phSearchCountry"
+                            oninput="filterCountryList(this)" 
+                            class="country-search-input w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium"
+                          >
+                          <span class="absolute right-2.5 top-2.5 text-xs text-slate-400">🔍</span>
+                        </div>
+                        <div class="country-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                      </div>
+                    </div>
+
+                    <!-- Phone Number Input -->
                     <input
                       type="tel"
                       id="primaryPhone"
                       name="phone_numbers[]"
-                      placeholder="10xxxxxxxx"
+                      placeholder="10xxxxxxxx / Phone Number"
                       class="glass-input flex-1 px-4 py-3 rounded-xl text-emerald-300 placeholder-slate-500 text-sm font-mono tracking-wider text-left"
-                      oninput="validateField(this, val => val.replace(/\D/g,'').length >= 8)"
+                      oninput="validateField(this, val => val.replace(/\D/g,'').length >= 7)"
                     />
                   </div>
                   <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPrimaryPhone" data-i18n="errPrimaryPhone">رقم الهاتف مطلوب وبصيغة صحيحة</p>
@@ -294,36 +333,34 @@
                 <span data-i18n="btnAddPhone">+ إضافة رقم هاتف إضافي</span>
               </button>
 
-              <!-- البريد الإلكتروني حصرياً Gmail -->
+              <!-- البريد الإلكتروني للمراسلات الرسمية -->
               <div class="form-group pt-2 border-t border-slate-800/80">
                 <label class="block text-xs font-bold text-slate-300 mb-1.5" for="clientEmail">
-                  <span data-i18n="labelEmail">البريد الإلكتروني (مخصص حصرياً لـ Gmail)</span>
-                  <span class="text-amber-400 font-bold">*</span>
+                  <span data-i18n="labelEmail">البريد الإلكتروني (متاح للتواصل والمراسلات الرسمية)</span>
+                  <span class="text-red-400">*</span>
                 </label>
-                <div class="relative">
-                  <input
-                    type="email"
-                    id="clientEmail"
-                    name="email"
-                    placeholder="example@gmail.com"
-                    class="glass-input w-full px-4 py-3 rounded-xl text-cyan-300 placeholder-slate-500 text-sm font-mono dir-ltr text-right"
-                    oninput="validateGmail(this)"
-                  />
-                  <span class="absolute left-3.5 top-3.5 text-xs text-slate-500 font-mono">@gmail.com</span>
-                </div>
+                <input
+                  type="email"
+                  id="clientEmail"
+                  name="email"
+                  placeholder="example@domain.com"
+                  data-i18n-placeholder="phEmail"
+                  class="glass-input w-full px-4 py-3 rounded-xl text-cyan-300 placeholder-slate-500 text-sm font-mono dir-ltr text-right"
+                  oninput="validateGeneralEmail(this)"
+                />
                 <p class="text-[11px] text-slate-400 mt-1" id="hintEmail" data-i18n="hintEmail">
-                  يجب أن ينتهي البريد بـ @gmail.com لضمان وصول الإشعارات الرسمية
+                  يرجى إدخال بريد إلكتروني نشط ومتاح لتلقي الإشعارات والمراسلات الرسمية الخاصة بالعقد
                 </p>
-                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errEmail" data-i18n="errEmail">يرجى إدخال بريد Gmail صحيح (name@gmail.com)</p>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errEmail" data-i18n="errEmail">يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com)</p>
               </div>
 
             </div>
 
-            <!-- ── SECTION 3: إثبات الهوية والعنوان ── -->
-            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+            <!-- ── SECTION 3: إثبات الشخصية ومحل الإقامة والعنوان والمرفقات ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-5">
               <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
                 <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">03</span>
-                <span data-i18n="sec3Title">إثبات الشخصية والعنوان الوطني</span>
+                <span data-i18n="sec3Title">إثبات الشخصية ومحل الإقامة والعنوان والمرفقات</span>
               </div>
 
               <!-- نوع الهوية والرقم -->
@@ -353,178 +390,314 @@
                 </div>
               </div>
 
-              <!-- العنوان بالتفصيل -->
-              <div class="form-group">
-                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="primaryAddress">
-                  <span data-i18n="labelAddress">العنوان الحالي المعتمد بالتفصيل</span>
+              <!-- سؤال مكان الإقامة الحالي (Radio Buttons بصيغة لبقة) -->
+              <div class="form-group pt-2 border-t border-slate-800/80">
+                <label class="block text-xs font-bold text-amber-300 mb-2">
+                  <span data-i18n="labelResidenceCountry">مكان الإقامة الحالي:</span>
                   <span class="text-amber-400 font-bold">*</span>
                 </label>
-                <textarea
-                  id="primaryAddress"
-                  name="addresses[]"
-                  rows="2"
-                  data-i18n-placeholder="phAddress"
-                  placeholder="المحافظة، المدينة، اسم الشارع، رقم العقار والشقة"
-                  class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
-                  oninput="validateField(this, val => val.length >= 5)"
-                ></textarea>
-                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errAddress" data-i18n="errAddress">العنوان بالتفصيل مطلوب</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label class="custom-check-box active rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-bold text-white shadow-sm" id="residenceEgyptBox">
+                    <input type="radio" name="residence_country" value="داخل جمهورية مصر العربية" checked class="hidden" onchange="handleResidenceChange(this.value)">
+                    <span class="text-base">🇪🇬</span>
+                    <span data-i18n="optInsideEgypt">داخل جمهورية مصر العربية</span>
+                  </label>
+                  <label class="custom-check-box rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-bold text-white shadow-sm" id="residenceAbroadBox">
+                    <input type="radio" name="residence_country" value="خارج جمهورية مصر العربية" class="hidden" onchange="handleResidenceChange(this.value)">
+                    <span class="text-base">🌍</span>
+                    <span data-i18n="optOutsideEgypt">خارج جمهورية مصر العربية</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- حقول العناوين: المحافظة والمدينة وباقي العنوان -->
+              <div class="space-y-4 pt-3 border-t border-slate-800/80">
+                <!-- الحقل الأول: العنوان كما هو مسجل في إثبات الهوية الشخصية -->
+                <div class="client-id-address-group space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-xs font-bold text-slate-300" for="idAddress">
+                      <span data-i18n="labelIdAddress">العنوان كما هو مسجل في إثبات الهوية الشخصية</span>
+                      <span class="text-amber-400 font-bold">*</span>
+                    </label>
+                    <span class="text-[10px] text-amber-300/80 font-mono">اختر المحافظة والمدينة واكتب باقي التفاصيل</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                    <div>
+                      <label class="block text-[11px] font-semibold text-slate-400 mb-1">المحافظة <span class="text-amber-400">*</span></label>
+                      <select id="idGovernorate" class="glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer" onchange="handleStaticGovChange(this.value, 'id')">
+                        <option value="">اختر المحافظة...</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-semibold text-slate-400 mb-1">المدينة / الحي / المركز <span class="text-amber-400">*</span></label>
+                      <select id="idCity" class="glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled onchange="handleStaticCityChange(this.value, 'id')">
+                        <option value="">اختر المحافظة أولاً...</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة) <span class="text-amber-400">*</span></label>
+                    <input type="text" id="idStreet" placeholder="اسم الشارع، رقم العمارة، رقم الشقة، علامة مميزة..." class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm font-semibold" oninput="handleStaticStreetInput('id')" />
+                  </div>
+
+                  <input type="hidden" id="idAddress" name="id_address" value="" />
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errIdAddress" data-i18n="errIdAddress">يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان</p>
+                </div>
+
+                <!-- الحقل الثاني: العنوان المعتمد بالتفصيل للمراسلات -->
+                <div class="client-corr-address-group space-y-2.5 pt-3 border-t border-slate-800/60">
+                  <label class="block text-xs font-bold text-slate-300" for="correspondenceAddress">
+                    <span data-i18n="labelCorrespondenceAddress">العنوان المعتمد بالتفصيل للمراسلات</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+
+                  <div id="customCorrContainer" class="space-y-2.5 p-3 rounded-2xl bg-slate-950/40 border border-slate-800/80">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                      <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">المحافظة <span class="text-amber-400">*</span></label>
+                        <select id="corrGovernorate" class="glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer" onchange="handleStaticGovChange(this.value, 'corr')">
+                          <option value="">اختر المحافظة...</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">المدينة / الحي / المركز <span class="text-amber-400">*</span></label>
+                        <select id="corrCity" class="glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-white bg-slate-900 border border-slate-700/80 focus:border-amber-400 focus:outline-none text-xs sm:text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled onchange="handleStaticCityChange(this.value, 'corr')">
+                          <option value="">اختر المحافظة أولاً...</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-semibold text-slate-400 mb-1">باقي تفاصيل العنوان للمراسلات <span class="text-amber-400">*</span></label>
+                      <input type="text" id="corrStreet" placeholder="اسم الشارع، رقم المبنى، الشقة للمراسلات الرسمية" class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm font-semibold" oninput="handleStaticStreetInput('corr')" />
+                    </div>
+                  </div>
+
+                  <input type="hidden" id="correspondenceAddress" name="correspondence_address" value="" />
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errCorrespondenceAddress" data-i18n="errCorrespondenceAddress">العنوان المعتمد للمراسلات مطلوب</p>
+                </div>
+              </div>
+
+              <!-- ── المستندات والمرفقات المطلوبة ── -->
+              <div class="pt-3 border-t border-slate-800/80 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-amber-400 font-bold text-xs sm:text-sm">
+                    <span>📎</span>
+                    <span data-i18n="secAttachmentsTitle">المستندات والمرفقات المطلوبة</span>
+                    <span class="text-red-400">*</span>
+                  </div>
+                  <span class="text-[11px] text-slate-400 font-mono">PDF / JPG / PNG</span>
+                </div>
+
+                <!-- التنبيه والشرط الديناميكي للمستندات المطلوبة -->
+                <div id="dynamicDocNotice" class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs font-semibold flex items-start gap-2.5">
+                  <span class="text-base flex-shrink-0">⚠️</span>
+                  <div id="docNoticeText" data-i18n="docNoticeInside">
+                    للعملاء المقيمين داخل مصر: يُشترط رفع صورة واضحة لبطاقة الرقم القومي (الوجهين: الأمامي والخلفي).
+                  </div>
+                </div>
+
+                <!-- رفع المستندات (Upload Zone) -->
+                <div 
+                  id="dropZone" 
+                  class="border-2 border-dashed border-amber-500/35 hover:border-amber-400 rounded-2xl p-6 text-center transition-all bg-slate-900/40 hover:bg-amber-500/5 cursor-pointer shadow-sm"
+                  onclick="document.getElementById('fileInput').click()"
+                >
+                  <input 
+                    type="file" 
+                    id="fileInput" 
+                    multiple 
+                    accept="image/*,.pdf" 
+                    class="hidden" 
+                    onchange="handleFilesSelected(this.files)"
+                  >
+                  <div class="text-3xl mb-2">📁</div>
+                  <div class="font-bold text-xs sm:text-sm text-slate-200" id="dropTitleText" data-i18n="dropTitle">
+                    اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا
+                  </div>
+                  <div class="text-[11px] text-slate-400 mt-1" id="dropSubtitleText" data-i18n="dropSubtitleInside">
+                    (مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)
+                  </div>
+                </div>
+
+                <!-- المعاينات الحية للملفات المرفوعة -->
+                <div id="fileListContainer" class="space-y-2 hidden">
+                  <div class="text-xs font-bold text-amber-300" data-i18n="selectedFilesHeading">المعاينات المرفقة للإرسال:</div>
+                  <div id="fileItemsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                </div>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errAttachments" data-i18n="errAttachments">المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه</p>
               </div>
 
             </div>
 
-            <!-- ── SECTION 4: بيانات الوحدة والتعاقد ── -->
-            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
+            <!-- ── SECTION 4: بيانات الوحدة ونظام التعاقد والخيارات الشرطية ── -->
+            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-5">
               <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
                 <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">04</span>
-                <span data-i18n="sec4Title">بيانات الوحدة ونظام التعاقد</span>
+                <span data-i18n="sec4Title">بيانات الوحدة ونظام التعاقد والخيارات الشرطية</span>
               </div>
 
-              <!-- كود الوحدة -->
-              <div class="form-group">
-                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="unitCode">
-                  <span class="text-amber-300 font-bold" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
-                  <span class="text-amber-400 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="unitCode"
-                  name="unit_code"
-                  placeholder="مثال: nn-13 أو B2-104"
-                  data-i18n-placeholder="phUnitCode"
-                  class="glass-input w-full px-4 py-3 rounded-xl text-amber-300 placeholder-slate-500 text-sm font-mono font-extrabold tracking-widest text-center uppercase border-amber-500/40 focus:border-amber-400"
-                  oninput="validateField(this, val => val.length >= 2)"
-                />
-                <p class="text-[11px] text-slate-400 mt-1" id="hintUnitCode" data-i18n="hintUnitCode">كود فريد يحدد وحدتك في المخطط العام</p>
-                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errUnitCode" data-i18n="errUnitCode">كود الوحدة مطلوب</p>
+              <!-- سؤال: هل تم استكمال قيمة المقدم؟ (نعم / لا) + تاريخ الدفع -->
+              <div class="p-3 sm:p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="space-y-1.5 flex-1">
+                    <label class="block text-xs font-bold text-slate-300">
+                    <span class="text-amber-300 font-bold" data-i18n="labelAdvanceQuestion">هل تم استكمال قيمة المقدم؟</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+                  <div class="flex items-center gap-2 max-w-[220px]">
+                    <label class="custom-check-box active flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white transition-all text-center" id="boxYes">
+                      <input type="radio" name="paid_5_percent" value="نعم" checked class="hidden" onchange="toggleAdvancePaidBox(this)">
+                      <span>✓</span> <span data-i18n="optYesPaid">نعم</span>
+                    </label>
+                    <label class="custom-check-box flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white transition-all text-center" id="boxNo">
+                      <input type="radio" name="paid_5_percent" value="لا" class="hidden" onchange="toggleAdvancePaidBox(this)">
+                      <span>✕</span> <span data-i18n="optNoPaid">لا</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- حقل تاريخ الدفع (يظهر عندما تكون الإجابة نعم) -->
+                <div id="paymentDateContainer" class="space-y-1.5 sm:w-60 w-full transition-all">
+                  <label class="block text-xs font-bold text-slate-300" for="paymentDate">
+                    <span class="text-amber-300 font-bold" data-i18n="labelPaymentDate">📅 تاريخ الدفع:</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="paymentDate"
+                    name="payment_date"
+                    class="glass-input w-full px-3.5 py-2 rounded-xl text-white text-xs sm:text-sm font-mono border-amber-500/40 focus:border-amber-400"
+                  />
+                    <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPaymentDate" data-i18n="errPaymentDate">تاريخ الدفع مطلوب</p>
+                  </div>
+                </div>
               </div>
 
-              <!-- مكان التعاقد (قائمة منسدلة List كما طُلِب) -->
-              <div class="form-group">
+              <!-- تنبيه الإيقاف في حال اختيار "لا" -->
+              <div id="advanceNoticeNo" class="hidden p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-semibold flex items-start gap-2.5">
+                <span class="text-base flex-shrink-0">⚠️</span>
+                <div>
+                  عفواً، لا يمكن استكمال حجز الوحدة وتسجيل بيانات التعاقد إلا بعد استكمال سداد قيمة المقدم. يرجى مراجعة إدارة المبيعات.
+                </div>
+              </div>
+
+              <!-- تفاصيل الوحدة الأساسية (تخفى في حال اختيار "لا") -->
+              <div id="primaryUnitDetailsContainer" class="space-y-4">
+                <!-- 1. كود الوحدة -->
+                <div class="form-group w-full">
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5" for="unitCode">
+                    <span class="text-amber-300 font-bold" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
+                    <span class="text-amber-400 font-bold">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="unitCode"
+                    name="unit_code"
+                    placeholder="مثال: nn-13 أو B2-104"
+                    data-i18n-placeholder="phUnitCode"
+                    class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 placeholder-slate-500 text-xs sm:text-sm font-mono font-extrabold tracking-widest text-center uppercase border-amber-500/40 focus:border-amber-400"
+                    oninput="validateField(this, val => val.length >= 2)"
+                  />
+                  <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errUnitCode" data-i18n="errUnitCode">كود الوحدة مطلوب</p>
+                </div>
+
+                <!-- حقول خطة السداد: فترة السداد والنسبة ومقترح نظام السداد -->
+                <div class="form-group w-full space-y-3">
+                  <!-- 1. فترة السداد -->
+                  <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5" for="period">
+                      <span class="text-amber-300 font-bold">فترة السداد</span>
+                      <span class="text-amber-400 font-bold">*</span>
+                    </label>
+                    <select 
+                      name="period" 
+                      id="period" 
+                      class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400 bg-slate-900/80" 
+                      onchange="handlePeriodChange(this); validateField(this, val => val !== '')"
+                    >
+                      <option value="">اختر فترة السداد...</option>
+                      <option value="7 Years">7 Years</option>
+                      <option value="8 Years">8 Years</option>
+                      <option value="9 Years">9 Years</option>
+                      <option value="10 Years">10 Years</option>
+                    </select>
+                    <input type="hidden" name="payment_period" id="paymentPeriod" value="">
+                    <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPeriod">فترة السداد مطلوبة</p>
+                  </div>
+
+                  <!-- 2. النسبة (Rate) - تظهر عند اختيار أي فترة -->
+                  <div class="hidden" id="rateSelectContainer">
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5" for="rateSelect">
+                      <span class="text-amber-300 font-bold" data-i18n="labelRate">النسبة (Rate)</span>
+                      <span class="text-amber-400 font-bold">*</span>
+                    </label>
+                    <select 
+                      id="rateSelect" 
+                      class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400 bg-slate-900/80"
+                      onchange="handleRateChange(this)"
+                    >
+                      <option value="">اختر النسبة...</option>
+                    </select>
+                    <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errRateSelect">يرجى اختيار النسبة</p>
+                  </div>
+
+                  <!-- حقل النسبة النهائي المخفي للباك إند وقاعدة البيانات -->
+                  <input type="hidden" name="final_rate" id="final_rate" value="">
+
+                  <!-- مقترح نظام السداد (موجود مباشرة تحت الخطة المختارة) -->
+                  <div class="form-group pt-2">
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5" for="clientPlanExceptions">
+                      <span class="text-amber-300 font-bold" data-i18n="labelPlanExceptions">اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام</span>
+                      <span class="text-slate-400 text-[10px] font-normal" data-i18n="optOptional">(اختياري)</span>
+                    </label>
+                    <textarea
+                      id="clientPlanExceptions"
+                      name="notes"
+                      rows="2"
+                      data-i18n-placeholder="phPlanExceptions"
+                      placeholder="اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام..."
+                      class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm focus:border-amber-400 transition-all resize-y"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. المكان الأقرب لتوثيق العقد (يظهر للعميل داخل مصر بعد سؤال المقدم مباشرة، ويخفى خارج مصر تماماً) -->
+              <!-- خيارات نص صافي بدون أي إيموجي أو مصطلحات إضافية: القاهرة / الإسكندرية -->
+              <div id="contractLocationContainer" class="form-group pt-2 border-t border-slate-800/80 w-full">
                 <label class="block text-xs font-bold text-slate-300 mb-1.5" for="contractLocation">
-                  <span class="text-amber-300 font-bold" data-i18n="labelLocation">مكان التعاقد (الفرع المفضل لإنهاء الإجراءات)</span>
+                  <span class="text-amber-300 font-bold" data-i18n="labelLocation">المكان الأقرب لتوثيق العقد</span>
                   <span class="text-amber-400 font-bold">*</span>
                 </label>
                 <select 
                   name="contract_location" 
                   id="contractLocation" 
-                  class="glass-input w-full px-4 py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400" 
+                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400" 
                   onchange="validateField(this, val => val !== '')"
                 >
-                  <option value="" data-i18n="optSelectLocation">اختر فرع التعاقد...</option>
-                  <option value="القاهرة" selected data-i18n="branchCairo">🏛️ فرع القاهرة (المقر الرئيسي)</option>
-                  <option value="الإسكندرية" data-i18n="branchAlex">🌊 فرع الإسكندرية (الفرع الساحلي)</option>
+                  <option value="" data-i18n="optSelectLocation">اختر المكان الأقرب لتوثيق العقد...</option>
+                  <option value="القاهرة" selected data-i18n="branchCairoClean">القاهرة</option>
+                  <option value="الإسكندرية" data-i18n="branchAlexClean">الإسكندرية</option>
                 </select>
-                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errLocation" data-i18n="errLocation">مكان التعاقد مطلوب</p>
+                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errLocation" data-i18n="errLocation">المكان الأقرب لتوثيق العقد مطلوب</p>
               </div>
 
-              <!-- فترة السداد (تحت مكان التعاقد مباشرة) -->
-              <div class="form-group">
-                <label class="block text-xs font-bold text-slate-300 mb-1.5" for="paymentPeriod">
-                  <span class="text-amber-300 font-bold" data-i18n="labelPeriod">فترة السداد المتفق عليها</span>
-                  <span class="text-amber-400 font-bold">*</span>
+              <!-- ── ملاحظات عامة في نهاية النموذج ── -->
+              <div class="form-group pt-2 border-t border-slate-800/80 w-full space-y-2">
+                <label class="block text-xs font-bold text-slate-300" for="generalNotes">
+                  <span class="text-amber-300 font-bold" data-i18n="labelGeneralNotes">هل لديك أي ملاحظات تود إخبارنا بها؟</span>
+                  <span class="text-slate-400 text-[10px] font-normal" data-i18n="optOptional">(اختياري)</span>
                 </label>
-                <select 
-                  name="payment_period" 
-                  id="paymentPeriod" 
-                  class="glass-input w-full px-4 py-3 rounded-xl text-amber-300 text-xs sm:text-sm font-bold border-amber-500/30 focus:border-amber-400" 
-                  onchange="validateField(this, val => val !== '')"
-                >
-                  <option value="" data-i18n="optSelectPeriod">اختر فترة السداد...</option>
-                  <option value="كاش" data-i18n="optCash">كاش (Cash)</option>
-                  <option value="سنة واحدة" data-i18n="opt1Yr">سنة واحدة</option>
-                  <option value="سنتان" data-i18n="opt2Yr">سنتان</option>
-                  <option value="3 سنوات" data-i18n="opt3Yr">3 سنوات</option>
-                  <option value="4 سنوات" data-i18n="opt4Yr">4 سنوات</option>
-                  <option value="5 سنوات" data-i18n="opt5Yr">5 سنوات</option>
-                  <option value="6 سنوات" data-i18n="opt6Yr">6 سنوات</option>
-                  <option value="7 سنوات" data-i18n="opt7Yr">7 سنوات</option>
-                </select>
-                <p class="error-msg text-red-400 text-xs mt-1 hidden" id="errPeriod" data-i18n="errPeriod">فترة السداد مطلوبة</p>
-              </div>
-
-              <!-- هل تم سداد نسبة الـ 5%؟ (تحت فترة السداد مباشرة) -->
-              <div class="form-group">
-                <label class="block text-xs font-bold text-slate-300 mb-1.5">
-                  <span class="text-amber-300 font-bold" data-i18n="label5Percent">هل تم سداد نسبة الـ 5%؟</span> <span class="text-amber-400 font-bold">*</span>
-                </label>
-                <div class="grid grid-cols-2 gap-3">
-                  <label class="custom-check-box active rounded-xl py-3 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white" id="boxYes">
-                    <input type="radio" name="paid_5_percent" value="نعم" checked class="hidden" onchange="togglePaidBox(this)">
-                    <span>✓</span> <span data-i18n="optYesPaid">نعم (تم السداد)</span>
-                  </label>
-                  <label class="custom-check-box rounded-xl py-3 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-bold text-white" id="boxNo">
-                    <input type="radio" name="paid_5_percent" value="لا" class="hidden" onchange="togglePaidBox(this)">
-                    <span>✕</span> <span data-i18n="optNoPaid">لا (لم يتم)</span>
-                  </label>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- ── SECTION 5: المستندات والملاحظات ── -->
-            <div class="section-card p-4 sm:p-5 rounded-2xl space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2.5 text-amber-400 font-black text-sm sm:text-base">
-                  <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold shadow-sm">05</span>
-                  <span data-i18n="sec5Title">المستندات والمرفقات (اختياري / موصى به)</span>
-                </div>
-                <span class="text-[11px] text-slate-400" data-i18n="fileTypesHint">PDF أو صور</span>
-              </div>
-
-              <!-- رفع المستندات (Upload Zone) -->
-              <div 
-                id="dropZone" 
-                class="border-2 border-dashed border-amber-500/35 hover:border-amber-400 rounded-2xl p-6 text-center transition-all bg-slate-900/40 hover:bg-amber-500/5 cursor-pointer shadow-sm"
-                onclick="document.getElementById('fileInput').click()"
-              >
-                <input 
-                  type="file" 
-                  id="fileInput" 
-                  multiple 
-                  accept="image/*,.pdf" 
-                  class="hidden" 
-                  onchange="handleFilesSelected(this.files)"
-                >
-                <div class="text-3xl mb-2">📁</div>
-                <div class="font-bold text-xs sm:text-sm text-slate-200" data-i18n="dropTitle">
-                  اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا
-                </div>
-                <div class="text-[11px] text-slate-400 mt-1" data-i18n="dropSubtitle">
-                  (صور البطاقة الشخصية، جواز السفر، إيصالات السداد، أو مستندات الشركاء)
-                </div>
-              </div>
-
-              <!-- المعاينات الحية للملفات المرفوعة -->
-              <div id="fileListContainer" class="space-y-2 hidden">
-                <div class="text-xs font-bold text-amber-300" data-i18n="selectedFilesHeading">المعاينات المرفقة للإرسال:</div>
-                <div id="fileItemsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-              </div>
-
-              <!-- الملاحظات أو طلبات خاصة (تحت رفع المستندات مباشرة وبحد أقصى 250 حرف) -->
-              <div class="form-group pt-4 border-t border-slate-800/80">
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="block text-xs font-bold text-slate-300" for="clientNotes">
-                    <span class="text-amber-300 font-bold" data-i18n="labelNotes">ملاحظات أو طلبات خاصة (اختياري)</span>
-                  </label>
-                  <span id="notesCounter" class="text-[11px] font-mono font-bold text-amber-300 bg-amber-500/15 px-2.5 py-0.5 rounded-lg border border-amber-400/40 transition-colors shadow-sm">
-                    <span id="currentNotesChars">0</span> / 250 <span data-i18n="charLabel">حرف</span>
-                  </span>
-                </div>
                 <textarea
-                  id="clientNotes"
-                  name="notes"
+                  id="generalNotes"
+                  name="general_notes"
                   rows="3"
-                  maxlength="250"
-                  data-i18n-placeholder="phNotes"
-                  placeholder="أي ملاحظات إضافية تود تسجيلها مع استمارة التعاقد (الحد الأقصى 250 حرف)..."
-                  class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm focus:border-amber-400 transition-all resize-y"
-                  oninput="updateNotesCounter(this)"
+                  data-i18n-placeholder="phGeneralNotes"
+                  placeholder="اكتب هنا أي ملاحظات أو استفسارات إضافية تود إخبارنا بها..."
+                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-white placeholder-slate-500 text-xs sm:text-sm focus:border-amber-400 transition-all resize-y"
                 ></textarea>
-                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
-                  <span data-i18n="hintNotes">يمكنك كتابة تفاصيل محددة ترغب في توثيقها مع الطلب</span>
-                  <span id="notesRemainingText" class="text-[10px] text-slate-400 font-mono">المتبقي: 250 حرف</span>
-                </div>
               </div>
 
             </div>
@@ -534,7 +707,7 @@
               <button
                 type="submit"
                 id="submitBtn"
-                class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-base shadow-[0_4px_25px_rgba(212,175,55,0.35)] border border-amber-300/40 transition-all cursor-pointer flex items-center justify-center gap-2"
+                class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-base shadow-2xl hover:shadow-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>🔒</span>
                 <span data-i18n="submitBtnText">استيفاء وتسجيل بيانات التعاقد رسمياً</span>
@@ -579,10 +752,6 @@
           <span class="text-slate-400" data-i18n="lblUnitRef">كود الوحدة:</span>
           <span class="font-mono text-amber-300 font-bold uppercase" id="modalUnitCode">-</span>
         </div>
-        <div id="modalAdvisorRow" class="hidden flex justify-between border-t border-slate-800 pt-1.5">
-          <span class="text-slate-400" data-i18n="lblAdvisor">المستشار العقاري:</span>
-          <span id="modalAdvisorName" class="text-emerald-400 font-bold"></span>
-        </div>
         <div class="flex justify-between border-t border-slate-800 pt-1.5">
           <span class="text-slate-400" data-i18n="lblStatus">حالة الطلب:</span>
           <span class="text-emerald-400 font-bold" data-i18n="valApproved">معتمد وموثق</span>
@@ -600,69 +769,137 @@
     </div>
   </div>
 
-  <!-- ═══════════════ SCRIPT LOGIC (BILINGUAL I18N + INTERACTIVITY) ═══════════════ -->
+  <!-- ═══════════════ SCRIPT LOGIC ═══════════════ -->
   <script>
-    // ── BILINGUAL DICTIONARY ──
+    const baseUrl = (window.BACKEND_API_URL || '').replace(/\/$/, '');
+
+    const countryData = [
+      { code: '+20', flag: '🇪🇬', nameAr: 'مصر', nameEn: 'Egypt', pinned: true },
+      { code: '+966', flag: '🇸🇦', nameAr: 'المملكة العربية السعودية', nameEn: 'Saudi Arabia', pinned: true },
+      { code: '+971', flag: '🇦🇪', nameAr: 'الإمارات العربية المتحدة', nameEn: 'United Arab Emirates', pinned: true },
+      { code: '+962', flag: '🇯🇴', nameAr: 'الأردن', nameEn: 'Jordan' },
+      { code: '+973', flag: '🇧🇭', nameAr: 'البحرين', nameEn: 'Bahrain' },
+      { code: '+213', flag: '🇩🇿', nameAr: 'الجزائر', nameEn: 'Algeria' },
+      { code: '+249', flag: '🇸🇩', nameAr: 'السودان', nameEn: 'Sudan' },
+      { code: '+964', flag: '🇮🇶', nameAr: 'العراق', nameEn: 'Iraq' },
+      { code: '+965', flag: '🇰🇼', nameAr: 'الكويت', nameEn: 'Kuwait' },
+      { code: '+212', flag: '🇲🇦', nameAr: 'المغرب', nameEn: 'Morocco' },
+      { code: '+967', flag: '🇾🇪', nameAr: 'اليمن', nameEn: 'Yemen' },
+      { code: '+216', flag: '🇹🇳', nameAr: 'تونس', nameEn: 'Tunisia' },
+      { code: '+968', flag: '🇴🇲', nameAr: 'سلطنة عمان', nameEn: 'Oman' },
+      { code: '+963', flag: '🇸🇾', nameAr: 'سوريا', nameEn: 'Syria' },
+      { code: '+970', flag: '🇵🇸', nameAr: 'فلسطين', nameEn: 'Palestine' },
+      { code: '+974', flag: '🇶🇦', nameAr: 'قطر', nameEn: 'Qatar' },
+      { code: '+961', flag: '🇱🇧', nameAr: 'لبنان', nameEn: 'Lebanon' },
+      { code: '+218', flag: '🇱🇾', nameAr: 'ليبيا', nameEn: 'Libya' },
+      { code: '+222', flag: '🇲🇷', nameAr: 'موريتانيا', nameEn: 'Mauritania' },
+      { code: '+1', flag: '🇺🇸', nameAr: 'أمريكا / كندا', nameEn: 'USA / Canada' },
+      { code: '+44', flag: '🇬🇧', nameAr: 'المملكة المتحدة (بريطانيا)', nameEn: 'United Kingdom' },
+      { code: '+49', flag: '🇩🇪', nameAr: 'ألمانيا', nameEn: 'Germany' },
+      { code: '+33', flag: '🇫🇷', nameAr: 'فرنسا', nameEn: 'France' },
+      { code: '+39', flag: '🇮🇹', nameAr: 'إيطاليا', nameEn: 'Italy' },
+      { code: '+34', flag: '🇪🇸', nameAr: 'إسبانيا', nameEn: 'Spain' },
+      { code: '+90', flag: '🇹🇷', nameAr: 'تركيا', nameEn: 'Turkey' },
+      { code: '+31', flag: '🇳🇱', nameAr: 'هولندا', nameEn: 'Netherlands' },
+      { code: '+41', flag: '🇨🇭', nameAr: 'سويسرا', nameEn: 'Switzerland' },
+      { code: '+46', flag: '🇸🇪', nameAr: 'السويد', nameEn: 'Sweden' },
+      { code: '+43', flag: '🇦🇹', nameAr: 'النمسا', nameEn: 'Austria' },
+      { code: '+32', flag: '🇧🇪', nameAr: 'بلجيكا', nameEn: 'Belgium' },
+      { code: '+61', flag: '🇦🇺', nameAr: 'أستراليا', nameEn: 'Australia' },
+      { code: '+86', flag: '🇨🇳', nameAr: 'الصين', nameEn: 'China' },
+      { code: '+91', flag: '🇮🇳', nameAr: 'الهند', nameEn: 'India' },
+      { code: '+81', flag: '🇯🇵', nameAr: 'اليابان', nameEn: 'Japan' },
+      { code: '+7', flag: '🇷🇺', nameAr: 'روسيا', nameEn: 'Russia' },
+      { code: '+55', flag: '🇧🇷', nameAr: 'البرازيل', nameEn: 'Brazil' },
+      { code: '+60', flag: '🇲🇾', nameAr: 'ماليزيا', nameEn: 'Malaysia' },
+      { code: '+30', flag: '🇬🇷', nameAr: 'اليونان', nameEn: 'Greece' },
+      { code: '+351', flag: '🇵🇹', nameAr: 'البرتغال', nameEn: 'Portugal' }
+    ];
+
     const translations = {
       ar: {
         brandName: "مجموعة العمار للتطوير العقاري",
         brandSlogan: "SHORES ONLY • الساحل الشمالي",
         adminLink: "لوحة المسؤول",
-        vipSalesIntro: "استمارة معتمدة بإشراف المستشار العقاري:",
         officialSurveyTag: "🏖️ استبيان واستيفاء بيانات عقود الشاليهات الساحلية (Shores Only)",
         pageTitle: "استمارة بيانات العقد والوحدة",
         pageSubtitle: "يرجى تسجيل وتدقيق بيانات العقد بدقة لضمان سرعة إتمام الإجراءات وتجهيز وثائق الملكية",
-        sec1Title: "بيانات أطراف العقد والشركاء",
-        labelPrimaryName: "اسم العميل كما هو مدون في العقد",
-        phPrimaryName: "اكتب الاسم كاملاً ومطابقاً للبطاقة أو العقد",
-        errPrimaryName: "اسم العميل كما هو مدون في العقد مطلوب",
+        sec1Title: "قسم البيانات الشخصية وبيانات العميل",
+        labelPrimaryName: "اسم العميل كما هو في البطاقة الشخصية",
+        phPrimaryName: "(الاسم كاملاً ومطابقاً للهوية الشخصية)",
+        errPrimaryName: "اسم العميل كما هو في البطاقة الشخصية مطلوب",
         btnAddPartner: "إضافة اسم شريك / طرف آخر بالعقد",
-        sec2Title: "بيانات الاتصال والتواصل",
-        labelPrimaryPhone: "رقم الهاتف الأساسي (يدعم واتساب)",
+        sec2Title: "رقم الهاتف والتواصل والبريد",
+        labelPrimaryPhone: "رقم الهاتف والتواصل (يدعم الأرقام المحلية والدولية)",
+        phSearchCountry: "بحث عن الدولة أو الكود...",
         errPrimaryPhone: "رقم الهاتف مطلوب وبصيغة صحيحة",
         btnAddPhone: "+ إضافة رقم هاتف إضافي",
-        labelEmail: "البريد الإلكتروني (مخصص حصرياً لـ Gmail)",
-        hintEmail: "يجب أن ينتهي البريد بـ @gmail.com لضمان وصول الإشعارات الرسمية",
-        errEmail: "يرجى إدخال بريد Gmail صحيح (name@gmail.com)",
-        sec3Title: "إثبات الشخصية والعنوان الوطني",
+        labelEmail: "البريد الإلكتروني (متاح للتواصل والمراسلات الرسمية)",
+        hintEmail: "يرجى إدخال بريد إلكتروني نشط ومتاح لتلقي الإشعارات والمراسلات الرسمية الخاصة بالعقد",
+        phEmail: "example@domain.com",
+        errEmail: "يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com)",
+        sec3Title: "إثبات الشخصية ومحل الإقامة والعنوان والمرفقات",
         labelIdType: "نوع الوثيقة",
         optNatId: "بطاقة الرقم القومي (14 رقم)",
         optPassport: "جواز السفر (Passport)",
         labelIdNumber: "رقم بطاقة الرقم القومي أو جواز السفر",
         phIdNumber: "أدخل الرقم كما هو بالوثيقة",
         errIdNumber: "رقم إثبات الهوية مطلوب",
-        labelAddress: "العنوان الحالي المعتمد بالتفصيل",
-        phAddress: "المحافظة، المدينة، اسم الشارع، رقم العقار والشقة",
-        errAddress: "العنوان بالتفصيل مطلوب",
-        sec4Title: "بيانات الوحدة ونظام التعاقد",
+        labelResidenceCountry: "مكان الإقامة الحالي:",
+        optInsideEgypt: "داخل جمهورية مصر العربية",
+        optOutsideEgypt: "خارج جمهورية مصر العربية",
+        labelIdAddress: "العنوان كما هو مسجل في إثبات الشخصية",
+        phIdAddress: "المحافظة، المدينة، اسم الشارع، رقم العقار كما هو مدون بالبطاقة أو الجواز",
+        errIdAddress: "العنوان كما هو مسجل في إثبات الشخصية مطلوب",
+        labelCorrespondenceAddress: "العنوان المعتمد بالتفصيل للمراسلات",
+        phCorrespondenceAddress: "اسم الشارع، رقم المبنى، الشقة لإرسال المراسلات الرسمية",
+        errCorrespondenceAddress: "العنوان المعتمد للمراسلات مطلوب بالتفصيل",
+        secAttachmentsTitle: "المستندات والمرفقات المطلوبة",
+        docNoticeInside: "للعملاء المقيمين داخل مصر: يُشترط رفع صورة واضحة لبطاقة الرقم القومي (الوجهين: الأمامي والخلفي).",
+        docNoticeOutside: "للعملاء المقيمين خارج مصر: يُشترط رفع صورة واضحة لجواز السفر الساري + صورة بطاقة الإقامة السارية.",
+        dropTitle: "اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا",
+        dropSubtitleInside: "(مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)",
+        dropSubtitleOutside: "(مطلوب إجباري: جواز السفر الساري + الإقامة)",
+        selectedFilesHeading: "المعاينات المرفقة للإرسال:",
+        errAttachments: "المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه",
+        sec4Title: "بيانات الوحدة ونظام التعاقد والخيارات الشرطية",
         labelUnitCode: "كود الوحدة (الرقم الكودي الخاص بالوحدة)",
         phUnitCode: "مثال: nn-13 أو B2-104",
-        hintUnitCode: "كود فريد يحدد وحدتك في المخطط العام",
         errUnitCode: "كود الوحدة مطلوب",
-        labelLocation: "مكان التعاقد (الفرع المفضل لإنهاء الإجراءات)",
-        optSelectLocation: "اختر فرع التعاقد...",
+        labelLocation: "المكان الأقرب لتوثيق العقد وإنهاء الإجراءات",
+        optSelectLocation: "اختر المكان الأقرب لتوثيق العقد...",
         branchCairo: "🏛️ فرع القاهرة (المقر الرئيسي)",
         branchAlex: "🌊 فرع الإسكندرية (الفرع الساحلي)",
-        errLocation: "مكان التعاقد مطلوب",
+        errLocation: "المكان الأقرب لتوثيق العقد مطلوب",
+        labelUnitPrice: "إجمالي قيمة الوحدة بالجنيه المصري (لحساب الأقساط بدقة)",
+        optOptional: "(اختياري)",
         labelPeriod: "فترة السداد المتفق عليها",
         optSelectPeriod: "اختر فترة السداد...",
-        optCash: "كاش (Cash)",
-        opt1Yr: "سنة واحدة",
-        opt2Yr: "سنتان",
-        opt3Yr: "3 سنوات",
-        opt4Yr: "4 سنوات",
-        opt5Yr: "5 سنوات",
-        opt6Yr: "6 سنوات",
-        opt7Yr: "7 سنوات",
+        opt3Yr: "3 سنوات (3 Years Plan)",
+        opt4Yr: "4 سنوات (4 Years Plan)",
+        opt5Yr: "5 سنوات (5 Years Plan)",
+        opt6Yr: "6 سنوات (6 Years Plan)",
+        opt7Yr: "7 سنوات (7 Years Plan)",
+        opt8Yr: "8 سنوات (8 Years Plan)",
+        opt9Yr: "9 سنوات (9 Years Plan)",
+        opt10Yr: "10 سنوات (10 Years Plan)",
         errPeriod: "فترة السداد مطلوبة",
-        label5Percent: "هل تم سداد نسبة الـ 5%؟",
-        optYesPaid: "نعم (تم السداد)",
-        optNoPaid: "لا (لم يتم)",
-        sec5Title: "المستندات والمرفقات (اختياري / موصى به)",
-        fileTypesHint: "PDF أو صور",
-        dropTitle: "اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا",
-        dropSubtitle: "(صور البطاقة الشخصية، جواز السفر، إيصالات السداد، أو مستندات الشركاء)",
-        selectedFilesHeading: "المعاينات المرفقة للإرسال:",
+        labelPlanExceptions: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام",
+        phPlanExceptions: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...",
+        planSummaryTitle: "تفاصيل خطة السداد المقترحة (محسوبة آلياً):",
+        lblDownPay: "نسبة المقدم:",
+        lblDeliveryPay: "دفعة الاستلام:",
+        lblQuarterlyCount: "عدد الأقساط (ربع سنوية):",
+        planNoteText: "نظام أقساط متساوية ربع سنوية كل 3 أشهر بدون فوائد بنكية.",
+        labelOctoberAdvance: "هل تم استكمال قيمة المقدم في شهر أكتوبر؟",
+        optYesPaid: "نعم (تم الاستكمال)",
+        optNoPaid: "لا (لم يستكمل)",
+        labelPaymentDate: "📅 تاريخ الدفع:",
+        hintPaymentDate: "حدد اليوم الذي تم فيه استكمال الدفع لشهر أكتوبر",
+        errPaymentDate: "تاريخ الدفع مطلوب",
+        labelNotes: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام",
+        lblFreeText: "حر وغير ملزم",
+        phNotes: "اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...",
         submitBtnText: "استيفاء وتسجيل بيانات التعاقد رسمياً",
         securityNotice: "بالضغط على تسجيل، يتم حفظ بياناتك بأمان في قاعدة بيانات مجموعة العمار وتوثيقها رسمياً",
         loadingTitle: "جارٍ حفظ وتأكيد بيانات العقد...",
@@ -670,313 +907,798 @@
         successTitle: "تم استيفاء وتسجيل بياناتك بنجاح!",
         successDesc: "تم تسجيل بيانات التعاقد وحفظها في المنظومة بنجاح، وسيقوم فريق المبيعات بالتواصل معكم لاستكمال الإجراءات الرسمية.",
         lblUnitRef: "كود الوحدة:",
-        lblAdvisor: "المستشار العقاري:",
         lblStatus: "حالة الطلب:",
         valApproved: "معتمد وموثق",
         btnAnotherForm: "حسناً، تسجيل استمارة أخرى",
-        partnerPlaceholder: "اسم الشريك بالكامل كما هو بالعقد",
-        labelNotes: "ملاحظات أو طلبات خاصة (اختياري)",
-        phNotes: "أي ملاحظات إضافية تود تسجيلها مع استمارة التعاقد (الحد الأقصى 250 حرف)...",
-        hintNotes: "يمكنك كتابة تفاصيل محددة ترغب في توثيقها مع الطلب",
-        charLabel: "حرف"
+        partnerPlaceholder: "اسم الشريك بالكامل كما هو بالهوية الشخصية"
       },
       en: {
         brandName: "Al Amar Real Estate Development",
         brandSlogan: "SHORES ONLY • NORTH COAST",
         adminLink: "Admin Dashboard",
-        vipSalesIntro: "Certified Form Supervised by Property Consultant:",
         officialSurveyTag: "🏖️ Official Shores Coastal Units Survey & Contract Verification",
         pageTitle: "Contract & Unit Registration Form",
         pageSubtitle: "Please review and enter contract information accurately for formal processing & official registry",
-        sec1Title: "Contract Parties & Partners",
-        labelPrimaryName: "Client Name as in Contract",
-        phPrimaryName: "Full client name exactly as in ID or contract",
-        errPrimaryName: "Client name as in contract is required",
+        sec1Title: "Personal Details & Client Information",
+        labelPrimaryName: "Client Name as in National ID",
+        phPrimaryName: "(Full name matching National ID or Passport)",
+        errPrimaryName: "Client name as in ID is required",
         btnAddPartner: "+ Add Partner Name to Contract",
-        sec2Title: "Contact & Email Details",
-        labelPrimaryPhone: "Primary Phone (WhatsApp Supported)",
+        sec2Title: "Contact Phone, International Code & Email",
+        labelPrimaryPhone: "Phone & Contact Number (Local & International)",
+        phSearchCountry: "Search country or dialing code...",
         errPrimaryPhone: "Valid phone number is required",
         btnAddPhone: "+ Add Additional Phone Number",
-        labelEmail: "Email Address (Gmail Exclusive)",
-        hintEmail: "Must end with @gmail.com for official contract notifications",
-        errEmail: "Please provide a valid Gmail address (@gmail.com)",
-        sec3Title: "Identity Verification & Address",
+        labelEmail: "Email (Official Correspondence & Notices)",
+        hintEmail: "Please provide an active email for official contract notices and correspondence",
+        phEmail: "example@domain.com",
+        errEmail: "Please provide a valid email for correspondence (example@domain.com)",
+        sec3Title: "Identity Proof, Residence, Address & Attachments",
         labelIdType: "ID Document Type",
         optNatId: "National ID (14 digits)",
         optPassport: "Passport",
         labelIdNumber: "National ID or Passport Number",
         phIdNumber: "Enter document number accurately",
         errIdNumber: "Identification document number is required",
-        labelAddress: "Detailed Residential Address",
-        phAddress: "Governorate, City, Street, Building & Apt No.",
-        errAddress: "Detailed address is required",
-        sec4Title: "Unit Specifications & Payment Plan",
-        labelUnitCode: "Unit Code (e.g. nn-13)",
+        labelResidenceCountry: "Current Residence Place:",
+        optInsideEgypt: "Inside Arab Republic of Egypt",
+        optOutsideEgypt: "Outside Arab Republic of Egypt",
+        labelIdAddress: "Address as registered in ID / Passport",
+        phIdAddress: "Governorate, City, Street, Building No. as in ID or Passport",
+        errIdAddress: "Address as in ID is required",
+        labelCorrespondenceAddress: "Approved Correspondence Address in Detail",
+        phCorrespondenceAddress: "Street name, building number, apartment number for official mail",
+        errCorrespondenceAddress: "Approved correspondence address is required in detail",
+        secAttachmentsTitle: "Required Documents & Attachments",
+        docNoticeInside: "For clients residing inside Egypt: Uploading both sides of the National ID is mandatory.",
+        docNoticeOutside: "For clients residing outside Egypt: Uploading valid Passport + Residence permit is mandatory.",
+        dropTitle: "Click to upload documents or drag & drop files here",
+        dropSubtitleInside: "(Mandatory: National ID card both sides)",
+        dropSubtitleOutside: "(Mandatory: Valid Passport + Residence Permit)",
+        selectedFilesHeading: "Attached Files Preview:",
+        errAttachments: "Required documents are mandatory. Please attach the required files.",
+        sec4Title: "Unit Information, Payment Plan & Conditional Options",
+        labelUnitCode: "Unit Code (Unit Identification Code)",
         phUnitCode: "e.g. nn-13 or B2-104",
-        hintUnitCode: "Unique unit identifier in master plan",
         errUnitCode: "Unit code is required",
-        labelLocation: "Contract Location Branch",
+        labelLocation: "Nearest Branch for Contract Signing",
         optSelectLocation: "Select contract branch...",
-        branchCairo: "🏛️ Cairo Branch (Headquarters)",
-        branchAlex: "🌊 Alexandria Branch (Coastal)",
-        errLocation: "Contract branch location is required",
-        labelPeriod: "Agreed Payment Period",
-        optSelectPeriod: "Select payment plan...",
-        optCash: "Cash",
-        opt1Yr: "1 Year",
-        opt2Yr: "2 Years",
-        opt3Yr: "3 Years",
-        opt4Yr: "4 Years",
-        opt5Yr: "5 Years",
-        opt6Yr: "6 Years",
-        opt7Yr: "7 Years",
-        errPeriod: "Payment period is required",
-        label5Percent: "Has 5% Deposit Been Paid?",
-        optYesPaid: "Yes (Paid)",
+        branchCairo: "🏛️ Cairo Branch (Head Office)",
+        branchAlex: "🌊 Alexandria Branch (Coastal Branch)",
+        errLocation: "Contract branch is required",
+        labelUnitPrice: "Total Unit Price in EGP (for accurate installment calculation)",
+        optOptional: "(Optional)",
+        labelPeriod: "Agreed Payment Term",
+        optSelectPeriod: "Select payment term...",
+        opt3Yr: "3 Years Plan",
+        opt4Yr: "4 Years Plan",
+        opt5Yr: "5 Years Plan",
+        opt6Yr: "6 Years Plan",
+        opt7Yr: "7 Years Plan",
+        opt8Yr: "8 Years Plan",
+        opt9Yr: "9 Years Plan",
+        opt10Yr: "10 Years Plan",
+        errPeriod: "Payment plan selection is required",
+        labelPlanExceptions: "Write any proposed payment plan you wish to record freely without obligation",
+        phPlanExceptions: "Write any proposed payment plan you wish to record freely without obligation...",
+        planSummaryTitle: "Proposed Payment Plan Breakdown (Auto-calculated):",
+        lblDownPay: "Down Payment:",
+        lblDeliveryPay: "Delivery Payment:",
+        lblQuarterlyCount: "Quarterly Installments:",
+        planNoteText: "Equal quarterly installments every 3 months with 0% bank interest.",
+        labelOctoberAdvance: "Was the October down payment completed?",
+        optYesPaid: "Yes (Completed)",
         optNoPaid: "No (Pending)",
-        sec5Title: "Document Attachments (Recommended)",
-        fileTypesHint: "PDF or Images",
-        dropTitle: "Click to browse files or drag and drop here",
-        dropSubtitle: "(National ID, Passport, deposit receipts, or partner docs)",
-        selectedFilesHeading: "Attached File Previews:",
-        submitBtnText: "Complete & Register Contract Form",
-        securityNotice: "By submitting, your contract data is securely encrypted in Al Amar Real Estate records",
-        loadingTitle: "Securing & Registering Contract Data...",
+        labelPaymentDate: "📅 Payment Date:",
+        hintPaymentDate: "Specify the date the October down payment was made",
+        errPaymentDate: "Payment date is required",
+        labelNotes: "Write any proposed payment plan you wish to record freely without obligation",
+        lblFreeText: "Free & Non-binding",
+        phNotes: "Write any proposed payment plan you wish to record freely without obligation...",
+        submitBtnText: "Submit & Officially Register Contract",
+        securityNotice: "By clicking submit, your data is securely stored and registered with Al Amar Group",
+        loadingTitle: "Saving and confirming contract details...",
         loadingSub: "Please wait a few seconds",
         successTitle: "Contract Information Submitted Successfully!",
-        successDesc: "Your contract data has been successfully verified and saved. Our sales management team will contact you shortly.",
+        successDesc: "Your registration has been securely documented. Our sales team will get in touch to finalize official paperwork.",
         lblUnitRef: "Unit Code:",
-        lblAdvisor: "Property Consultant:",
-        lblStatus: "Status:",
-        valApproved: "Certified & Registered",
-        btnAnotherForm: "Register Another Form",
-        partnerPlaceholder: "Partner's full name as in contract",
-        labelNotes: "Notes or Special Requests (Optional)",
-        phNotes: "Any additional notes or specific requests (max 250 characters)...",
-        hintNotes: "You can specify any special notes to document with this request",
-        charLabel: "chars"
+        lblStatus: "Application Status:",
+        valApproved: "Certified & Logged",
+        btnAnotherForm: "Register Another Contract",
+        partnerPlaceholder: "Full partner name as in ID"
       }
     };
 
-    let currentLang = 'ar';
-    const baseUrl = (window.BACKEND_URL || '').replace(/\/$/, '');
+    let currentLang = localStorage.getItem('elamar_lang') || 'ar';
+    let currentResidence = 'داخل جمهورية مصر العربية';
+    let selectedFiles = [];
 
-    // ── Check Slug from Query String ──
-    const urlParams = new URLSearchParams(window.location.search);
-    const slugParam = urlParams.get('slug');
+    document.addEventListener('DOMContentLoaded', () => {
+      buildCountryList(document.getElementById('primaryPickerContainer'));
+      setLanguage(currentLang);
+      updatePaymentPlanCalculation();
 
-    if (slugParam) {
-      fetch(`${baseUrl}/api/public.php?slug=${encodeURIComponent(slugParam)}`)
-        .then(res => res.json())
-        .then(res => {
-          if (res && res.success && res.data) {
-            document.getElementById('hiddenSalesId').value = res.data.sales_id;
-            document.getElementById('vipSalesAdvisorName').textContent = res.data.sales_name;
-            document.getElementById('modalAdvisorName').textContent = res.data.sales_name;
-            document.getElementById('vipSalesBadgeContainer').classList.remove('hidden');
-            document.getElementById('defaultSurveyTag').classList.add('hidden');
-            document.getElementById('modalAdvisorRow').classList.remove('hidden');
-          }
-        })
-        .catch(err => console.log('Slug resolution fallback'));
-    }
+      // Check URL for slug
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug');
+      if (slug) {
+        fetch(`${baseUrl}/api/sales_lookup.php?slug=${encodeURIComponent(slug)}`)
+          .then(r => r.json())
+          .then(d => {
+            if (d && d.id) {
+              document.getElementById('salesIdHidden').value = d.id;
+            }
+          }).catch(()=>{});
+      }
 
-    // ── Language Toggle Handler ──
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.country-picker')) {
+          document.querySelectorAll('.country-dropdown').forEach(d => d.classList.add('hidden'));
+        }
+      });
+      initStaticAddressFields();
+    });
+
     function toggleLanguage() {
-      currentLang = currentLang === 'ar' ? 'en' : 'ar';
-      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-      document.documentElement.lang = currentLang;
-      document.getElementById('langBtnText').innerText = currentLang === 'ar' ? 'English' : 'العربية';
-      applyTranslations(currentLang);
+      const nextLang = (currentLang === 'ar') ? 'en' : 'ar';
+      setLanguage(nextLang);
     }
 
-    function applyTranslations(lang) {
-      const dict = translations[lang];
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('elamar_lang', lang);
+
+      const html = document.documentElement;
+      html.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+      html.lang = lang;
+
+      document.getElementById('langBtnText').innerText = (lang === 'ar') ? 'English' : 'العربية';
+
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.textContent = dict[key];
+        if (translations[lang] && translations[lang][key]) {
+          el.innerText = translations[lang][key];
+        }
       });
+
       document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
-        if (dict[key]) el.placeholder = dict[key];
+        if (translations[lang] && translations[lang][key]) {
+          el.setAttribute('placeholder', translations[lang][key]);
+        }
+      });
+
+      updateResidenceDynamicUI(currentResidence);
+      if (typeof initStaticAddressFields === 'function') {
+        initStaticAddressFields();
+      }
+      if (typeof updatePaymentPlanCalculation === 'function') {
+        updatePaymentPlanCalculation();
+      }
+    }
+
+    function buildCountryList(container) {
+      const listContainer = container.querySelector('.country-scroll');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+
+      const pinnedTitle = document.createElement('div');
+      pinnedTitle.className = "text-[10px] font-bold text-amber-400/80 px-2 pt-1 pb-0.5 uppercase tracking-wider";
+      pinnedTitle.innerText = (currentLang === 'en') ? '⭐ Popular Countries' : '⭐ الدول الأكثر استخداماً';
+      listContainer.appendChild(pinnedTitle);
+
+      countryData.filter(c => c.pinned).forEach(c => {
+        listContainer.appendChild(createCountryItemEl(c, container));
+      });
+
+      const div = document.createElement('div');
+      div.className = "border-t border-slate-800 my-1";
+      listContainer.appendChild(div);
+
+      const allTitle = document.createElement('div');
+      allTitle.className = "text-[10px] font-bold text-slate-400 px-2 pt-1 pb-0.5 uppercase tracking-wider";
+      allTitle.innerText = (currentLang === 'en') ? '🌍 All Countries (Alphabetical)' : '🌍 باقي دول العالم (ترتيب أبجدي)';
+      listContainer.appendChild(allTitle);
+
+      countryData.filter(c => !c.pinned).forEach(c => {
+        listContainer.appendChild(createCountryItemEl(c, container));
       });
     }
 
-    // ── Dynamic Partners Management ──
+    function createCountryItemEl(c, pickerContainer) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = "country-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-amber-500/15 text-slate-200 hover:text-white transition-colors cursor-pointer text-left";
+      item.setAttribute('data-name-ar', c.nameAr);
+      item.setAttribute('data-name-en', c.nameEn);
+      item.setAttribute('data-code', c.code);
+
+      const name = (currentLang === 'en') ? c.nameEn : c.nameAr;
+      item.innerHTML = `
+        <span class="flex items-center gap-2 truncate">
+          <span class="text-base">${c.flag}</span>
+          <span class="truncate font-semibold">${name}</span>
+        </span>
+        <span class="font-mono text-amber-300 font-bold dir-ltr ml-2">${c.code}</span>
+      `;
+
+      item.onclick = (e) => {
+        e.stopPropagation();
+        selectCountry(c, pickerContainer);
+      };
+      return item;
+    }
+
+    function toggleCountryDropdown(btn) {
+      const container = btn.closest('.country-picker');
+      const dropdown = container.querySelector('.country-dropdown');
+      const isHidden = dropdown.classList.contains('hidden');
+
+      document.querySelectorAll('.country-dropdown').forEach(d => d.classList.add('hidden'));
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = dropdown.querySelector('.country-search-input');
+        if (searchInput) {
+          searchInput.value = '';
+          filterCountryList(searchInput);
+          setTimeout(() => searchInput.focus(), 50);
+        }
+      } else {
+        dropdown.classList.add('hidden');
+      }
+    }
+
+    function selectCountry(c, pickerContainer) {
+      const displaySpan = pickerContainer.querySelector('.country-display');
+      const hiddenInput = pickerContainer.querySelector('.country-code-val');
+      const dropdown = pickerContainer.querySelector('.country-dropdown');
+
+      if (displaySpan) {
+        displaySpan.innerHTML = `<span class="text-base">${c.flag}</span><span class="font-mono">${c.code}</span>`;
+      }
+      if (hiddenInput) {
+        hiddenInput.value = c.code;
+      }
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+      }
+    }
+
+    function filterCountryList(input) {
+      const q = input.value.trim().toLowerCase();
+      const dropdown = input.closest('.country-dropdown');
+      const items = dropdown.querySelectorAll('.country-item');
+
+      items.forEach(item => {
+        const ar = (item.getAttribute('data-name-ar') || '').toLowerCase();
+        const en = (item.getAttribute('data-name-en') || '').toLowerCase();
+        const code = (item.getAttribute('data-code') || '').toLowerCase();
+        const match = ar.includes(q) || en.includes(q) || code.includes(q);
+        item.style.display = match ? 'flex' : 'none';
+      });
+    }
+
     function addPartnerNameField() {
       const container = document.getElementById('namesContainer');
       const div = document.createElement('div');
-      div.className = 'flex items-center gap-2 mt-2';
-      const plh = translations[currentLang].partnerPlaceholder;
+      div.className = "flex gap-2 items-center transform transition-all duration-300 opacity-0 translate-y-2";
       div.innerHTML = `
         <input
           type="text"
           name="names[]"
-          placeholder="${plh}"
-          class="glass-input flex-1 px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
-          oninput="validateField(this, val => val.length >= 3)"
+          placeholder="${translations[currentLang].partnerPlaceholder}"
+          class="glass-input flex-1 px-4 py-2.5 rounded-xl text-white placeholder-slate-500 text-sm font-semibold"
         />
-        <button
-          type="button"
-          onclick="this.parentElement.remove()"
-          class="p-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 cursor-pointer"
-          title="حذف هذا الشريك"
-        >
-          🗑️
+        <button type="button" onclick="removeDynamicField(this)" class="p-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs cursor-pointer font-bold">
+          ✕
         </button>
       `;
       container.appendChild(div);
+      setTimeout(() => {
+        div.classList.remove('opacity-0', 'translate-y-2');
+      }, 20);
     }
 
-    // ── Dynamic Phone Numbers Management ──
+    let extraPhoneCounter = 0;
     function addExtraPhoneField() {
+      extraPhoneCounter++;
       const container = document.getElementById('phonesContainer');
       const div = document.createElement('div');
-      div.className = 'flex gap-2 dir-ltr items-center mt-2';
+      div.className = "flex gap-2 items-center dir-ltr transform transition-all duration-300 opacity-0 translate-y-2";
+      const pickerId = `extraPicker_${extraPhoneCounter}`;
+
       div.innerHTML = `
-        <select name="phone_codes[]" class="glass-input px-3 py-3 rounded-xl text-amber-300 text-xs font-bold w-28 text-center">
-          <option value="+20">🇪🇬 +20</option>
-          <option value="+966">🇸🇦 +966</option>
-          <option value="+971">🇦🇪 +971</option>
-          <option value="+965">🇰🇼 +965</option>
-          <option value="+974">🇶🇦 +974</option>
-          <option value="+1">🇺🇸 +1</option>
-          <option value="+44">🇬🇧 +44</option>
-        </select>
+        <div class="country-picker relative w-36 sm:w-40 flex-shrink-0" id="${pickerId}">
+          <button 
+            type="button" 
+            onclick="toggleCountryDropdown(this)" 
+            class="country-btn glass-input w-full px-2.5 py-2.5 rounded-xl text-amber-300 text-xs font-bold flex items-center justify-between cursor-pointer hover:border-amber-400 transition-all"
+          >
+            <span class="country-display flex items-center gap-1.5 truncate">
+              <span class="text-base">🇪🇬</span>
+              <span class="font-mono">+20</span>
+            </span>
+            <span class="text-[10px] text-slate-400">▼</span>
+          </button>
+          
+          <input type="hidden" name="phone_codes[]" value="+20" class="country-code-val">
+
+          <div class="country-dropdown hidden absolute top-full mt-1.5 left-0 z-50 w-72 bg-slate-900/98 border border-amber-500/40 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+            <div class="relative mb-2">
+              <input 
+                type="text" 
+                placeholder="بحث عن الدولة أو الكود..." 
+                oninput="filterCountryList(this)" 
+                class="country-search-input w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium"
+              >
+              <span class="absolute right-2.5 top-2.5 text-xs text-slate-400">🔍</span>
+            </div>
+            <div class="country-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+          </div>
+        </div>
+
         <input
           type="tel"
           name="phone_numbers[]"
-          placeholder="10xxxxxxxx"
-          class="glass-input flex-1 px-4 py-3 rounded-xl text-emerald-300 placeholder-slate-500 text-sm font-mono tracking-wider text-left"
-          oninput="validateField(this, val => val.replace(/\\D/g,'').length >= 8)"
+          placeholder="10xxxxxxxx / Phone Number"
+          class="glass-input flex-1 px-4 py-2.5 rounded-xl text-emerald-300 placeholder-slate-500 text-sm font-mono text-left"
         />
-        <button
-          type="button"
-          onclick="this.parentElement.remove()"
-          class="p-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 cursor-pointer"
-          title="حذف هذا الرقم"
-        >
-          🗑️
+        <button type="button" onclick="removeDynamicField(this)" class="p-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs cursor-pointer font-bold">
+          ✕
         </button>
       `;
       container.appendChild(div);
+      buildCountryList(div.querySelector('.country-picker'));
+
+      setTimeout(() => {
+        div.classList.remove('opacity-0', 'translate-y-2');
+      }, 20);
     }
 
-    // ── 5% Paid Checkbox Box Toggle ──
-    function togglePaidBox(radio) {
-      document.querySelectorAll('input[name="paid_5_percent"]').forEach(r => {
-        r.closest('label').classList.remove('active');
+    function removeDynamicField(btn) {
+      const parent = btn.parentElement;
+      parent.classList.add('opacity-0', '-translate-y-2');
+      setTimeout(() => parent.remove(), 250);
+    }
+
+    function handleResidenceChange(value) {
+      currentResidence = value;
+      document.getElementById('residenceEgyptBox').classList.toggle('active', value.includes('داخل'));
+      document.getElementById('residenceAbroadBox').classList.toggle('active', value.includes('خارج'));
+
+      updateResidenceDynamicUI(value);
+    }
+
+    function updateResidenceDynamicUI(value) {
+      const isOutside = value.includes('خارج');
+      const docNotice = document.getElementById('docNoticeText');
+      const dropSub = document.getElementById('dropSubtitleText');
+      const locContainer = document.getElementById('contractLocationContainer');
+
+      if (isOutside) {
+        if (docNotice) docNotice.innerText = translations[currentLang].docNoticeOutside;
+        if (dropSub) dropSub.innerText = translations[currentLang].dropSubtitleOutside;
+      } else {
+        if (docNotice) docNotice.innerText = translations[currentLang].docNoticeInside;
+        if (dropSub) dropSub.innerText = translations[currentLang].dropSubtitleInside;
+      }
+
+      if (locContainer) {
+        if (isOutside) {
+          locContainer.classList.add('hidden');
+          const locSelect = document.getElementById('contractLocation');
+          if (locSelect) locSelect.value = '';
+        } else {
+          locContainer.classList.remove('hidden');
+        }
+      }
+    }
+
+    // ── Egyptian Governorates & Cities Dataset for Dynamic Address Picker ──
+    const egyptGovernoratesAndCities = {
+      "القاهرة": [
+        "التجمع الخامس (القاهرة الجديدة)", "التجمع الأول", "الرحاب", "مدينتي", "مدينة نصر", "مصر الجديدة",
+        "المعادي", "الزمالك", "وسط البلد", "المقطم", "الشروق", "بدر", "العبور", "شبرا", "عين شمس", 
+        "الزيتون", "حلوان", "15 مايو", "النزهة", "المستقبل", "العاصمة الإدارية الجديدة"
+      ],
+      "الجيزة": [
+        "الشيخ زايد", "6 أكتوبر", "حدائق أكتوبر", "أكتوبر الجديدة", "الدقي", "المهندسين", "العجوزة", 
+        "الهرم", "فيصل", "العمرانية", "بولاق الدكرور", "الوراق", "إمبابة", "الحوامدية", "البدرشين", 
+        "العياط", "أوسيم", "كرداسة"
+      ],
+      "الإسكندرية": [
+        "سموحة", "سيدي جابر", "لوران", "سان ستيفانو", "كفر عبده", "رشدي", "محرم بك", "الإبراهيمية", 
+        "سيدي بشر", "ميامي", "العصافرة", "المندرة", "المنتزه", "المعمورة", "العجمي", "الهانوفيل", 
+        "برج العرب", "المنشية"
+      ],
+      "القليوبية": [
+        "بنها", "شبرا الخيمة", "قليوب", "القناطر الخيرية", "الخانكة", "كفر شكر", "طوخ", "قها", "العبور", "الخصوص", "شبين القناطر"
+      ],
+      "الدقهلية": [
+        "المنصورة", "طلخا", "ميت غمر", "دكرنس", "بلقاس", "السنبلاوين", "شربين", "بني عبيد", "منية النصر", "المنزلة", "أجا", "نبروه", "جمصة"
+      ],
+      "الشرقية": [
+        "الزقازيق", "العاشر من رمضان", "بلبيس", "منيا القمح", "فاقوس", "أبو حماد", "أبو كبير", "الحسينية", "كفر صقر", "ديرب نجم", "الصالحية الجديدة"
+      ],
+      "المنوفية": [
+        "شبين الكوم", "مدينة السادات", "منوف", "أشمون", "سرس الليان", "قويسنا", "بركة السبع", "تلا", "الشهداء"
+      ],
+      "الغربية": [
+        "طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "السنطة", "سمنود", "بسيون", "قطور"
+      ],
+      "كفر الشيخ": [
+        "كفر الشيخ", "دسوق", "فوه", "مطوبس", "بلطيم", "سيدي سالم", "الرياض", "بيلا", "الحامول", "قلين"
+      ],
+      "البحيرة": [
+        "دمنهور", "كفر الدوار", "رشيد", "إدكو", "أبو المطامير", "أبو حمص", "الدلنجات", "محمودية", "إيتاي البارود", "حوش عيسى", "كوم حمادة", "بدر", "وادي النطرون", "النوبارية الجديدة"
+      ],
+      "دمياط": [
+        "دمياط", "دمياط الجديدة", "رأس البر", "فارسكور", "الزرقا", "كفر سعد", "كفر البطيخ", "عزبة البرج"
+      ],
+      "بورسعيد": [
+        "حي الشرق", "حي العرب", "حي المناخ", "حي الضواحي", "حي الجنوب", "حي الزهور", "حي غرب", "مدينة بورفؤاد"
+      ],
+      "الإسماعيلية": [
+        "الإسماعيلية", "فايد", "القنطرة شرق", "القنطرة غرب", "التل الكبير", "أبو صوير", "القصاصين"
+      ],
+      "السويس": [
+        "حي السويس", "حي الأربعين", "حي عتاقة", "حي فيصل", "حي الجناين", "العين السخنة"
+      ],
+      "مطروح": [
+        "العلمين", "العلمين الجديدة", "مرسى مطروح", "الضبعة", "الحمام", "سيدي عبد الرحمن", "سيدي براني", "السلوم", "سيوة"
+      ],
+      "البحر الأحمر": [
+        "الغردقة", "الجونة", "سفاجا", "سهل حشيش", "القصيرة", "مرسى علم", "رأس غارب"
+      ],
+      "جنوب سيناء": [
+        "شرم الشيخ", "دهب", "نويبع", "طابا", "طور سيناء", "رأس سدر", "سانت كاترين"
+      ],
+      "شمال سيناء": [
+        "العريش", "الشيخ زويد", "رفح", "بئر العبد"
+      ],
+      "الفيوم": [
+        "الفيوم", "الفيوم الجديدة", "طامية", "سنورس", "إطسا", "إبشواي", "يوسف الصديق"
+      ],
+      "بني سويف": [
+        "بني سويف", "بني سويف الجديدة", "الواسطى", "ناصر", "إهناسيا", "ببا", "الفشن", "سمسطا"
+      ],
+      "المنيا": [
+        "المنيا", "المنيا الجديدة", "مغاغة", "بني مزار", "مطاي", "سمالوط", "أبو قرقاص", "ملوي", "دير مواس"
+      ],
+      "أسيوط": [
+        "أسيوط", "أسيوط الجديدة", "ديروط", "القوصية", "أبنوب", "منفلوط", "الفتح", "أبو تيج", "الغنايم"
+      ],
+      "سوهاج": [
+        "سوهاج", "سوهاج الجديدة", "أخميم", "البلينا", "المراغة", "جرجا", "طهطا", "طما"
+      ],
+      "قنا": [
+        "قنا", "قنا الجديدة", "نجع حمادي", "دشنا", "فرشوط", "أبو تشت", "قوص", "نقادة"
+      ],
+      "الأقصر": [
+        "الأقصر", "طيبة الجديدة", "إسنا", "أرمنت", "البياضية", "القرنة"
+      ],
+      "أسوان": [
+        "أسوان", "أسوان الجديدة", "دراو", "كوم أمبو", "نصر النوبة", "إدفو", "أبو سمبل"
+      ],
+      "الوادي الجديد": [
+        "الخارجة", "الداخلة", "الفرافرة", "باريس", "بلاط"
+      ],
+      "خارج جمهورية مصر العربية / أخرى": [
+        "مدينة / منطقة بالخارج"
+      ]
+    };
+
+    function initStaticAddressFields() {
+      const idGov = document.getElementById('idGovernorate');
+      const corrGov = document.getElementById('corrGovernorate');
+      if (idGov) populateGovSelect(idGov);
+      if (corrGov) populateGovSelect(corrGov);
+    }
+
+    function populateGovSelect(selectEl) {
+      if (!selectEl) return;
+      const currentVal = selectEl.value;
+      selectEl.innerHTML = `<option value="">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>`;
+      Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+        const opt = document.createElement('option');
+        opt.value = gov;
+        opt.textContent = gov;
+        opt.className = "bg-slate-900 text-white";
+        selectEl.appendChild(opt);
       });
-      radio.closest('label').classList.add('active');
+      if (currentVal && egyptGovernoratesAndCities[currentVal]) {
+        selectEl.value = currentVal;
+      }
     }
 
-    // ── Field Validation Helpers ──
-    function validateField(input, testFn) {
-      const isValid = testFn(input.value.trim());
-      if (isValid) {
-        input.classList.remove('invalid');
-        input.classList.add('valid');
+    function handleStaticGovChange(govVal, type) {
+      const citySelect = (type === 'id') ? document.getElementById('idCity') : document.getElementById('corrCity');
+      if (!citySelect) return;
+      citySelect.innerHTML = '';
+
+      if (!govVal) {
+        citySelect.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = (currentLang === 'en') ? 'Select Governorate first...' : 'اختر المحافظة أولاً...';
+        opt.className = "bg-slate-900 text-white";
+        citySelect.appendChild(opt);
       } else {
-        input.classList.remove('valid');
-        input.classList.add('invalid');
+        citySelect.disabled = false;
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = (currentLang === 'en') ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...';
+        defaultOpt.className = "bg-slate-900 text-white";
+        citySelect.appendChild(defaultOpt);
+
+        const cities = egyptGovernoratesAndCities[govVal] || [];
+        cities.forEach(city => {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = city;
+          opt.className = "bg-slate-900 text-white";
+          citySelect.appendChild(opt);
+        });
+
+        const otherOpt = document.createElement('option');
+        otherOpt.value = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
+        otherOpt.textContent = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
+        otherOpt.className = "bg-slate-900 text-white";
+        citySelect.appendChild(otherOpt);
       }
-      return isValid;
+      updateStaticCombinedAddress(type);
     }
 
-    function validateGmail(input) {
-      const email = input.value.trim();
-      const isValid = /^[a-z0-9._%+-]+@gmail\.com$/i.test(email);
-      const err = document.getElementById('errEmail');
-      if (isValid || email === '') {
-        input.classList.remove('invalid');
-        if (isValid) input.classList.add('valid');
-        err.classList.add('hidden');
-      } else {
-        input.classList.remove('valid');
-        input.classList.add('invalid');
-        err.classList.remove('hidden');
-      }
-      return isValid;
+    function handleStaticCityChange(cityVal, type) {
+      updateStaticCombinedAddress(type);
     }
 
-    // ── Notes Live Character Counter (Max 250) ──
-    function updateNotesCounter(textarea) {
-      const max = 250;
-      let len = textarea.value.length;
-      if (len > max) {
-        textarea.value = textarea.value.substring(0, max);
-        len = max;
+    function handleStaticStreetInput(type) {
+      updateStaticCombinedAddress(type);
+    }
+
+    function toggleStaticSameAddress(isSame) {
+      const container = document.getElementById('customCorrContainer');
+      if (container) container.classList.toggle('hidden', isSame);
+      updateStaticCombinedAddress('id');
+      if (!isSame) updateStaticCombinedAddress('corr');
+    }
+
+    function updateStaticCombinedAddress(type) {
+      const isSame = document.getElementById('sameAsIdAddress')?.checked;
+      if (type === 'id' || isSame) {
+        const gov = document.getElementById('idGovernorate')?.value.trim() || '';
+        const city = document.getElementById('idCity')?.value.trim() || '';
+        const street = document.getElementById('idStreet')?.value.trim() || '';
+
+        let combined = '';
+        if (gov && city && street) {
+          combined = `${gov} - ${city} - ${street}`;
+        } else if (gov || city || street) {
+          combined = [gov, city, street].filter(Boolean).join(' - ');
+        }
+
+        const idAddrHidden = document.getElementById('idAddress');
+        if (idAddrHidden) idAddrHidden.value = combined;
+
+        if (isSame) {
+          const corrAddrHidden = document.getElementById('correspondenceAddress');
+          if (corrAddrHidden) corrAddrHidden.value = combined;
+        }
       }
-      const charEl = document.getElementById('currentNotesChars');
-      const remEl = document.getElementById('notesRemainingText');
-      const badge = document.getElementById('notesCounter');
-      
-      if (charEl) charEl.textContent = len;
-      if (remEl) {
-        const rem = max - len;
-        remEl.textContent = (currentLang === 'ar') ? `المتبقي: ${rem} حرف` : `Remaining: ${rem} chars`;
-      }
-      if (len >= 240) {
-        badge.classList.remove('text-amber-300', 'bg-amber-500/15', 'border-amber-400/40');
-        badge.classList.add('text-red-300', 'bg-red-500/20', 'border-red-400/60');
-      } else {
-        badge.classList.remove('text-red-300', 'bg-red-500/20', 'border-red-400/60');
-        badge.classList.add('text-amber-300', 'bg-amber-500/15', 'border-amber-400/40');
+
+      if (type === 'corr' && !isSame) {
+        const gov = document.getElementById('corrGovernorate')?.value.trim() || '';
+        const city = document.getElementById('corrCity')?.value.trim() || '';
+        const street = document.getElementById('corrStreet')?.value.trim() || '';
+
+        let combined = '';
+        if (gov && city && street) {
+          combined = `${gov} - ${city} - ${street}`;
+        } else if (gov || city || street) {
+          combined = [gov, city, street].filter(Boolean).join(' - ');
+        }
+
+        const corrAddrHidden = document.getElementById('correspondenceAddress');
+        if (corrAddrHidden) corrAddrHidden.value = combined;
       }
     }
 
-    // ── Drag & Drop File Uploads Management ──
-    let selectedFiles = [];
-
-    function handleFilesSelected(files) {
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        if (selectedFiles.some(existing => existing.name === f.name && existing.size === f.size)) continue;
-        selectedFiles.push(f);
+    function formatUnitPrice(input) {
+      let raw = input.value.replace(/[^0-9]/g, '');
+      if (!raw) {
+        input.value = '';
+        return;
       }
-      renderFilePreviews();
+      input.value = Number(raw).toLocaleString('en-US');
     }
 
-    function removeFile(index) {
-      selectedFiles.splice(index, 1);
-      renderFilePreviews();
-    }
+    // ── 1. بيانات خطة السداد والنسب لكل فترة في كائن واحد يسهل تعديله ──
+    const paymentRatesConfig = {
+      "7 Years": ["5% - 5%"],
+      "8 Years": ["5% - 7%"],
+      "9 Years": ["5% - 12%", "5% - 10%"],
+      "10 Years": ["10% - 10%", "5% - 10%"]
+    };
 
-    function renderFilePreviews() {
-      const container = document.getElementById('fileListContainer');
-      const list = document.getElementById('fileItemsList');
-      list.innerHTML = '';
+    function handlePeriodChange(selectEl) {
+      const selectedPeriod = selectEl.value;
+      const rateSelectContainer = document.getElementById('rateSelectContainer');
+      const rateSelect = document.getElementById('rateSelect');
+      const finalRateInput = document.getElementById('final_rate');
+      const errRateSelect = document.getElementById('errRateSelect');
+      const legacyPeriod = document.getElementById('paymentPeriod');
 
-      if (selectedFiles.length === 0) {
-        container.classList.add('hidden');
+      if (legacyPeriod) {
+        legacyPeriod.value = selectedPeriod;
+      }
+
+      // تصفير القيم السابقة دائماً عند تغيير الفترة
+      if (finalRateInput) finalRateInput.value = '';
+      if (rateSelect) {
+        rateSelect.innerHTML = '<option value="">' + (currentLang === 'en' ? 'Select Rate...' : 'اختر النسبة...') + '</option>';
+        rateSelect.classList.remove('invalid');
+      }
+      if (errRateSelect) errRateSelect.classList.add('hidden');
+      if (rateSelectContainer) rateSelectContainer.classList.add('hidden');
+
+      // لو الفترة فاضية، كل حاجة تفضل فاضية
+      if (!selectedPeriod) {
+        if (typeof updatePaymentPlanCalculation === 'function') {
+          updatePaymentPlanCalculation();
+        }
         return;
       }
 
-      container.classList.remove('hidden');
+      const rates = paymentRatesConfig[selectedPeriod] || [];
 
-      selectedFiles.forEach((file, index) => {
-        const isPdf = file.name.toLowerCase().endsWith('.pdf');
-        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+      // إذا كانت الفترة تحتوي على نسبة واحدة فقط (7 أو 8) -> تظهر النسبة فوراً وتعتمد
+      if (rates.length === 1) {
+        if (finalRateInput) finalRateInput.value = rates[0];
+        if (rateSelect) {
+          rateSelect.innerHTML = `<option value="${rates[0]}" selected>${rates[0]}</option>`;
+          rateSelect.classList.remove('invalid');
+        }
+        if (rateSelectContainer) rateSelectContainer.classList.remove('hidden');
+      } 
+      // إذا كانت الفترة تحتوي على أكثر من نسبة (9 أو 10) -> تظهر القائمة للاختيار
+      else if (rates.length > 1) {
+        if (rateSelect) {
+          rateSelect.innerHTML = '<option value="">' + (currentLang === 'en' ? 'Select Rate...' : 'اختر النسبة...') + '</option>';
+          rates.forEach(rate => {
+            const opt = document.createElement('option');
+            opt.value = rate;
+            opt.textContent = rate;
+            rateSelect.appendChild(opt);
+          });
+          rateSelect.classList.remove('invalid');
+        }
+        if (rateSelectContainer) rateSelectContainer.classList.remove('hidden');
+      }
 
-        const card = document.createElement('div');
-        card.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-between gap-2 shadow-sm text-xs';
-        card.innerHTML = `
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-base">${isPdf ? '📄' : '🖼️'}</span>
-            <div class="overflow-hidden">
-              <div class="text-slate-200 font-bold truncate max-w-[140px] sm:max-w-[180px]">${file.name}</div>
-              <div class="text-[10px] text-slate-400 font-mono">${sizeMb} MB</div>
-            </div>
-          </div>
-          <button type="button" onclick="removeFile(${index})" class="p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/30 text-red-400 text-xs cursor-pointer">
-            ✕
-          </button>
-        `;
-        list.appendChild(card);
-      });
+      if (typeof updatePaymentPlanCalculation === 'function') {
+        updatePaymentPlanCalculation();
+      }
     }
 
-    // Drag events
+    function handleRateChange(selectEl) {
+      const chosenRate = selectEl.value;
+      const finalRateInput = document.getElementById('final_rate');
+      const errRateSelect = document.getElementById('errRateSelect');
+
+      if (chosenRate) {
+        if (finalRateInput) finalRateInput.value = chosenRate;
+        if (errRateSelect) errRateSelect.classList.add('hidden');
+        selectEl.classList.remove('invalid');
+      } else {
+        if (finalRateInput) finalRateInput.value = '';
+        if (errRateSelect) errRateSelect.classList.remove('hidden');
+        selectEl.classList.add('invalid');
+      }
+    }
+
+    function updatePaymentPlanCalculation() {
+      const periodSelect = document.getElementById('period') || document.getElementById('paymentPeriod');
+      const periodVal = periodSelect ? periodSelect.value : '7 Years';
+      const unitPriceInput = document.getElementById('unitPrice');
+      
+      let priceNum = 0;
+      if (unitPriceInput && unitPriceInput.value) {
+        priceNum = parseFloat(unitPriceInput.value.replace(/,/g, '')) || 0;
+      }
+
+      let years = 7;
+      const match = periodVal.match(/\d+/);
+      if (match) {
+        years = parseInt(match[0]);
+      }
+
+      const totalInstallments = years * 4;
+      const downPercent = (years >= 8) ? 15 : 10;
+      const deliveryPercent = 10;
+      const remainingPercent = 100 - downPercent - deliveryPercent;
+
+      const yearsBadge = document.getElementById('planYearsBadge');
+      if (yearsBadge) yearsBadge.innerText = `${years} ${(currentLang === 'en') ? 'Years' : 'سنوات'}`;
+
+      const downPercentEl = document.getElementById('planDownPercent');
+      if (downPercentEl) downPercentEl.innerText = `${downPercent}%`;
+
+      const instCountEl = document.getElementById('planInstallmentsCount');
+      if (instCountEl) instCountEl.innerText = `${totalInstallments} ${(currentLang === 'en') ? 'Quarterly Installments' : 'قسط ربع سنوي'}`;
+
+      const downAmountEl = document.getElementById('planDownAmount');
+      const deliveryAmountEl = document.getElementById('planDeliveryAmount');
+      const quarterlyAmountEl = document.getElementById('planQuarterlyAmount');
+
+      if (priceNum > 0) {
+        const downEgp = (priceNum * downPercent) / 100;
+        const deliveryEgp = (priceNum * deliveryPercent) / 100;
+        const remainingEgp = (priceNum * remainingPercent) / 100;
+        const quarterlyEgp = remainingEgp / totalInstallments;
+
+        if (downAmountEl) downAmountEl.innerText = `${downEgp.toLocaleString('en-US', {maximumFractionDigits:0})} EGP`;
+        if (deliveryAmountEl) deliveryAmountEl.innerText = `${deliveryEgp.toLocaleString('en-US', {maximumFractionDigits:0})} EGP`;
+        if (quarterlyAmountEl) quarterlyAmountEl.innerText = `≈ ${quarterlyEgp.toLocaleString('en-US', {maximumFractionDigits:0})} EGP / قسط`;
+      } else {
+        if (downAmountEl) downAmountEl.innerText = (currentLang === 'en') ? '(Enter unit price)' : '(أدخل سعر الوحدة للأرقام)';
+        if (deliveryAmountEl) deliveryAmountEl.innerText = (currentLang === 'en') ? '(Enter unit price)' : '(أدخل سعر الوحدة للأرقام)';
+        if (quarterlyAmountEl) quarterlyAmountEl.innerText = (currentLang === 'en') ? 'Balanced installments' : 'أقساط متساوية كل 3 أشهر';
+      }
+    }
+
+    function toggleAdvancePaidBox(radio) {
+      const isYes = (radio.value === 'نعم');
+      document.getElementById('boxYes')?.classList.toggle('active', isYes);
+      document.getElementById('boxNo')?.classList.toggle('active', !isYes);
+
+      const dateContainer = document.getElementById('paymentDateContainer');
+      const unitDetails = document.getElementById('primaryUnitDetailsContainer');
+      const noticeNo = document.getElementById('advanceNoticeNo');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (isYes) {
+        if (dateContainer) dateContainer.classList.remove('hidden');
+        if (unitDetails) unitDetails.classList.remove('hidden');
+        if (noticeNo) noticeNo.classList.add('hidden');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      } else {
+        if (dateContainer) dateContainer.classList.add('hidden');
+        if (unitDetails) unitDetails.classList.add('hidden');
+        if (noticeNo) noticeNo.classList.remove('hidden');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        const dateInput = document.getElementById('paymentDate');
+        if (dateInput) dateInput.value = '';
+      }
+    }
+
+    function toggleOctoberPaidBox(radio) {
+      toggleAdvancePaidBox(radio);
+    }
+
+    function validateField(input, testFn) {
+      const val = input.value.trim();
+      const isValid = testFn(val);
+      input.classList.toggle('valid', isValid);
+      input.classList.toggle('invalid', !isValid && val.length > 0);
+      return isValid;
+    }
+
+    function validateGeneralEmail(input) {
+      const val = input.value.trim().toLowerCase();
+      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+      input.classList.toggle('valid', isValid);
+      input.classList.toggle('invalid', !isValid && val.length > 0);
+      return isValid;
+    }
+
     const dropZone = document.getElementById('dropZone');
     ['dragenter', 'dragover'].forEach(name => {
       dropZone.addEventListener(name, (e) => {
@@ -991,73 +1713,202 @@
       });
     });
     dropZone.addEventListener('drop', (e) => {
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        handleFilesSelected(e.dataTransfer.files);
-      }
+      handleFilesSelected(e.dataTransfer.files);
     });
 
-    // ── Form Submit Handler ──
-    document.getElementById('contractForm').addEventListener('submit', async function (e) {
+    function handleFilesSelected(files) {
+      Array.from(files).forEach(file => {
+        if (file.size <= 25 * 1024 * 1024) {
+          selectedFiles.push(file);
+        } else {
+          alert(`File ${file.name} exceeds max size (25MB)`);
+        }
+      });
+      renderSelectedFiles();
+      if (selectedFiles.length > 0) {
+        document.getElementById('errAttachments').classList.add('hidden');
+      }
+    }
+
+    function renderSelectedFiles() {
+      const container = document.getElementById('fileListContainer');
+      const list = document.getElementById('fileItemsList');
+      if (selectedFiles.length === 0) {
+        container.classList.add('hidden');
+        list.innerHTML = '';
+        return;
+      }
+      container.classList.remove('hidden');
+      list.innerHTML = '';
+
+      selectedFiles.forEach((file, idx) => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs shadow-md";
+
+        const isImg = file.type.startsWith('image/');
+        const previewUrl = isImg ? URL.createObjectURL(file) : null;
+
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5 truncate">
+            ${isImg 
+              ? `<img src="${previewUrl}" class="w-10 h-10 object-cover rounded-xl border border-slate-700">`
+              : `<div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg">📄</div>`
+            }
+            <div class="truncate">
+              <div class="truncate font-mono font-bold text-white">${file.name}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${(file.size/1024).toFixed(1)} KB</div>
+            </div>
+          </div>
+          <button type="button" onclick="removeFile(${idx})" class="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold cursor-pointer transition-colors">
+            ✕
+          </button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderSelectedFiles();
+    }
+
+    document.getElementById('contractForm').addEventListener('submit', async function(e) {
       e.preventDefault();
+      
+      document.querySelectorAll('.error-msg').forEach(el => el.classList.add('hidden'));
 
       let hasError = false;
-      document.querySelectorAll('.error-msg').forEach(el => el.classList.add('hidden'));
 
       // 1. Primary Name
       const primaryName = document.getElementById('primaryName').value.trim();
-      if (!primaryName || primaryName.length < 3) {
+      if (!primaryName || primaryName.length < 2) {
         document.getElementById('errPrimaryName').classList.remove('hidden');
         hasError = true;
       }
 
-      // 2. Phone
-      const primaryPhone = document.getElementById('primaryPhone').value.replace(/\D/g, '');
-      if (!primaryPhone || primaryPhone.length < 8) {
+      // 2. Primary Phone
+      const primaryPhone = document.getElementById('primaryPhone').value.trim();
+      if (!primaryPhone || primaryPhone.replace(/\D/g,'').length < 7) {
         document.getElementById('errPrimaryPhone').classList.remove('hidden');
         hasError = true;
       }
 
-      // 3. Gmail
-      const email = document.getElementById('clientEmail').value.trim();
-      const gmailRegex = /^[a-z0-9._%+-]+@gmail\.com$/i;
-      if (!email || !gmailRegex.test(email)) {
+      // 3. Email
+      const email = document.getElementById('clientEmail').value.trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
         document.getElementById('errEmail').classList.remove('hidden');
         hasError = true;
       }
 
-      // 4. ID Number
+      // 4. ID Number (Strict checks)
+      const idType = document.getElementById('idType').value;
       const idNumber = document.getElementById('idNumber').value.trim();
-      if (!idNumber) {
-        document.getElementById('errIdNumber').classList.remove('hidden');
+      const errIdEl = document.getElementById('errIdNumber');
+      if (idType === 'national_id') {
+        if (!/^\d{14}$/.test(idNumber)) {
+          errIdEl.innerText = currentLang === 'ar' 
+            ? 'رقم البطاقة الشخصية يجب أن يتكون من 14 رقماً بالضبط'
+            : 'National ID must be exactly 14 digits';
+          errIdEl.classList.remove('hidden');
+          hasError = true;
+        }
+      } else {
+        if (!/^[A-Za-z0-9]{6,9}$/.test(idNumber)) {
+          errIdEl.innerText = currentLang === 'ar'
+            ? 'رقم جواز السفر يجب أن يتكون من 6 إلى 9 أحرف وأرقام بدون رموز خاصة'
+            : 'Passport number must be 6 to 9 alphanumeric characters without special symbols';
+          errIdEl.classList.remove('hidden');
+          hasError = true;
+        }
+      }
+
+      // 5. Addresses (Governorate, City & Street Details)
+      updateStaticCombinedAddress('id');
+      updateStaticCombinedAddress('corr');
+
+      const idGov = document.getElementById('idGovernorate')?.value;
+      const idCity = document.getElementById('idCity')?.value;
+      const idStreet = document.getElementById('idStreet')?.value.trim();
+      const idAddress = document.getElementById('idAddress').value.trim();
+
+      if (!idGov || !idCity || !idStreet || idStreet.length < 3) {
+        document.getElementById('errIdAddress').classList.remove('hidden');
         hasError = true;
       }
 
-      // 5. Address
-      const address = document.getElementById('primaryAddress').value.trim();
-      if (!address) {
-        document.getElementById('errAddress').classList.remove('hidden');
+      const corrGov = document.getElementById('corrGovernorate')?.value;
+      const corrCity = document.getElementById('corrCity')?.value;
+      const corrStreet = document.getElementById('corrStreet')?.value.trim();
+      if (!corrGov || !corrCity || !corrStreet || corrStreet.length < 3) {
+        document.getElementById('errCorrespondenceAddress').classList.remove('hidden');
         hasError = true;
       }
 
-      // 6. Unit Code
+      // 6. Attachments
+      if (selectedFiles.length === 0) {
+        document.getElementById('errAttachments').classList.remove('hidden');
+        hasError = true;
+      }
+
+      // 7. Unit Code
       const unitCode = document.getElementById('unitCode').value.trim();
       if (!unitCode) {
         document.getElementById('errUnitCode').classList.remove('hidden');
         hasError = true;
       }
 
-      // 6.1. Contract Location
-      const location = document.getElementById('contractLocation').value;
-      if (!location) {
-        document.getElementById('errLocation').classList.remove('hidden');
-        hasError = true;
+      // 8. Contract Location (Only if inside Egypt)
+      const isInsideEgypt = !currentResidence.includes('خارج');
+      if (isInsideEgypt) {
+        const location = document.getElementById('contractLocation').value;
+        if (!location) {
+          document.getElementById('errLocation').classList.remove('hidden');
+          hasError = true;
+        }
       }
 
-      // 7. Payment Period
-      const period = document.getElementById('paymentPeriod').value;
+      // 9. Payment Period & Final Rate
+      const periodEl = document.getElementById('period') || document.getElementById('paymentPeriod');
+      const period = periodEl ? periodEl.value : '';
+      const finalRateEl = document.getElementById('final_rate');
+      const finalRate = finalRateEl ? finalRateEl.value : '';
+
       if (!period) {
-        document.getElementById('errPeriod').classList.remove('hidden');
+        document.getElementById('errPeriod')?.classList.remove('hidden');
         hasError = true;
+      }
+      if (period && !finalRate) {
+        const errRateSelect = document.getElementById('errRateSelect');
+        const rateSelect = document.getElementById('rateSelect');
+        if (errRateSelect) errRateSelect.classList.remove('hidden');
+        if (rateSelect) rateSelect.classList.add('invalid');
+        hasError = true;
+      } else {
+        const errRateSelect = document.getElementById('errRateSelect');
+        const rateSelect = document.getElementById('rateSelect');
+        if (errRateSelect) errRateSelect.classList.add('hidden');
+        if (rateSelect) rateSelect.classList.remove('invalid');
+      }
+
+      // 10. Down payment status check (Freeze & halt if No)
+      const advancePaidRadio = document.querySelector('input[name="paid_5_percent"]:checked');
+      const advancePaidVal = advancePaidRadio ? advancePaidRadio.value : '';
+      if (advancePaidVal === 'لا') {
+        const noticeNo = document.getElementById('advanceNoticeNo');
+        if (noticeNo) noticeNo.classList.remove('hidden');
+        alert(currentLang === 'en'
+          ? 'Contract registration cannot proceed without completing the down payment.'
+          : 'عفواً، لا يمكن استكمال تسجيل التعاقد وحجز الوحدة إلا بعد استكمال سداد قيمة المقدم.');
+        return;
+      }
+
+      if (advancePaidVal === 'نعم') {
+        const paymentDate = document.getElementById('paymentDate').value;
+        if (!paymentDate) {
+          document.getElementById('errPaymentDate').classList.remove('hidden');
+          hasError = true;
+        }
       }
 
       if (hasError) {
@@ -1066,13 +1917,12 @@
         return;
       }
 
-      // Show Loading
       document.getElementById('loadingOverlay').classList.remove('hidden');
 
       const formData = new FormData(this);
       formData.append('lang', currentLang);
+      formData.append('residence_country', currentResidence);
 
-      // Append selected files
       selectedFiles.forEach(file => {
         formData.append('attachments[]', file, file.name);
       });
@@ -1091,7 +1941,6 @@
           document.getElementById('modalUnitCode').innerText = unitCode;
           document.getElementById('successModal').classList.remove('hidden');
 
-          // Trigger Confetti Celebration Blast!
           if (typeof confetti === 'function') {
             confetti({
               particleCount: 120,
@@ -1114,11 +1963,10 @@
         }
       } catch (err) {
         document.getElementById('loadingOverlay').classList.add('hidden');
-        alert('Server connection error. Please ensure Backend is running on Render/Railway.');
+        alert('Server connection error. Please ensure Backend is running.');
       }
     });
 
-    // Check admin session to show shortcut button if authorized
     fetch(`${baseUrl}/check_auth.php`)
       .then(res => res.json())
       .then(data => {

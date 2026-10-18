@@ -32,40 +32,81 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// ── تسجيل الدخول ──
+// ── تسجيل الدخول الموحد (Unified RBAC Authentication) ──
 $authError = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])) {
-    $inputUsername = trim($_POST['admin_username'] ?? 'admin');
-    $inputPassword = (string)$_POST['admin_password'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_password'])) {
+    $inputEmail = trim($_POST['login_email'] ?? '');
+    $inputPassword = (string)$_POST['login_password'];
 
-    try {
-        $adminStmt = $pdo->prepare("SELECT * FROM admins WHERE username = :u LIMIT 1");
-        $adminStmt->execute([':u' => $inputUsername]);
-        $adminUser = $adminStmt->fetch();
+    if (empty($inputEmail) || empty($inputPassword)) {
+        $authError = ($adminLang === 'en') ? 'Please provide both email and password.' : 'يرجى إدخال البريد الإلكتروني وكلمة المرور.';
+    } else {
+        try {
+            // 1. فحص جدول المستخدمين users أولاً (Email / Password)
+            $userStmt = $pdo->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+            $userStmt->execute([':email' => $inputEmail]);
+            $user = $userStmt->fetch();
 
-        if ($adminUser && password_verify($inputPassword, $adminUser['password']) && $adminUser['role'] === 'admin') {
-            session_regenerate_id(true);
-            $_SESSION['is_authorized_admin'] = true;
-            $_SESSION['admin_role']          = $adminUser['role'];
-            $_SESSION['admin_user']          = $adminUser['username'];
-            $_SESSION['admin_logged_time']   = time();
-            header("Location: view_clients.php");
-            exit;
-        } else {
+            if ($user && password_verify($inputPassword, $user['password_hash'])) {
+                session_regenerate_id(true);
+                $_SESSION['auth_user_id']        = (int)$user['id'];
+                $_SESSION['auth_user_name']      = $user['name'];
+                $_SESSION['auth_user_email']     = $user['email'];
+                $_SESSION['auth_user_role']      = $user['role']; // 'Admin', 'Manager', 'Sales'
+                $_SESSION['auth_user_ref']       = $user['referral_code'];
+                $_SESSION['auth_manager_id']     = $user['manager_id'];
+                $_SESSION['is_authorized_admin'] = ($user['role'] === 'Admin');
+                $_SESSION['admin_role']          = strtolower($user['role']);
+                $_SESSION['admin_user']          = $user['name'];
+                $_SESSION['admin_logged_time']   = time();
+                header("Location: view_clients.php");
+                exit;
+            }
+
+            // 2. فحص جدول admins للتوافق مع بيانات الأدمن القديمة (username أو email)
+            $adminStmt = $pdo->prepare("SELECT * FROM admins WHERE username = :u LIMIT 1");
+            $adminStmt->execute([':u' => $inputEmail]);
+            $adminUser = $adminStmt->fetch();
+
+            if ($adminUser && password_verify($inputPassword, $adminUser['password'])) {
+                // مزامنة هذا الأدمن مع جدول users إن لم يكن موجوداً
+                $checkUsr = $pdo->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
+                $checkUsr->execute([':email' => 'admin@elamar.com']);
+                $existU = $checkUsr->fetch();
+                $uid = $existU ? $existU['id'] : 1;
+
+                session_regenerate_id(true);
+                $_SESSION['auth_user_id']        = (int)$uid;
+                $_SESSION['auth_user_name']      = $adminUser['username'];
+                $_SESSION['auth_user_email']     = 'admin@elamar.com';
+                $_SESSION['auth_user_role']      = 'Admin';
+                $_SESSION['auth_user_ref']       = 'admin';
+                $_SESSION['auth_manager_id']     = null;
+                $_SESSION['is_authorized_admin'] = true;
+                $_SESSION['admin_role']          = 'admin';
+                $_SESSION['admin_user']          = $adminUser['username'];
+                $_SESSION['admin_logged_time']   = time();
+                header("Location: view_clients.php");
+                exit;
+            }
+
+            // إذا فشل التحقق
             $authError = ($adminLang === 'en') 
-                ? 'Unauthorized access. Invalid credentials or insufficient permissions.' 
-                : 'غير مصرح بالدخول. بيانات الدخول غير صحيحة أو لا تملك صلاحيات مسؤول (Admin).';
+                ? 'Invalid email or password. Please check your credentials.' 
+                : 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق وإعادة المحاولة.';
+
+        } catch (PDOException $e) {
+            $authError = ($adminLang === 'en') ? 'Database verification failed: ' . $e->getMessage() : 'حدث خطأ أثناء التحقق من بيانات الدخول.';
         }
-    } catch (PDOException $e) {
-        $authError = ($adminLang === 'en') ? 'Database verification failed.' : 'حدث خطأ أثناء التحقق من الصلاحيات.';
     }
 }
 
-// التحقق من الصلاحية
-$isAuthenticated = !empty($_SESSION['is_authorized_admin']) 
-                   && $_SESSION['is_authorized_admin'] === true 
-                   && !empty($_SESSION['admin_role']) 
-                   && $_SESSION['admin_role'] === 'admin';
+// التحقق من تسجيل الدخول النشط
+$isAuthenticated = !empty($_SESSION['auth_user_id']) || (!empty($_SESSION['is_authorized_admin']) && $_SESSION['is_authorized_admin'] === true);
+$currentUserRole = $_SESSION['auth_user_role'] ?? (($_SESSION['admin_role'] ?? '') === 'admin' ? 'Admin' : 'Sales');
+$currentUserId   = (int)($_SESSION['auth_user_id'] ?? 1);
+$currentUserName = $_SESSION['auth_user_name'] ?? ($_SESSION['admin_user'] ?? 'المستخدم');
+$currentUserRef  = $_SESSION['auth_user_ref'] ?? 'ref';
 
 // ═══════════════════════════════════════════════════════════════
 // صفحة تسجيل الدخول (إذا لم يكن مسجلاً)
@@ -106,15 +147,15 @@ if (!$isAuthenticated):
     </div>
 
     <h2 class="text-2xl font-black text-white mb-1" id="loginHeading">
-      لوحة تحكم المسؤول
+      بوابة تسجيل الدخول الموحدة
     </h2>
     <p class="text-xs text-amber-400 font-bold mb-6" id="loginSubheading">
-      منطقة محمية مصرح بها فقط لإدارة عقود الساحل الشمالي
+      منطقة آمنة لدخول موظفي المبيعات والمديرين والإدارة المركزية
     </p>
 
     <?php if ($authError): ?>
-      <div class="bg-red-500/15 border border-red-500/40 text-red-300 text-xs p-3 rounded-2xl mb-4 font-bold">
-        <?= htmlspecialchars($authError, ENT_QUOTES, 'UTF-8'); ?>
+      <div class="bg-red-500/15 border border-red-500/40 text-red-300 text-xs p-3 rounded-2xl mb-4 font-bold text-right" id="loginErrorBox">
+        ⚠️ <?= htmlspecialchars($authError, ENT_QUOTES, 'UTF-8'); ?>
       </div>
     <?php endif; ?>
 
@@ -122,25 +163,25 @@ if (!$isAuthenticated):
       <div class="text-right" id="loginFormContainer">
         
         <label class="block text-xs font-bold text-slate-300 mb-1.5" id="lblUsername">
-          اسم المستخدم (Username):
+          البريد الإلكتروني (Email):
         </label>
         <input 
-          type="text" 
-          name="admin_username" 
-          value="admin"
-          placeholder="admin" 
+          type="email" 
+          name="login_email" 
+          value="<?= htmlspecialchars($_POST['login_email'] ?? '') ?>"
+          placeholder="example@elamar.com" 
           required 
-          class="w-full px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all font-mono mb-3"
+          class="w-full px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all font-mono mb-3 dir-ltr text-right"
         >
 
         <label class="block text-xs font-bold text-slate-300 mb-1.5" id="lblPassword">
-          كلمة المرور المشفرة:
+          كلمة المرور:
         </label>
         <div class="relative">
           <input 
             type="password" 
-            name="admin_password" 
-            id="adminPwdInput"
+            name="login_password" 
+            id="adminPwdInput" 
             placeholder="••••••••" 
             required 
             autofocus
@@ -161,7 +202,7 @@ if (!$isAuthenticated):
         id="loginSubmitBtn"
         class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl hover:shadow-amber-500/25 transition-all cursor-pointer mt-2"
       >
-        دخول اللوحة الآمنة
+        دخول لوحة التحكم
       </button>
     </form>
 
@@ -180,12 +221,12 @@ if (!$isAuthenticated):
       const html = document.documentElement;
       html.dir = isAr ? 'rtl' : 'ltr';
       document.getElementById('loginLangBtnText').innerText = isAr ? 'English' : 'العربية';
-      document.getElementById('loginHeading').innerText = isAr ? 'لوحة تحكم المسؤول' : 'Admin Dashboard';
-      document.getElementById('loginSubheading').innerText = isAr ? 'منطقة محمية مصرح بها فقط لإدارة عقود الساحل الشمالي' : 'Protected Area - Shores Coastal Contracts Management';
-      document.getElementById('lblUsername').innerText = isAr ? 'اسم المستخدم (Username):' : 'Username:';
-      document.getElementById('lblPassword').innerText = isAr ? 'كلمة المرور المشفرة:' : 'Password:';
-      document.getElementById('loginSubmitBtn').innerText = isAr ? 'دخول اللوحة الآمنة' : 'Login to Dashboard';
-      document.getElementById('loginBackForm').innerText = isAr ? '← العودة لاستمارة التعاقد' : '← Back to Main Form';
+      document.getElementById('loginHeading').innerText = isAr ? 'بوابة تسجيل الدخول الموحدة' : 'Unified Staff Portal';
+      document.getElementById('loginSubheading').innerText = isAr ? 'منطقة آمنة لدخول موظفي المبيعات والمديرين والإدارة المركزية' : 'Secure Access for Sales Executives, Managers & Admins';
+      document.getElementById('lblUsername').innerText = isAr ? 'البريد الإلكتروني (Email):' : 'Official Email Address:';
+      document.getElementById('lblPassword').innerText = isAr ? 'كلمة المرور:' : 'Password:';
+      document.getElementById('loginSubmitBtn').innerText = isAr ? 'دخول لوحة التحكم' : 'Sign In to Dashboard';
+      document.getElementById('loginBackForm').innerText = isAr ? '← العودة لاستمارة التعاقد' : '← Back to Survey Form';
       document.getElementById('loginFormContainer').className = isAr ? 'text-right' : 'text-left';
     }
   </script>
@@ -205,49 +246,94 @@ header('Content-Type: text/html; charset=utf-8');
 $notification = '';
 $notificationType = 'success';
 
-// ── إجراء الحذف (Delete Action) ──
+// دالة أمان للتحقق من صلاحية الوصول لسجل عميل معين
+function checkClientAccess($pdo, $clientId, $userId, $userRole) {
+    if ($userRole === 'Admin') return true;
+    if ($userRole === 'Sales') {
+        $st = $pdo->prepare("SELECT id FROM clients WHERE id = :cid AND sales_id = :uid LIMIT 1");
+        $st->execute([':cid' => $clientId, ':uid' => $userId]);
+        return (bool)$st->fetch();
+    }
+    if ($userRole === 'Manager') {
+        $st = $pdo->prepare("SELECT c.id FROM clients c 
+                             JOIN users u ON c.sales_id = u.id 
+                             WHERE c.id = :cid AND u.manager_id = :mid LIMIT 1");
+        $st->execute([':cid' => $clientId, ':mid' => $userId]);
+        return (bool)$st->fetch();
+    }
+    return false;
+}
+
+// ── إجراء الحذف (Delete Action) مع الحماية الصارمة ──
 if (isset($_POST['action']) && $_POST['action'] === 'delete' && !empty($_POST['client_id'])) {
     $delId = (int)$_POST['client_id'];
-    try {
-        $fileStmt = $pdo->prepare("SELECT attachments FROM clients WHERE id = :id");
-        $fileStmt->execute([':id' => $delId]);
-        $row = $fileStmt->fetch();
-        if ($row && !empty($row['attachments'])) {
-            $files = json_decode($row['attachments'], true);
-            if (is_array($files)) {
-                foreach ($files as $f) {
-                    $realPath = __DIR__ . '/' . $f;
-                    if (file_exists($realPath) && is_file($realPath)) {
-                        @unlink($realPath);
+    
+    // التحقق من الصلاحية
+    if (!checkClientAccess($pdo, $delId, $currentUserId, $currentUserRole)) {
+        $notification = "غير مصرح لك بحذف هذا العميل، لا يقع ضمن صلاحياتك.";
+        $notificationType = 'error';
+    } else {
+        try {
+            $fileStmt = $pdo->prepare("SELECT attachments FROM clients WHERE id = :id");
+            $fileStmt->execute([':id' => $delId]);
+            $row = $fileStmt->fetch();
+            if ($row && !empty($row['attachments'])) {
+                $files = json_decode($row['attachments'], true);
+                if (is_array($files)) {
+                    foreach ($files as $f) {
+                        $realPath = __DIR__ . '/' . $f;
+                        if (file_exists($realPath) && is_file($realPath)) {
+                            @unlink($realPath);
+                        }
                     }
                 }
             }
-        }
 
-        $delStmt = $pdo->prepare("DELETE FROM clients WHERE id = :id");
-        $delStmt->execute([':id' => $delId]);
-        $notification = "تم حذف سجل العميل رقم #$delId بنجاح.";
-    } catch (PDOException $e) {
-        $notification = "فشل الحذف: " . $e->getMessage();
-        $notificationType = 'error';
+            $delStmt = $pdo->prepare("DELETE FROM clients WHERE id = :id");
+            $delStmt->execute([':id' => $delId]);
+            $notification = "تم حذف سجل العميل رقم #$delId بنجاح.";
+        } catch (PDOException $e) {
+            $notification = "فشل الحذف: " . $e->getMessage();
+            $notificationType = 'error';
+        }
     }
 }
 
-// ── إجراء التعديل (Edit Action) ──
+// ── إجراء التعديل (Edit Action) مع الحماية الصارمة ──
 if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['client_id'])) {
-    $editId        = (int)$_POST['client_id'];
-    $editName      = trim($_POST['edit_name'] ?? '');
-    $editPhone     = trim($_POST['edit_phone'] ?? '');
-    $editEmail     = trim($_POST['edit_email'] ?? '');
-    $editIdType    = trim($_POST['edit_id_type'] ?? 'national_id');
-    $editIdNumber  = trim($_POST['edit_id_number'] ?? '');
-    $editUnitCode  = trim($_POST['edit_unit_code'] ?? '');
-    $editLocation  = trim($_POST['edit_contract_location'] ?? 'القاهرة');
-    $editPayment   = trim($_POST['edit_payment_period'] ?? '');
-    $editPaid5     = trim($_POST['edit_paid_5_percent'] ?? '');
-    $editAddress   = trim($_POST['edit_addresses'] ?? '');
-    $editNotes     = trim($_POST['edit_notes'] ?? '');
-    $editSalesId   = !empty($_POST['edit_sales_id']) ? (int)$_POST['edit_sales_id'] : null;
+    $editId = (int)$_POST['client_id'];
+
+    if (!checkClientAccess($pdo, $editId, $currentUserId, $currentUserRole)) {
+        $notification = "غير مصرح لك بتعديل هذا العميل، لا يقع ضمن صلاحياتك.";
+        $notificationType = 'error';
+    } else {
+        $editName          = trim($_POST['edit_name'] ?? '');
+        $editPhone         = trim($_POST['edit_phone'] ?? '');
+        $editEmail         = trim($_POST['edit_email'] ?? '');
+        $editIdType        = trim($_POST['edit_id_type'] ?? 'national_id');
+        $editIdNumber      = trim($_POST['edit_id_number'] ?? '');
+        $editResidence     = trim($_POST['edit_residence_country'] ?? 'داخل جمهورية مصر العربية');
+        $editUnitCode      = trim($_POST['edit_unit_code'] ?? '');
+        $editUnitPrice     = !empty($_POST['edit_unit_price']) ? floatval(str_replace(',', '', $_POST['edit_unit_price'])) : null;
+        $editLocation      = trim($_POST['edit_contract_location'] ?? 'القاهرة');
+        $editPayment       = trim($_POST['edit_payment_period'] ?? '');
+        $editPaid5         = trim($_POST['edit_paid_5_percent'] ?? 'لا');
+        $editPaymentDate   = !empty($_POST['edit_payment_date']) ? trim($_POST['edit_payment_date']) : null;
+        $editIdAddress     = trim($_POST['edit_id_address'] ?? '');
+        $editCorrAddress   = trim($_POST['edit_correspondence_address'] ?? '');
+        $editAddress       = trim($_POST['edit_addresses'] ?? '');
+        $editGeneralNotes  = trim($_POST['edit_general_notes'] ?? '');
+        $editNotes         = trim($_POST['edit_notes'] ?? '');
+        $editSalesId       = !empty($_POST['edit_sales_id']) ? (int)$_POST['edit_sales_id'] : null;
+
+        // لموظف Sales، يظل العميل دائماً تابعاً لحسابه
+        if ($currentUserRole === 'Sales') {
+            $editSalesId = $currentUserId;
+        }
+
+        if (empty($editAddress) && (!empty($editIdAddress) || !empty($editCorrAddress))) {
+            $editAddress = "العنوان في الهوية: " . $editIdAddress . " \n---\n عنوان المراسلات: " . $editCorrAddress;
+        }
 
     try {
         $chkStmt = $pdo->prepare("SELECT id FROM clients WHERE eoi_number = :code AND id != :id LIMIT 1");
@@ -304,99 +390,264 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
                         email = :email, 
                         id_type = :id_type, 
                         id_number = :id_number, 
+                        residence_country = :residence_country,
                         contract_location = :contract_location, 
                         eoi_number = :unit_code, 
+                        unit_price = :unit_price,
                         payment_period = :payment_period, 
                         paid_5_percent = :paid_5_percent, 
+                        payment_date = :payment_date,
+                        id_address = :id_address,
+                        correspondence_address = :correspondence_address,
                         addresses = :addresses,
+                        general_notes = :general_notes,
                         notes = :notes,
                         attachments = :attachments,
                         sales_id = :sales_id
                        WHERE id = :id";
             $updStmt = $pdo->prepare($updSql);
             $updStmt->execute([
-                ':name'              => $editName,
-                ':phone'             => $editPhone,
-                ':email'             => $editEmail,
-                ':id_type'           => $editIdType,
-                ':id_number'         => $editIdNumber,
-                ':contract_location' => $editLocation,
-                ':unit_code'         => $editUnitCode,
-                ':payment_period'    => $editPayment,
-                ':paid_5_percent'    => $editPaid5,
-                ':addresses'         => $editAddress,
-                ':notes'             => $editNotes,
-                ':attachments'       => $finalAttachmentsJson,
-                ':sales_id'          => $editSalesId,
-                ':id'                => $editId
+                ':name'                   => $editName,
+                ':phone'                  => $editPhone,
+                ':email'                  => $editEmail,
+                ':id_type'                => $editIdType,
+                ':id_number'              => $editIdNumber,
+                ':residence_country'      => $editResidence,
+                ':contract_location'      => $editLocation,
+                ':unit_code'              => $editUnitCode,
+                ':unit_price'             => $editUnitPrice,
+                ':payment_period'         => $editPayment,
+                ':paid_5_percent'         => $editPaid5,
+                ':payment_date'           => $editPaymentDate,
+                ':id_address'             => $editIdAddress,
+                ':correspondence_address' => $editCorrAddress,
+                ':addresses'              => $editAddress,
+                ':general_notes'          => $editGeneralNotes,
+                ':notes'                  => $editNotes,
+                ':attachments'            => $finalAttachmentsJson,
+                ':sales_id'               => $editSalesId,
+                ':id'                     => $editId
             ]);
-            $notification = "تم تحديث وحفظ بيانات العميل رقم #$editId والمرفقات ومسؤول المبيعات بنجاح.";
+            $notification = "تم تحديث وحفظ بيانات العقد رقم #$editId بنجاح.";
         }
     } catch (PDOException $e) {
         $notification = "فشل التحديث: " . $e->getMessage();
         $notificationType = 'error';
     }
+  } // إغلاق else الخاصة بـ checkClientAccess
 }
 
-// ── تصدير CSV ──
+// ── دالة تقسيم الشركاء المتعددين للوحدة الواحدة ──
+if (!function_exists('splitPartnerValues')) {
+    function splitPartnerValues($val): array {
+        if (empty($val)) return [];
+        $normalized = str_replace(["\r\n", "\r", "\n", '،'], ',', (string)$val);
+        $items = array_map('trim', explode(',', $normalized));
+        return array_values(array_filter($items, fn($x) => $x !== ''));
+    }
+}
+
+// ── تصدير CSV مع مراعاة الصلاحيات وتفكيك الشركاء إلى صفوف مستقلة ──
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=shores_clients_report_' . date('Y-m-d') . '.csv');
+    header('Content-Disposition: attachment; filename=shores_contracts_report_' . date('Y-m-d') . '.csv');
     $output = fopen('php://output', 'w');
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-    fputcsv($output, ['رقم العقد (ID)', 'كود الوحدة', 'موظف المبيعات (Sales)', 'اسم العميل / الشركاء بالعقد', 'رقم الهاتف', 'البريد الإلكتروني', 'نوع الهوية', 'رقم الوثيقة', 'مكان التعاقد', 'فترة السداد', 'سداد الـ 5%', 'العنوان بالتفصيل', 'الملاحظات', 'تاريخ التسجيل']);
+    fputcsv($output, [
+        'رقم العقد (ID)', 
+        'كود الوحدة', 
+        'قيمة الوحدة (EGP)',
+        'موظف المبيعات (Sales)', 
+        'اسم العميل في البطاقة / الشركاء', 
+        'مكان الإقامة الحالي',
+        'رقم الهاتف والتواصل', 
+        'البريد الإلكتروني', 
+        'نوع الهوية', 
+        'رقم الوثيقة', 
+        'مكان توثيق العقد', 
+        'فترة السداد', 
+        'استكمال المقدم', 
+        'تاريخ دفع المقدم',
+        'العنوان في الهوية الشخصية', 
+        'العنوان للمراسلات', 
+        'ملاحظات عامة',
+        'خطة بديلة واستثناءات', 
+        'تاريخ التسجيل'
+    ]);
     
-    $exportStmt = $pdo->query("SELECT c.id, c.eoi_number, IFNULL(s.name, 'مباشر (بدون وسيط)'), c.name, c.phone, c.email, c.id_type, c.id_number, c.contract_location, c.payment_period, c.paid_5_percent, c.addresses, c.notes, c.created_at FROM clients c LEFT JOIN sales_employees s ON c.sales_id = s.id ORDER BY c.id DESC");
-    while ($row = $exportStmt->fetch(PDO::FETCH_NUM)) {
-        fputcsv($output, $row);
+    $exportWhere = [];
+    $exportParams = [];
+    if ($currentUserRole === 'Sales') {
+        $exportWhere[] = "c.sales_id = :mysid";
+        $exportParams[':mysid'] = $currentUserId;
+    } elseif ($currentUserRole === 'Manager') {
+        $exportWhere[] = "c.sales_id IN (SELECT id FROM users WHERE manager_id = :mymid)";
+        $exportParams[':mymid'] = $currentUserId;
+    }
+
+    $exportSql = "SELECT 
+        c.id, 
+        c.eoi_number, 
+        IFNULL(c.unit_price, '-') as unit_price,
+        IFNULL(u.name, 'مباشر (بدون وسيط)') as sales_rep_name, 
+        c.name, 
+        IFNULL(c.residence_country, 'داخل جمهورية مصر العربية') as residence_country,
+        c.phone, 
+        c.email, 
+        c.id_type, 
+        c.id_number, 
+        c.contract_location, 
+        c.payment_period, 
+        c.paid_5_percent, 
+        IFNULL(c.payment_date, '-') as payment_date,
+        IFNULL(c.id_address, c.addresses) as id_address, 
+        IFNULL(c.correspondence_address, '-') as correspondence_address, 
+        IFNULL(c.general_notes, '-') as general_notes,
+        IFNULL(c.notes, '-') as notes, 
+        c.created_at 
+        FROM clients c 
+        LEFT JOIN users u ON c.sales_id = u.id";
+        
+    if (!empty($exportWhere)) {
+        $exportSql .= " WHERE " . implode(" AND ", $exportWhere);
+    }
+    $exportSql .= " ORDER BY c.id DESC";
+        
+    $exportStmt = $pdo->prepare($exportSql);
+    $exportStmt->execute($exportParams);
+        
+    while ($row = $exportStmt->fetch(PDO::FETCH_ASSOC)) {
+        $names   = splitPartnerValues((string)$row['name']);
+        $phones  = splitPartnerValues((string)$row['phone']);
+        $emails  = splitPartnerValues((string)($row['email'] ?? ''));
+        $idNums  = splitPartnerValues((string)($row['id_number'] ?? ''));
+
+        $pCount = max(count($names), count($phones), count($emails), 1);
+
+        for ($i = 0; $i < $pCount; $i++) {
+            $pName  = $names[$i] ?? ($names[0] ?? $row['name']);
+            $pPhone = $phones[$i] ?? ($phones[0] ?? $row['phone']);
+            $pEmail = $emails[$i] ?? ($emails[0] ?? $row['email']);
+            $pIdNum = $idNums[$i] ?? ($idNums[0] ?? $row['id_number']);
+
+            $idLabel = ($pCount > 1) ? $row['id'] . ' (شريك ' . ($i + 1) . ')' : $row['id'];
+            
+            // منع الاختصار العلمي (3E+13) في الإكسيل للأرقام الكبيرة والهواتف بصيغة نص صريح
+            $cleanPhone = preg_replace('/\s+/', '', (string)$pPhone);
+            $excelPhone = !empty($cleanPhone) ? '="' . $cleanPhone . '"' : '-';
+
+            $cleanIdNum = preg_replace('/\s+/', '', (string)$pIdNum);
+            $excelIdNum = !empty($cleanIdNum) ? '="' . $cleanIdNum . '"' : '-';
+
+            // تصحيح التاريخ ليظهر بصيغة YYYY-MM-DD بدلاً من علامات ########
+            $excelDate = !empty($row['created_at']) ? date('Y-m-d', strtotime($row['created_at'])) : '-';
+
+            fputcsv($output, [
+                $idLabel,
+                $row['eoi_number'],
+                $row['unit_price'],
+                $row['sales_rep_name'],
+                $pName,
+                $row['residence_country'],
+                $excelPhone,
+                $pEmail,
+                $row['id_type'],
+                $excelIdNum,
+                $row['contract_location'],
+                $row['payment_period'],
+                $row['paid_5_percent'],
+                $row['payment_date'],
+                $row['id_address'],
+                $row['correspondence_address'],
+                $row['general_notes'],
+                $row['notes'],
+                $excelDate
+            ]);
+        }
     }
     fclose($output);
     exit;
 }
 
-// ── استرجاع البيانات والإحصائيات ──
+// ── استعلامات لوحة الإحصائيات وجدول العملاء وفق الصلاحيات الهرمية ──
 try {
-    $filterSalesId = isset($_GET['sales_id']) && $_GET['sales_id'] !== '' ? (int)$_GET['sales_id'] : null;
-    $filterLoc     = $_GET['location'] ?? '';
-    
-    $countQuery = "SELECT COUNT(*) AS total FROM clients";
-    if ($filterSalesId !== null) $countQuery .= " WHERE sales_id = :sales_id";
-    $countStmt = $pdo->prepare($countQuery);
-    if ($filterSalesId !== null) $countStmt->execute([':sales_id' => $filterSalesId]);
-    else $countStmt->execute();
-    $totalClients = (int)$countStmt->fetch()['total'];
-
-    $paidQuery = "SELECT paid_5_percent, COUNT(*) as count FROM clients";
-    if ($filterSalesId !== null) $paidQuery .= " WHERE sales_id = :sales_id";
-    $paidQuery .= " GROUP BY paid_5_percent";
-    $paidStmt = $pdo->prepare($paidQuery);
-    if ($filterSalesId !== null) $paidStmt->execute([':sales_id' => $filterSalesId]);
-    else $paidStmt->execute();
-    $paidStats = $paidStmt->fetchAll();
-
-    $locQuery = "SELECT contract_location, COUNT(*) as count FROM clients GROUP BY contract_location";
-    $locStats = $pdo->query($locQuery)->fetchAll();
-
-    $salesStmt = $pdo->query("SELECT id, name, slug FROM sales_employees WHERE active = 1 ORDER BY name ASC");
-    $salesList = $salesStmt->fetchAll();
-
-    $clientQuery = "SELECT c.*, s.name as sales_name, s.email as sales_email FROM clients c 
-                    LEFT JOIN sales_employees s ON c.sales_id = s.id";
-    $whereParts = [];
-    $params = [];
-    if ($filterSalesId !== null) {
-        $whereParts[] = "c.sales_id = :sales_id";
-        $params[':sales_id'] = $filterSalesId;
+    // 1. تحديد قائمة السيلز المسموح بعرضها في الفلتر حسب الرتبة
+    $salesList = [];
+    if ($currentUserRole === 'Admin') {
+        // الأدمن يرى جميع مسؤولي المبيعات
+        $salesList = $pdo->query("SELECT id, name, referral_code, manager_id FROM users WHERE role = 'Sales' ORDER BY name ASC")->fetchAll();
+    } elseif ($currentUserRole === 'Manager') {
+        // المدير يرى موظفي فريقه فقط (الذين يشير manager_id لهم إليه)
+        $smStmt = $pdo->prepare("SELECT id, name, referral_code, manager_id FROM users WHERE manager_id = :mid AND role = 'Sales' ORDER BY name ASC");
+        $smStmt->execute([':mid' => $currentUserId]);
+        $salesList = $smStmt->fetchAll();
     }
+
+    // فلترة السيلز أو الفرع
+    $filterSalesId = isset($_GET['sales_id']) && $_GET['sales_id'] !== '' ? (int)$_GET['sales_id'] : null;
+    $filterLoc     = trim($_GET['location'] ?? '');
+
+    $whereClauses = [];
+    $params = [];
+
+    // تطبيق فلتر الصلاحيات الصارم الأساسي (Mandatory RBAC Scoping)
+    if ($currentUserRole === 'Sales') {
+        // موظف المبيعات: يرى عملاءه فقط
+        $whereClauses[] = "c.sales_id = :rbac_sales_id";
+        $params[':rbac_sales_id'] = $currentUserId;
+    } elseif ($currentUserRole === 'Manager') {
+        // المدير: عملاء فريقه التابعين له فقط
+        if ($filterSalesId !== null) {
+            // تحقق من أن السيلز المحدد يتبع هذا المدير فعلاً لمنع التلاعب
+            $validSalesIds = array_column($salesList, 'id');
+            if (in_array($filterSalesId, $validSalesIds)) {
+                $whereClauses[] = "c.sales_id = :chosen_sid";
+                $params[':chosen_sid'] = $filterSalesId;
+            } else {
+                // إذا حاول التلاعب بـ ID موظف ليس في فريقه، نحصر البحث بفريقه فقط
+                $whereClauses[] = "c.sales_id IN (SELECT id FROM users WHERE manager_id = :rbac_mgr_id)";
+                $params[':rbac_mgr_id'] = $currentUserId;
+            }
+        } else {
+            $whereClauses[] = "c.sales_id IN (SELECT id FROM users WHERE manager_id = :rbac_mgr_id)";
+            $params[':rbac_mgr_id'] = $currentUserId;
+        }
+    } else {
+        // الأدمن (Admin): صلاحية كاملة لرؤية الجميع مع إمكانية الفلترة
+        if ($filterSalesId !== null) {
+            $whereClauses[] = "c.sales_id = :chosen_sid";
+            $params[':chosen_sid'] = $filterSalesId;
+        }
+    }
+
     if (!empty($filterLoc)) {
-        $whereParts[] = "c.contract_location = :loc";
+        $whereClauses[] = "c.contract_location = :loc";
         $params[':loc'] = $filterLoc;
     }
-    if (!empty($whereParts)) {
-        $clientQuery .= " WHERE " . implode(' AND ', $whereParts);
-    }
-    $clientQuery .= " ORDER BY c.id DESC";
-    $stmt = $pdo->prepare($clientQuery);
+
+    $whereSql = !empty($whereClauses) ? " WHERE " . implode(" AND ", $whereClauses) : "";
+
+    // إجمالي العملاء المصرح برؤيتهم
+    $cntStmt = $pdo->prepare("SELECT COUNT(*) FROM clients c" . $whereSql);
+    $cntStmt->execute($params);
+    $totalClients = $cntStmt->fetchColumn();
+
+    // إحصائيات الدفع في النطاق المصرح به
+    $paidStmt = $pdo->prepare("SELECT c.paid_5_percent, COUNT(*) as count FROM clients c" . $whereSql . " GROUP BY c.paid_5_percent");
+    $paidStmt->execute($params);
+    $paidStats = $paidStmt->fetchAll();
+
+    // إحصائيات الفروع في النطاق المصرح به
+    $locStmt = $pdo->prepare("SELECT c.contract_location, COUNT(*) as count FROM clients c" . $whereSql . " GROUP BY c.contract_location");
+    $locStmt->execute($params);
+    $locStats = $locStmt->fetchAll();
+
+    // جلب جدول العملاء بالبيانات واسم السيلز من جدول users
+    $sql = "SELECT c.*, u.name as sales_name, u.referral_code as sales_slug, u.role as sales_role 
+            FROM clients c 
+            LEFT JOIN users u ON c.sales_id = u.id" . $whereSql . " ORDER BY c.id DESC";
+
+    $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $clients = $stmt->fetchAll();
 
@@ -429,13 +680,13 @@ try {
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 lg:p-8 selection:bg-amber-500/30 selection:text-amber-200">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 lg:p-8 selection:bg-slate-400/25 selection:text-white">
 
   <!-- Ambient light -->
   <div class="fixed top-0 right-10 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
   <div class="fixed bottom-0 left-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-  <div class="max-w-[1600px] mx-auto space-y-6 relative z-10">
+  <div class="max-w-[1700px] mx-auto space-y-6 relative z-10">
 
     <!-- ═══════════════ TOP HEADER ═══════════════ -->
     <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border border-slate-800">
@@ -446,16 +697,30 @@ try {
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/15 text-amber-400 border border-amber-500/30">
-              EXECUTIVE DASHBOARD
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black <?= $currentUserRole === 'Admin' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : ($currentUserRole === 'Manager' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30') ?>">
+              <?= strtoupper($currentUserRole) ?> PANEL
             </span>
-            <span class="text-xs text-slate-400" data-i18n="dashBadge">الإدارة المركزية</span>
+            <span class="text-xs text-white font-bold bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">
+              👤 <?= htmlspecialchars($currentUserName) ?>
+            </span>
           </div>
           <h1 class="text-xl sm:text-2xl font-black text-white mt-1" data-i18n="dashTitle">
-            لوحة تحكم وإدارة عقود شورز الساحلية
+            <?php if ($currentUserRole === 'Sales'): ?>
+              لوحة تحكم مستشار المبيعات | عقود شورز
+            <?php elseif ($currentUserRole === 'Manager'): ?>
+              لوحة قيادة مدير القطاع | متابعة فريق المبيعات
+            <?php else: ?>
+              لوحة تحكم وإدارة عقود شورز الساحلية
+            <?php endif; ?>
           </h1>
           <p class="text-xs text-slate-400" data-i18n="dashSub">
-            تتبع ومراجعة استبيانات وعقود الساحل الشمالي مع إسناد موظفي المبيعات
+            <?php if ($currentUserRole === 'Sales'): ?>
+              متابعة واستعراض العملاء المسجلين تحت حسابك المباشر مع رابط الإحالة الخاص بك
+            <?php elseif ($currentUserRole === 'Manager'): ?>
+              إدارة ومتابعة استبيانات وعقود فريق موظفي المبيعات التابعين لقطاعك
+            <?php else: ?>
+              الإدارة المركزية الشاملة لكافة المديرين وموظفي المبيعات واستبيانات العملاء
+            <?php endif; ?>
           </p>
         </div>
       </div>
@@ -463,6 +728,18 @@ try {
       <!-- Action Buttons -->
       <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
         
+        <?php if ($currentUserRole === 'Sales'): ?>
+          <!-- زر مخصص لموظف المبيعات: نسخ رابط الاستبيان الخاص به (?ref=CODE) -->
+          <button 
+            type="button" 
+            onclick="copyMySurveyLink('<?= htmlspecialchars($currentUserRef) ?>')"
+            class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-xl hover:shadow-amber-500/25 flex items-center gap-2 cursor-pointer"
+          >
+            <span>🔗</span>
+            <span data-i18n="btnCopySurveyLink">نسخ رابط الاستبيان الخاص بي</span>
+          </button>
+        <?php endif; ?>
+
         <!-- Language Switcher Button -->
         <button 
           id="langToggleBtn" 
@@ -472,11 +749,13 @@ try {
           <span>🌐</span> <span id="langBtnText">English</span>
         </button>
 
-        <!-- Manage Sales -->
-        <a href="manage_sales.php" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-black rounded-2xl transition-all shadow-lg hover:shadow-purple-500/20 flex items-center gap-2">
-          <span>👥</span>
-          <span data-i18n="btnManageSales">إدارة مسؤولي المبيعات</span> (<?= count($salesList) ?>)
-        </a>
+        <?php if ($currentUserRole === 'Admin'): ?>
+          <!-- Manage Sales & Users (Admin Only) -->
+          <a href="manage_sales.php" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-black rounded-2xl transition-all shadow-lg hover:shadow-purple-500/20 flex items-center gap-2">
+            <span>👥</span>
+            <span data-i18n="btnManageSales">إدارة مسؤولي المبيعات</span> (<?= count($salesList) ?>)
+          </a>
+        <?php endif; ?>
 
         <!-- Export CSV -->
         <a href="view_clients.php?export=csv" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-2xl transition-all shadow-md flex items-center gap-1.5">
@@ -489,7 +768,7 @@ try {
         </button>
 
         <!-- New Form -->
-        <a href="form.php" target="_blank" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-md flex items-center gap-1.5">
+        <a href="form.php<?= ($currentUserRole === 'Sales') ? '?ref=' . urlencode($currentUserRef) : '' ?>" target="_blank" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-md flex items-center gap-1.5">
           <span>+</span> <span data-i18n="btnNewForm">استمارة التعاقد</span>
         </a>
 
@@ -512,7 +791,7 @@ try {
       </div>
     <?php endif; ?>
 
-    <!-- ═══════════════ KPI STATS WITH ANIMATED COUNTERS ═══════════════ -->
+    <!-- ═══════════════ KPI STATS ═══════════════ -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       
       <!-- إجمالي العقود -->
@@ -529,13 +808,13 @@ try {
         </div>
       </div>
 
-      <!-- حالة سداد الـ 5% -->
+      <!-- حالة سداد مقدم أكتوبر -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl text-emerald-400">
           💳
         </div>
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpi5Percent">حالة سداد نسبة الـ 5%</p>
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpi5Percent">سداد مقدم أكتوبر</p>
           <div class="flex items-center gap-2 mt-1.5">
             <?php foreach ($paidStats as $ps): ?>
               <span class="px-2.5 py-0.5 rounded-lg text-xs font-black <?= ($ps['paid_5_percent'] === 'نعم') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30' ?>">
@@ -552,8 +831,8 @@ try {
           🏛️
         </div>
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpiBranches">فروع التعاقد</p>
-          <div class="flex items-center gap-2 mt-1.5">
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpiBranches">فروع ومكان التوثيق</p>
+          <div class="flex items-center gap-2 mt-1.5 flex-wrap">
             <?php foreach ($locStats as $ls): ?>
               <span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-800 text-cyan-300 border border-slate-700">
                 <?= htmlspecialchars($ls['contract_location'] ?: 'غير محدد') ?>: <?= $ls['count'] ?>
@@ -595,18 +874,23 @@ try {
         <span class="absolute right-3.5 top-3.5 text-slate-400 text-sm">🔍</span>
       </div>
 
-      <!-- Dropdown Filters (Form Submit) -->
+      <!-- Dropdown Filters -->
       <form method="GET" action="view_clients.php" class="flex flex-wrap items-center gap-3 w-full md:w-auto">
         
-        <!-- Sales Filter -->
+        <?php if ($currentUserRole !== 'Sales'): ?>
+        <!-- Sales Filter (Manager / Admin View) -->
         <div class="flex items-center gap-1.5">
-          <span class="text-xs text-slate-400 font-bold" data-i18n="filterSalesLbl">السيلز:</span>
+          <span class="text-xs text-slate-400 font-bold" data-i18n="filterSalesLbl">
+            <?= $currentUserRole === 'Manager' ? 'موظف السيلز (فريقك):' : 'السيلز:' ?>
+          </span>
           <select 
             name="sales_id" 
             onchange="this.form.submit()" 
             class="px-3 py-2.5 bg-slate-900 border border-slate-700 text-amber-300 text-xs font-bold rounded-xl cursor-pointer focus:outline-none focus:border-amber-400"
           >
-            <option value="" data-i18n="optAllSales">كل موظفي Sales (عرض الكل)</option>
+            <option value="" data-i18n="optAllSales">
+              <?= $currentUserRole === 'Manager' ? 'كل موظفي فريقي (عرض الكل)' : 'كل موظفي Sales (عرض الكل)' ?>
+            </option>
             <?php foreach ($salesList as $s): ?>
               <option value="<?= $s['id'] ?>" <?= ($filterSalesId !== null && $filterSalesId == $s['id']) ? 'selected' : '' ?>>
                 👤 <?= htmlspecialchars($s['name']) ?>
@@ -614,18 +898,20 @@ try {
             <?php endforeach; ?>
           </select>
         </div>
+        <?php endif; ?>
 
         <!-- Branch Filter -->
         <div class="flex items-center gap-1.5">
-          <span class="text-xs text-slate-400 font-bold" data-i18n="filterBranchLbl">الفرع:</span>
+          <span class="text-xs text-slate-400 font-bold" data-i18n="filterBranchLbl">مكان التوثيق:</span>
           <select 
             name="location" 
             onchange="this.form.submit()" 
             class="px-3 py-2.5 bg-slate-900 border border-slate-700 text-cyan-300 text-xs font-bold rounded-xl cursor-pointer focus:outline-none focus:border-amber-400"
           >
-            <option value="" data-i18n="optAllBranches">كل الفروع</option>
+            <option value="" data-i18n="optAllBranches">كل الأماكن</option>
             <option value="القاهرة" <?= ($filterLoc === 'القاهرة') ? 'selected' : '' ?> data-i18n="optCairoBranch">🏛️ القاهرة</option>
             <option value="الإسكندرية" <?= ($filterLoc === 'الإسكندرية') ? 'selected' : '' ?> data-i18n="optAlexBranch">🌊 الإسكندرية</option>
+            <option value="خارج جمهورية مصر العربية" <?= ($filterLoc === 'خارج جمهورية مصر العربية') ? 'selected' : '' ?>>🌍 خارج مصر</option>
           </select>
         </div>
 
@@ -658,17 +944,18 @@ try {
             <tr>
               <th class="p-4 w-12 text-center">#</th>
               <th class="p-4 w-16">ID</th>
-              <th class="p-4" data-i18n="thSales">مسؤول المبيعات (Sales)</th>
+              <th class="p-4" data-i18n="thSales">مسؤول المبيعات</th>
               <th class="p-4" data-i18n="thUnit">كود الوحدة</th>
-              <th class="p-4" data-i18n="thBranch">الفرع</th>
-              <th class="p-4" data-i18n="thName">اسم العميل / الشركاء</th>
+              <th class="p-4" data-i18n="thResidence">مكان الإقامة</th>
+              <th class="p-4" data-i18n="thBranch">مكان التوثيق</th>
+              <th class="p-4" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
               <th class="p-4" data-i18n="thPhone">أرقام التواصل</th>
-              <th class="p-4">Gmail</th>
+              <th class="p-4">البريد الإلكتروني</th>
               <th class="p-4" data-i18n="thIdDoc">إثبات الشخصية</th>
               <th class="p-4" data-i18n="thPlan">فترة السداد</th>
-              <th class="p-4 text-center" data-i18n="th5Percent">سداد الـ 5%</th>
-              <th class="p-4" data-i18n="thAddress">العنوان المعتمد</th>
-              <th class="p-4" data-i18n="thNotes">الملاحظات</th>
+              <th class="p-4 text-center" data-i18n="th5Percent">مقدم أكتوبر</th>
+              <th class="p-4" data-i18n="thAddress">العنوان (الهوية / المراسلات)</th>
+              <th class="p-4" data-i18n="thNotes">الملاحظات والاستثناءات</th>
               <th class="p-4" data-i18n="thDocs">المستندات</th>
               <th class="p-4" data-i18n="thDate">التاريخ</th>
               <th class="p-4 text-center" data-i18n="thActions">إجراءات</th>
@@ -677,7 +964,7 @@ try {
           <tbody class="divide-y divide-slate-800/80 text-slate-200" id="clientsTableBody">
             <?php if (empty($clients)): ?>
               <tr>
-                <td colspan="15" class="p-14 text-center text-slate-400 font-semibold" data-i18n="noClientsFound">
+                <td colspan="17" class="p-14 text-center text-slate-400 font-semibold" data-i18n="noClientsFound">
                   <div class="text-4xl mb-2">🏖️</div>
                   لا توجد أي بيانات أو عقود مسجلة تطابق معايير البحث الحالية.
                 </td>
@@ -690,10 +977,27 @@ try {
                 if (!is_array($attachments)) $attachments = [];
                 $clientJson = htmlspecialchars(json_encode($client), ENT_QUOTES, 'UTF-8');
                 $loc = $client['contract_location'] ?? 'القاهرة';
+                $residence = $client['residence_country'] ?? 'داخل جمهورية مصر العربية';
+                $isOutside = str_contains($residence, 'خارج');
+
+                // تفكيك الشركاء للوحدة إلى صفوف مستقلة
+                $cNames  = splitPartnerValues((string)$client['name']);
+                $cPhones = splitPartnerValues((string)$client['phone']);
+                $cEmails = splitPartnerValues((string)($client['email'] ?? ''));
+                $cIdNums = splitPartnerValues((string)($client['id_number'] ?? ''));
+
+                $partnerCount = max(count($cNames), count($cPhones), count($cEmails), 1);
+
+                for ($pIdx = 0; $pIdx < $partnerCount; $pIdx++):
+                  $pName  = $cNames[$pIdx] ?? ($cNames[0] ?? $client['name']);
+                  $pPhone = $cPhones[$pIdx] ?? ($cPhones[0] ?? $client['phone']);
+                  $pEmail = $cEmails[$pIdx] ?? ($cEmails[0] ?? $client['email']);
+                  $pIdNum = $cIdNums[$pIdx] ?? ($cIdNums[0] ?? $client['id_number']);
+                  $rawPhone = preg_replace('/[^0-9]/', '', (string)$pPhone);
               ?>
                 <tr 
                   class="hover:bg-slate-800/40 transition-colors client-row" 
-                  data-search="<?= htmlspecialchars(mb_strtolower($client['name'] . ' ' . $client['phone'] . ' ' . $client['eoi_number'] . ' ' . ($client['sales_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
+                  data-search="<?= htmlspecialchars(mb_strtolower($pName . ' ' . $pPhone . ' ' . $client['eoi_number'] . ' ' . ($client['sales_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
                 >
                   
                   <!-- م (تسلسلي مرئي) -->
@@ -702,11 +1006,14 @@ try {
                   </td>
 
                   <!-- ID -->
-                  <td class="p-4 text-slate-400 font-mono text-xs font-bold">
+                  <td class="p-4 text-slate-400 font-mono text-xs font-bold whitespace-nowrap">
                     #<?= htmlspecialchars($client['id']) ?>
+                    <?php if ($partnerCount > 1): ?>
+                      <div class="text-[10px] text-amber-400 font-bold mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
+                    <?php endif; ?>
                   </td>
 
-                  <!-- موظف السيلز المخصص (Sales Rep) -->
+                  <!-- موظف السيلز -->
                   <td class="p-4">
                     <?php if (!empty($client['sales_name'])): ?>
                       <a 
@@ -724,86 +1031,140 @@ try {
                     <?php endif; ?>
                   </td>
 
-                  <!-- كود الوحدة مع نسخ بنقرة واحدة -->
+                  <!-- كود الوحدة مع السعر إن وجد -->
                   <td class="p-4 font-mono font-black text-amber-300">
                     <button 
                       type="button"
                       onclick="copyText('<?= htmlspecialchars($client['eoi_number']) ?>')" 
-                      class="bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-xl border border-amber-500/20 text-xs cursor-pointer"
+                      class="bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-xl border border-amber-500/20 text-xs cursor-pointer block"
                       title="Click to copy unit code"
                     >
                       <?= htmlspecialchars($client['eoi_number']) ?>
                     </button>
+                    <?php if (!empty($client['unit_price'])): ?>
+                      <div class="text-[10px] text-emerald-400 font-normal mt-0.5 font-mono">
+                        <?= number_format($client['unit_price']) ?> EGP
+                      </div>
+                    <?php endif; ?>
                   </td>
 
-                  <!-- فرع التعاقد -->
+                  <!-- مكان الإقامة الحالي -->
                   <td class="p-4 text-xs font-bold">
-                    <span class="px-2.5 py-1 rounded-xl <?= ($loc === 'الإسكندرية') ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30' ?>">
-                      <?= ($loc === 'الإسكندرية') ? '🌊 ' : '🏛️ ' ?>
-                      <?= htmlspecialchars($loc) ?>
+                    <span class="px-2.5 py-1 rounded-xl <?= $isOutside ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' ?>">
+                      <?= $isOutside ? '🌍 خارج مصر' : '🇪🇬 داخل مصر' ?>
                     </span>
+                  </td>
+
+                  <!-- مكان توثيق العقد -->
+                  <td class="p-4 text-xs font-bold">
+                    <?php if ($isOutside): ?>
+                      <span class="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-400 border border-slate-700">
+                        مستثنى (خارج مصر)
+                      </span>
+                    <?php else: ?>
+                      <span class="px-2.5 py-1 rounded-xl <?= ($loc === 'الإسكندرية') ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30' ?>">
+                        <?= ($loc === 'الإسكندرية') ? '🌊 ' : '🏛️ ' ?>
+                        <?= htmlspecialchars($loc) ?>
+                      </span>
+                    <?php endif; ?>
                   </td>
 
                   <!-- اسم العميل والشركاء -->
                   <td class="p-4 font-bold text-white max-w-[200px] break-words">
-                    <?= htmlspecialchars($client['name']) ?>
+                    <?= htmlspecialchars($pName) ?>
+                    <?php if ($partnerCount > 1): ?>
+                      <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 mr-1 font-bold whitespace-nowrap">شريك <?= ($pIdx + 1) ?></span>
+                    <?php endif; ?>
                   </td>
 
                   <!-- أرقام الهاتف مع واتساب السريع -->
                   <td class="p-4 font-mono text-xs text-emerald-400 dir-ltr text-right max-w-[170px]">
                     <div class="flex items-center justify-end gap-1.5">
-                      <?php 
-                        $rawPhone = preg_replace('/[^0-9]/', '', $client['phone']);
-                      ?>
-                      <a 
-                        href="https://wa.me/<?= $rawPhone ?>" 
-                        target="_blank" 
-                        class="p-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300"
-                        title="WhatsApp Chat / محادثة واتساب"
-                      >
-                        💬
-                      </a>
-                      <span class="font-semibold"><?= htmlspecialchars($client['phone']) ?></span>
+                      <?php if (!empty($rawPhone)): ?>
+                        <a 
+                          href="https://wa.me/<?= $rawPhone ?>" 
+                          target="_blank" 
+                          class="p-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300"
+                          title="WhatsApp Chat / محادثة واتساب"
+                        >
+                          💬
+                        </a>
+                      <?php endif; ?>
+                      <span class="font-semibold"><?= htmlspecialchars($pPhone) ?></span>
                     </div>
                   </td>
 
-                  <!-- البريد الإلكتروني -->
+                  <!-- البريد الإلكتروني للمراسلات -->
                   <td class="p-4 font-mono text-xs text-cyan-300 dir-ltr text-right">
-                    <?= htmlspecialchars($client['email'] ?: '-') ?>
+                    <?= htmlspecialchars($pEmail ?: '-') ?>
                   </td>
 
                   <!-- إثبات الهوية -->
                   <td class="p-4 text-xs font-mono">
-                    <div class="text-slate-300"><?= htmlspecialchars($client['id_number'] ?: '-') ?></div>
+                    <div class="text-slate-300"><?= htmlspecialchars($pIdNum ?: ($client['id_number'] ?: '-')) ?></div>
                     <div class="text-[10px] text-slate-500 font-bold"><?= ($client['id_type'] === 'passport') ? 'جواز سفر' : 'رقم قومي' ?></div>
                   </td>
 
-                  <!-- فترة السداد -->
+                  <!-- فترة السداد والنسبة -->
                   <td class="p-4 text-xs font-bold text-amber-200">
-                    <?= htmlspecialchars($client['payment_period'] ?: '-') ?>
+                    <div><?= htmlspecialchars($client['period'] ?: $client['payment_period'] ?: '-') ?></div>
+                    <?php if (!empty($client['final_rate'])): ?>
+                      <div class="text-[11px] text-amber-400 font-mono font-normal mt-0.5"><?= htmlspecialchars($client['final_rate']) ?></div>
+                    <?php endif; ?>
                   </td>
 
-                  <!-- سداد الـ 5% -->
+                  <!-- سداد مقدم أكتوبر + تاريخ الدفع -->
                   <td class="p-4 text-center">
                     <?php if ($client['paid_5_percent'] === 'نعم'): ?>
-                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        ✓ تم
+                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 block mb-1">
+                        ✓ تم الاستكمال
                       </span>
+                      <?php if (!empty($client['payment_date'])): ?>
+                        <div class="text-[10px] text-slate-400 font-mono font-bold">
+                          📅 <?= htmlspecialchars($client['payment_date']) ?>
+                        </div>
+                      <?php endif; ?>
                     <?php else: ?>
                       <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-red-500/20 text-red-400 border border-red-500/30">
-                        ✕ لا
+                        ✕ لم يستكمل
                       </span>
                     <?php endif; ?>
                   </td>
 
-                  <!-- العنوان -->
-                  <td class="p-4 text-xs text-slate-300 max-w-[180px] truncate" title="<?= htmlspecialchars($client['addresses']) ?>">
-                    <?= htmlspecialchars($client['addresses'] ?: '-') ?>
+                  <!-- العنوان (الهوية / المراسلات) -->
+                  <td class="p-4 text-xs text-slate-300 max-w-[200px]">
+                    <?php if (!empty($client['id_address'])): ?>
+                      <div class="truncate text-amber-300/90 text-[11px]" title="<?= htmlspecialchars($client['id_address']) ?>">
+                        <span class="font-bold">الهوية:</span> <?= htmlspecialchars($client['id_address']) ?>
+                      </div>
+                    <?php endif; ?>
+                    <?php if (!empty($client['correspondence_address'])): ?>
+                      <div class="truncate text-slate-300 text-[11px]" title="<?= htmlspecialchars($client['correspondence_address']) ?>">
+                        <span class="font-bold">المراسلات:</span> <?= htmlspecialchars($client['correspondence_address']) ?>
+                      </div>
+                    <?php endif; ?>
+                    <?php if (empty($client['id_address']) && empty($client['correspondence_address'])): ?>
+                      <div class="truncate" title="<?= htmlspecialchars($client['addresses']) ?>">
+                        <?= htmlspecialchars($client['addresses'] ?: '-') ?>
+                      </div>
+                    <?php endif; ?>
                   </td>
 
-                  <!-- الملاحظات -->
-                  <td class="p-4 text-xs text-amber-200/90 max-w-[170px] truncate" title="<?= htmlspecialchars($client['notes'] ?? '') ?>">
-                    <?= !empty($client['notes']) ? htmlspecialchars($client['notes']) : '<span class="text-slate-500">-</span>' ?>
+                  <!-- الملاحظات والاستثناءات -->
+                  <td class="p-4 text-xs max-w-[200px]">
+                    <?php if (!empty($client['general_notes'])): ?>
+                      <div class="truncate text-slate-300 text-[11px] mb-1" title="<?= htmlspecialchars($client['general_notes']) ?>">
+                        <span class="font-bold text-amber-400">عامة:</span> <?= htmlspecialchars($client['general_notes']) ?>
+                      </div>
+                    <?php endif; ?>
+                    <?php if (!empty($client['notes'])): ?>
+                      <div class="truncate text-amber-200 text-[11px]" title="<?= htmlspecialchars($client['notes']) ?>">
+                        <span class="font-bold text-amber-400">خطة/بديلة:</span> <?= htmlspecialchars($client['notes']) ?>
+                      </div>
+                    <?php endif; ?>
+                    <?php if (empty($client['general_notes']) && empty($client['notes'])): ?>
+                      <span class="text-slate-500">-</span>
+                    <?php endif; ?>
                   </td>
 
                   <!-- المستندات والمرفقات -->
@@ -836,7 +1197,6 @@ try {
                   <!-- إجراءات -->
                   <td class="p-4 text-center">
                     <div class="flex items-center justify-center gap-1.5">
-                      
                       <!-- زر التعديل -->
                       <button 
                         type="button"
@@ -850,18 +1210,18 @@ try {
                       <!-- زر الحذف -->
                       <button 
                         type="button"
-                        onclick="confirmDeleteClient(<?= $client['id'] ?>, '<?= addslashes($client['name']) ?>')"
+                        onclick="confirmDeleteClient(<?= $client['id'] ?>, '<?= htmlspecialchars(addslashes($client['name']), ENT_QUOTES) ?>')"
                         class="p-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                        title="Delete / حذف العقد"
+                        title="Delete / حذف"
                       >
                         🗑️
                       </button>
-
                     </div>
                   </td>
 
                 </tr>
-              <?php endforeach; ?>
+              <?php endfor; ?>
+            <?php endforeach; ?>
             <?php endif; ?>
           </tbody>
         </table>
@@ -871,30 +1231,40 @@ try {
 
   </div>
 
-  <!-- ═══════════════ EDIT MODAL ═══════════════ -->
-  <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
+  <!-- ═══════════════ EDIT CLIENT MODAL ═══════════════ -->
+  <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md hidden overflow-y-auto">
+    <div class="glass-card max-w-2xl w-full p-6 sm:p-8 rounded-3xl border border-amber-500/30 shadow-2xl relative my-8">
       
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-5">
-        <h3 class="font-black text-lg text-amber-400 flex items-center gap-2">
-          <span>✏️</span> <span data-i18n="editModalTitle">تعديل بيانات العقد والعميل</span>
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+          <span>✏️</span>
+          <span data-i18n="editModalTitle">تعديل بيانات العقد والعميل</span>
         </h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white text-xl cursor-pointer">✕</button>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
       </div>
 
-      <form method="POST" action="view_clients.php" enctype="multipart/form-data" class="space-y-4">
+      <form method="POST" action="view_clients.php" enctype="multipart/form-data" class="space-y-4 text-xs">
         <input type="hidden" name="action" value="edit">
         <input type="hidden" name="client_id" id="edit_client_id">
 
-        <!-- إسناد موظف السيلز (Sales Attribution) -->
-        <div class="p-3 rounded-2xl bg-slate-950/60 border border-purple-500/30">
-          <label class="block text-xs font-bold text-purple-300 mb-1.5" data-i18n="editModalSalesLbl">👤 مسؤول المبيعات (Sales Rep المنسوب له هذا العقد):</label>
-          <select name="edit_sales_id" id="edit_sales_id" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold focus:border-amber-400 focus:outline-none">
-            <option value="" data-i18n="optDirectNoSales">-- مباشر (بدون وسيط / Direct) --</option>
-            <?php foreach ($salesList as $s): ?>
-              <option value="<?= $s['id'] ?>">👤 <?= htmlspecialchars($s['name']) ?></option>
-            <?php endforeach; ?>
-          </select>
+        <!-- اختيار مسؤول المبيعات -->
+        <div>
+          <label class="block text-xs font-bold text-amber-300 mb-1" data-i18n="editModalSalesLbl">
+            👤 مسؤول المبيعات (Sales Rep):
+          </label>
+          <?php if ($currentUserRole === 'Sales'): ?>
+            <div class="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 font-bold">
+              👤 <?= htmlspecialchars($currentUserName) ?> (حسابك الحالي)
+            </div>
+            <input type="hidden" name="edit_sales_id" id="edit_sales_id" value="<?= $currentUserId ?>">
+          <?php else: ?>
+            <select name="edit_sales_id" id="edit_sales_id" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold">
+              <option value="" data-i18n="optDirectNoSales">-- مباشر (بدون وسيط / Direct) --</option>
+              <?php foreach ($salesList as $s): ?>
+                <option value="<?= $s['id'] ?>">👤 <?= htmlspecialchars($s['name']) ?> (<?= htmlspecialchars($s['referral_code']) ?>)</option>
+              <?php endforeach; ?>
+            </select>
+          <?php endif; ?>
         </div>
 
         <!-- كود الوحدة واسم العميل -->
@@ -904,24 +1274,43 @@ try {
             <input type="text" name="edit_unit_code" id="edit_unit_code" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 font-mono text-sm focus:border-amber-400 focus:outline-none uppercase font-bold">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thName">اسم العميل والشركاء:</label>
+            <label class="block text-xs font-bold text-slate-300 mb-1">اسم العميل في البطاقة / الشركاء:</label>
             <input type="text" name="edit_name" id="edit_name" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:border-amber-400 focus:outline-none font-semibold">
+          </div>
+        </div>
+
+        <!-- مكان الإقامة ومكان توثيق العقد -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">مكان الإقامة الحالي:</label>
+            <select name="edit_residence_country" id="edit_residence_country" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-300 text-xs font-bold">
+              <option value="داخل جمهورية مصر العربية">🇪🇬 داخل جمهورية مصر العربية</option>
+              <option value="خارج جمهورية مصر العربية">🌍 خارج جمهورية مصر العربية</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">مكان التوثيق (إن كان داخل مصر):</label>
+            <select name="edit_contract_location" id="edit_contract_location" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 text-xs font-bold">
+              <option value="القاهرة">القاهرة</option>
+              <option value="الإسكندرية">الإسكندرية</option>
+              <option value="خارج جمهورية مصر العربية">خارج جمهورية مصر العربية</option>
+            </select>
           </div>
         </div>
 
         <!-- الهاتف والبريد -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPhone">رقم الهاتف:</label>
+            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPhone">رقم الهاتف والتواصل:</label>
             <input type="text" name="edit_phone" id="edit_phone" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400 font-mono text-sm focus:border-amber-400 focus:outline-none dir-ltr text-right">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">البريد الإلكتروني (Gmail):</label>
+            <label class="block text-xs font-bold text-slate-300 mb-1">البريد الإلكتروني للمراسلات:</label>
             <input type="email" name="edit_email" id="edit_email" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-cyan-300 font-mono text-sm focus:border-amber-400 focus:outline-none dir-ltr text-right">
           </div>
         </div>
 
-        <!-- الهوية ومكان التعاقد -->
+        <!-- الهوية وسعر الوحدة -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblDocType">نوع الوثيقة:</label>
@@ -935,39 +1324,61 @@ try {
             <input type="text" name="edit_id_number" id="edit_id_number" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-sm focus:border-amber-400 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thBranch">فرع التعاقد:</label>
-            <select name="edit_contract_location" id="edit_contract_location" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 text-xs font-bold">
-              <option value="القاهرة">🏛️ فرع القاهرة</option>
-              <option value="الإسكندرية">🌊 فرع الإسكندرية</option>
-            </select>
+            <label class="block text-xs font-bold text-slate-300 mb-1">سعر الوحدة (EGP):</label>
+            <input type="number" step="any" name="edit_unit_price" id="edit_unit_price" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-300 font-mono text-sm focus:border-amber-400 focus:outline-none">
           </div>
         </div>
 
-        <!-- فترة السداد والـ 5% -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- فترة السداد واستكمال مقدم أكتوبر وتاريخ الدفع -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPlan">فترة السداد:</label>
-            <input type="text" name="edit_payment_period" id="edit_payment_period" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-200 text-xs font-bold focus:border-amber-400 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="th5Percent">سداد الـ 5%:</label>
-            <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold">
-              <option value="نعم">نعم (تم السداد)</option>
-              <option value="لا">لا (لم يتم)</option>
+            <select name="edit_payment_period" id="edit_payment_period" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-200 text-xs font-bold">
+              <option value="3 سنوات">3 سنوات</option>
+              <option value="4 سنوات">4 سنوات</option>
+              <option value="5 سنوات">5 سنوات</option>
+              <option value="6 سنوات">6 سنوات</option>
+              <option value="7 سنوات">7 سنوات</option>
+              <option value="8 سنوات">8 سنوات</option>
+              <option value="9 سنوات">9 سنوات</option>
+              <option value="10 سنوات">10 سنوات</option>
             </select>
           </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">استكمال مقدم أكتوبر:</label>
+            <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold">
+              <option value="نعم">نعم (تم الاستكمال)</option>
+              <option value="لا">لا (لم يستكمل)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">تاريخ الدفع:</label>
+            <input type="date" name="edit_payment_date" id="edit_payment_date" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:border-amber-400 focus:outline-none">
+          </div>
         </div>
 
-        <!-- العنوان -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thAddress">العنوان بالتفصيل:</label>
-          <textarea name="edit_addresses" id="edit_addresses" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+        <!-- العناوين -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">العنوان في البطاقة / الهوية:</label>
+            <textarea name="edit_id_address" id="edit_id_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">العنوان المعتمد للمراسلات:</label>
+            <textarea name="edit_correspondence_address" id="edit_correspondence_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+          </div>
         </div>
 
-        <!-- الملاحظات والطلبات الخاصة -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblNotes">الملاحظات والطلبات الخاصة (الحد الأقصى 250 حرف):</label>
-          <textarea name="edit_notes" id="edit_notes" rows="2" maxlength="250" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-amber-200 text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+        <!-- الملاحظات والاستثناءات -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblNotes">ملاحظات عامة / خطة بديلة واستثناءات (اختياري):</label>
+            <textarea name="edit_notes" id="edit_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-amber-200 text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">ملاحظات عامة (اختياري):</label>
+            <textarea name="edit_general_notes" id="edit_general_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+          </div>
         </div>
 
         <!-- المرفقات الحالية وإضافة جديدة -->
@@ -1051,12 +1462,11 @@ try {
 
   <!-- ═══════════════ SCRIPT LOGIC (BILINGUAL I18N + LIVE SEARCH) ═══════════════ -->
   <script>
-    // ── BILINGUAL DICTIONARY ──
     const dashboardTranslations = {
       ar: {
         dashBadge: "الإدارة المركزية",
         dashTitle: "لوحة تحكم وإدارة عقود شورز الساحلية",
-        dashSub: "تتبع ومراجعة استبيانات وعقود الساحل الشمالي مع إسناد موظفي المبيعات",
+        dashSub: "تتبع ومراجعة استبيانات وعقود الساحل الشمالي مع إسناد موظفي المبيعات والبيانات المحدثة",
         btnManageSales: "إدارة مسؤولي المبيعات",
         btnExportCsv: "تصدير Excel (CSV)",
         btnPrint: "طباعة",
@@ -1064,38 +1474,39 @@ try {
         btnLogout: "تسجيل خروج",
         kpiTotal: "إجمالي العقود المسجلة",
         kpiTotalSub: "عقد معتمد",
-        kpi5Percent: "حالة سداد نسبة الـ 5%",
-        kpiBranches: "فروع التعاقد",
+        kpi5Percent: "سداد مقدم أكتوبر",
+        kpiBranches: "فروع ومكان التوثيق",
         kpiSalesTeam: "فريق المبيعات",
         kpiSalesTeamSub: "موظف نشط",
         phSearchClients: "بحث سريع: اسم العميل، الهاتف، كود الوحدة، السيلز...",
         filterSalesLbl: "السيلز:",
         optAllSales: "كل موظفي Sales (عرض الكل)",
-        filterBranchLbl: "الفرع:",
-        optAllBranches: "كل الفروع",
+        filterBranchLbl: "مكان التوثيق:",
+        optAllBranches: "كل الأماكن",
         optCairoBranch: "🏛️ القاهرة",
         optAlexBranch: "🌊 الإسكندرية",
         btnClearFilters: "✕ إلغاء الفلترة",
         tblTitle: "جدول عقود واستبيانات العملاء",
-        thSales: "مسؤول المبيعات (Sales)",
+        thSales: "مسؤول المبيعات",
         thUnit: "كود الوحدة",
-        thBranch: "الفرع",
-        thName: "اسم العميل / الشركاء",
+        thResidence: "مكان الإقامة",
+        thBranch: "مكان التوثيق",
+        thName: "اسم العميل في البطاقة / الشركاء",
         thPhone: "أرقام التواصل",
         thIdDoc: "إثبات الشخصية",
         thPlan: "فترة السداد",
-        th5Percent: "سداد الـ 5%",
-        thAddress: "العنوان المعتمد",
-        thNotes: "الملاحظات",
+        th5Percent: "مقدم أكتوبر",
+        thAddress: "العنوان (الهوية / المراسلات)",
+        thNotes: "الملاحظات والاستثناءات",
         thDocs: "المستندات",
         thDate: "التاريخ",
         thActions: "إجراءات",
         noClientsFound: "لا توجد أي بيانات أو عقود مسجلة تطابق معايير البحث الحالية.",
         badgeDirect: "🌐 مباشر",
         lblNoFiles: "لا يوجد",
-        lblNotes: "الملاحظات والطلبات الخاصة:",
+        lblNotes: "الملاحظات والاستثناءات:",
         editModalTitle: "تعديل بيانات العقد والعميل",
-        editModalSalesLbl: "👤 مسؤول المبيعات (Sales Rep المنسوب له هذا العقد):",
+        editModalSalesLbl: "👤 مسؤول المبيعات (Sales Rep):",
         optDirectNoSales: "-- مباشر (بدون وسيط / Direct) --",
         lblDocType: "نوع الوثيقة:",
         lblDocNum: "رقم الوثيقة:",
@@ -1108,57 +1519,58 @@ try {
         btnDownloadDoc: "تحميل"
       },
       en: {
-        dashBadge: "Central Headquarters",
+        dashBadge: "Central Management",
         dashTitle: "Shores Coastal Contracts Management Dashboard",
-        dashSub: "Track and verify North Coast contracts with dedicated sales consultant attribution",
-        btnManageSales: "Manage Sales Team",
+        dashSub: "Track and review North Coast client registrations and sales consultant allocations",
+        btnManageSales: "Manage Sales Consultants",
         btnExportCsv: "Export Excel (CSV)",
         btnPrint: "Print",
-        btnNewForm: "+ Contract Form",
+        btnNewForm: "New Contract Form",
         btnLogout: "Logout",
         kpiTotal: "Total Registered Contracts",
-        kpiTotalSub: "Verified Contracts",
-        kpi5Percent: "5% Payment Status",
-        kpiBranches: "Contract Branches",
+        kpiTotalSub: "certified contracts",
+        kpi5Percent: "October Down Payment",
+        kpiBranches: "Contract Locations",
         kpiSalesTeam: "Sales Team",
-        kpiSalesTeamSub: "Active Reps",
-        phSearchClients: "Quick Search: Client name, phone, unit code, sales...",
-        filterSalesLbl: "Sales Rep:",
-        optAllSales: "All Sales Reps (Show All)",
-        filterBranchLbl: "Branch:",
-        optAllBranches: "All Branches",
+        kpiSalesTeamSub: "active consultants",
+        phSearchClients: "Quick Search: Client Name, Phone, Unit Code, Sales...",
+        filterSalesLbl: "Sales:",
+        optAllSales: "All Sales Consultants (Show All)",
+        filterBranchLbl: "Location:",
+        optAllBranches: "All Locations",
         optCairoBranch: "🏛️ Cairo",
         optAlexBranch: "🌊 Alexandria",
         btnClearFilters: "✕ Clear Filters",
-        tblTitle: "Client Records & Contracts Table",
-        thSales: "Sales Rep",
+        tblTitle: "Client Contracts & Applications Directory",
+        thSales: "Sales Consultant",
         thUnit: "Unit Code",
-        thBranch: "Branch",
-        thName: "Client / Partners",
-        thPhone: "Phone Numbers",
-        thIdDoc: "Identity Doc",
+        thResidence: "Residence",
+        thBranch: "Signing Location",
+        thName: "Client Name in ID / Partners",
+        thPhone: "Contact Phones",
+        thIdDoc: "ID / Passport",
         thPlan: "Payment Plan",
-        th5Percent: "5% Paid",
-        thAddress: "Verified Address",
-        thNotes: "Notes",
+        th5Percent: "October Advance",
+        thAddress: "Address (ID / Correspondence)",
+        thNotes: "Notes & Exceptions",
         thDocs: "Documents",
-        thDate: "Registered At",
+        thDate: "Date Logged",
         thActions: "Actions",
-        noClientsFound: "No client contracts found matching your search criteria.",
+        noClientsFound: "No clients or contracts found matching current search criteria.",
         badgeDirect: "🌐 Direct",
         lblNoFiles: "None",
-        lblNotes: "Notes & Special Requests:",
-        editModalTitle: "Edit Client & Contract Details",
-        editModalSalesLbl: "👤 Assigned Sales Consultant:",
-        optDirectNoSales: "-- Direct (No Sales Consultant) --",
-        lblDocType: "Doc Type:",
-        lblDocNum: "Doc Number:",
+        lblNotes: "Notes & Exceptions:",
+        editModalTitle: "Edit Client & Contract Information",
+        editModalSalesLbl: "👤 Sales Consultant Assigned:",
+        optDirectNoSales: "-- Direct (No Consultant) --",
+        lblDocType: "Document Type:",
+        lblDocNum: "Document Number:",
         editModalDocs: "📎 Document Attachments Management:",
         editModalUploadMore: "+ Upload Additional Files:",
         btnCancel: "Cancel",
         btnSaveEdit: "💾 Save Changes",
-        delClientModalTitle: "Confirm Contract Deletion",
-        btnConfirmDelete: "Yes, Confirm Deletion",
+        delClientModalTitle: "Confirm Client Contract Deletion",
+        btnConfirmDelete: "Yes, Permanently Delete",
         btnDownloadDoc: "Download"
       }
     };
@@ -1236,14 +1648,38 @@ try {
       document.getElementById('visibleRowsCount').innerText = count + ' ' + (currentLang === 'ar' ? 'عقد' : 'records');
     }
 
-    // Click to copy
     function copyText(str) {
       navigator.clipboard.writeText(str).then(() => {
         alert((currentLang === 'ar' ? 'تم نسخ: ' : 'Copied: ') + str);
       });
     }
 
-    // Delete Client Confirmation Modal
+    // نسخ رابط الاستبيان الخاص بموظف المبيعات (?ref=CODE)
+    function copyMySurveyLink(refCode) {
+      const origin = window.location.origin;
+      const path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+      const surveyUrl = `${origin}${path}/form.php?ref=${encodeURIComponent(refCode)}`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(surveyUrl).then(() => {
+          showCopyToast(surveyUrl);
+        }).catch(() => {
+          prompt((currentLang === 'ar' ? 'رابط الاستبيان الخاص بك:' : 'Your Survey Link:'), surveyUrl);
+        });
+      } else {
+        prompt((currentLang === 'ar' ? 'رابط الاستبيان الخاص بك:' : 'Your Survey Link:'), surveyUrl);
+      }
+    }
+
+    function showCopyToast(url) {
+      const toast = document.createElement('div');
+      toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black px-6 py-3 rounded-2xl shadow-2xl text-xs sm:text-sm flex items-center gap-2 animate-bounce";
+      toast.innerHTML = `<span>📋</span> <span>${currentLang === 'ar' ? 'تم نسخ رابط الاستبيان الخاص بك بنجاح!' : 'Survey link copied to clipboard!'}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Delete Client Modal
     function confirmDeleteClient(id, name) {
       document.getElementById('deleteClientId').value = id;
       const desc = (currentLang === 'ar')
@@ -1267,10 +1703,15 @@ try {
       document.getElementById('edit_email').value = client.email || '';
       document.getElementById('edit_id_type').value = client.id_type || 'national_id';
       document.getElementById('edit_id_number').value = client.id_number || '';
+      document.getElementById('edit_residence_country').value = client.residence_country || 'داخل جمهورية مصر العربية';
       document.getElementById('edit_contract_location').value = client.contract_location || 'القاهرة';
-      document.getElementById('edit_payment_period').value = client.payment_period || '';
-      document.getElementById('edit_paid_5_percent').value = client.paid_5_percent || 'نعم';
-      document.getElementById('edit_addresses').value = client.addresses || '';
+      document.getElementById('edit_unit_price').value = client.unit_price || '';
+      document.getElementById('edit_payment_period').value = client.payment_period || '3 سنوات';
+      document.getElementById('edit_paid_5_percent').value = client.paid_5_percent || 'لا';
+      document.getElementById('edit_payment_date').value = client.payment_date || '';
+      document.getElementById('edit_id_address').value = client.id_address || client.addresses || '';
+      document.getElementById('edit_correspondence_address').value = client.correspondence_address || '';
+      document.getElementById('edit_general_notes').value = client.general_notes || '';
       document.getElementById('edit_notes').value = client.notes || '';
 
       const filesContainer = document.getElementById('modal_existing_files');

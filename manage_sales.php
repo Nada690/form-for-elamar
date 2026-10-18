@@ -11,13 +11,11 @@ session_start();
 
 require_once __DIR__ . '/db.php';
 
-// التحقق من صلاحية الأدمن
-$isAuthenticated = !empty($_SESSION['is_authorized_admin']) 
-                   && $_SESSION['is_authorized_admin'] === true 
-                   && !empty($_SESSION['admin_role']) 
-                   && $_SESSION['admin_role'] === 'admin';
+// التحقق من صلاحية الأدمن (Admin Only)
+$isAdmin = (!empty($_SESSION['auth_user_role']) && $_SESSION['auth_user_role'] === 'Admin')
+           || (!empty($_SESSION['is_authorized_admin']) && $_SESSION['is_authorized_admin'] === true && !empty($_SESSION['admin_role']) && $_SESSION['admin_role'] === 'admin');
 
-if (!$isAuthenticated) {
+if (!$isAdmin) {
     header("Location: view_clients.php");
     exit;
 }
