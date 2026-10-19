@@ -5403,7 +5403,6 @@
               <span class="text-sm">📍</span>
               <span class="truncate font-black text-xs text-slate-950">${displayName}</span>
             </span>
-            <span class="text-[9px] text-sky-800 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">مصر</span>
           `;
 
           item.onclick = (e) => {
@@ -5426,14 +5425,12 @@
 
       const isEn = (currentLang === 'en');
       const displayName = isEn ? c.nameEn : c.nameAr;
-      const displayContinent = isEn ? c.continentEn : c.continentAr;
 
       item.innerHTML = `
         <span class="flex items-center gap-2 truncate">
           <span class="text-base flex-shrink-0">${c.flag}</span>
           <span class="truncate font-black text-xs text-slate-950">${displayName}</span>
         </span>
-        <span class="text-[9px] text-slate-600 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 flex-shrink-0 ml-2 font-mono">${displayContinent}</span>
       `;
 
       item.onclick = (e) => {
