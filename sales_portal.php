@@ -311,8 +311,11 @@ function pageHead(string $title): void { ?>
   <meta name="robots" content="noindex, nofollow">
   <title><?= h($title) ?> | مجموعة العمار</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
     body {
       background-color: #dbeafe !important;
       background-image: 
@@ -324,21 +327,37 @@ function pageHead(string $title): void { ?>
       font-weight: 700 !important;
     }
     html { font-family: 'Cairo', sans-serif; }
-    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div {
-      font-weight: 700;
+    .font-mono { font-family: 'Plus Jakarta Sans', monospace; }
+    
+    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div, th, td {
+      color: #000000 !important;
+      font-weight: 700 !important;
     }
     label {
       color: #000000 !important;
       font-weight: 800 !important;
     }
     .glass { 
-      background: rgba(255, 255, 255, 0.95); 
-      border: 2px solid #7dd3fc;
-      box-shadow: 0 20px 50px -10px rgba(2, 132, 199, 0.15), 0 8px 24px rgba(0, 0, 0, 0.04);
+      background: rgba(255, 255, 255, 0.96) !important; 
+      backdrop-filter: blur(28px) !important;
+      -webkit-backdrop-filter: blur(28px) !important;
+      border: 2px solid #7dd3fc !important;
+      box-shadow: 0 20px 50px -10px rgba(2, 132, 199, 0.15), 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+    }
+    input, select, textarea {
+      background: #ffffff !important;
+      border: 2px solid #7dd3fc !important;
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #0284c7 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35) !important;
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-950">
+<body class="min-h-screen text-slate-950 p-3 sm:p-6 lg:p-8">
 <?php }
 
 function flashBox(?array $flash): void {
@@ -402,7 +421,7 @@ if (isset($_GET['customer'])) {
     if (!$c) http_response_code(404);
     pageHead('تفاصيل العميل'); ?>
   <div class="max-w-3xl mx-auto p-4 sm:p-8">
-    <a href="sales_portal.php" class="text-amber-400 text-sm font-bold hover:underline">← رجوع للقائمة</a>
+    <a href="sales_portal.php" class="text-sky-900 text-sm font-black hover:underline">← رجوع للقائمة</a>
     <div class="glass rounded-3xl p-6 mt-4 shadow-2xl">
     <?php if (!$c): ?>
       <p class="text-center text-slate-300 font-bold py-10">العميل غير موجود.</p>
@@ -418,13 +437,13 @@ if (isset($_GET['customer'])) {
             'general_notes' => 'ملاحظات عامة', 'notes' => 'ملاحظات', 'sales_name' => 'مسؤول المبيعات',
             'created_at' => 'تاريخ التسجيل',
         ]; ?>
-      <h1 class="text-xl font-black text-white mb-4"><?= h($c['name']) ?></h1>
+      <h1 class="text-2xl font-black text-slate-950 mb-4"><?= h($c['name']) ?></h1>
       <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <?php foreach ($labels as $key => $label):
             if (!array_key_exists($key, $c) || $c[$key] === null || $c[$key] === '') continue; ?>
-          <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-3">
-            <dt class="text-[11px] text-amber-400 font-bold"><?= h($label) ?></dt>
-            <dd class="text-slate-100 mt-0.5 break-words"><?= nl2br(h($c[$key])) ?></dd>
+          <div class="bg-sky-50/70 border-2 border-sky-200 rounded-2xl p-3">
+            <dt class="text-[11px] text-sky-950 font-black"><?= h($label) ?></dt>
+            <dd class="text-slate-950 font-bold mt-0.5 break-words"><?= nl2br(h($c[$key])) ?></dd>
           </div>
         <?php endforeach; ?>
       </dl>
@@ -506,24 +525,26 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
   <!-- Header -->
   <header class="glass rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl">
     <div class="flex items-center gap-4">
-      <img src="logo.png" alt="Logo" class="h-12 object-contain">
+      <div class="p-2 rounded-2xl bg-gradient-to-tr from-sky-400/20 via-blue-400/10 to-transparent border-2 border-sky-300 shadow-md">
+        <img src="logo.png" alt="Logo" class="h-12 object-contain">
+      </div>
       <div>
-        <h1 class="text-lg sm:text-xl font-black text-white">بوابة المبيعات</h1>
-        <p class="text-xs text-slate-400">
-          <?= h($user['name']) ?> •
-          <span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold"><?= h($roleLabel) ?></span>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-950">بوابة المبيعات</h1>
+        <p class="text-xs text-slate-800 font-bold mt-1">
+          <span class="font-black text-slate-950">👤 <?= h($user['name']) ?></span> •
+          <span class="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-950 border border-sky-300 font-black"><?= h($roleLabel) ?></span>
         </p>
       </div>
     </div>
     <div class="flex items-center gap-2">
       <?php if ($isAdmin): ?>
-        <a href="sales_portal.php" class="px-4 py-2 rounded-2xl text-sm font-bold border <?= $view === 'customers' ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-800 text-slate-200 border-slate-700' ?>">العملاء</a>
-        <a href="sales_portal.php?view=users" class="px-4 py-2 rounded-2xl text-sm font-bold border <?= $view === 'users' ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-800 text-slate-200 border-slate-700' ?>">المستخدمون</a>
+        <a href="sales_portal.php" class="px-4 py-2 rounded-2xl text-sm font-black border-2 <?= $view === 'customers' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white hover:bg-sky-50 text-slate-950 border-sky-300 shadow-xs' ?>">العملاء</a>
+        <a href="sales_portal.php?view=users" class="px-4 py-2 rounded-2xl text-sm font-black border-2 <?= $view === 'users' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white hover:bg-sky-50 text-slate-950 border-sky-300 shadow-xs' ?>">المستخدمون</a>
       <?php endif; ?>
       <form method="POST" action="sales_portal.php">
         <input type="hidden" name="action" value="logout">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <button class="px-4 py-2 rounded-2xl text-sm font-bold bg-slate-800 hover:bg-red-500/20 text-slate-300 border border-slate-700">خروج</button>
+        <button class="px-4 py-2 rounded-2xl text-sm font-black bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-300 shadow-xs cursor-pointer">خروج</button>
       </form>
     </div>
   </header>
@@ -535,24 +556,34 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
   <?php if ($role === 'Sales'):
       $refLink = baseUrl() . '/form.php?ref=' . urlencode($user['referral_code']); ?>
   <div class="glass rounded-3xl p-4 sm:p-5">
-    <p class="text-xs font-bold text-amber-400 mb-2">رابطك الشخصي للتسجيل (أي عميل يسجل منه يظهر لك تلقائياً)</p>
+    <p class="text-xs font-black text-slate-950 mb-2">رابطك الشخصي للتسجيل (أي عميل يسجل منه يظهر لك تلقائياً)</p>
     <div class="flex items-center gap-2" dir="ltr">
-      <input id="refLink" readonly value="<?= h($refLink) ?>" class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-slate-200">
-      <button type="button" onclick="copyText('refLink', this)" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black">نسخ</button>
+      <input id="refLink" readonly value="<?= h($refLink) ?>" class="flex-1 px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-xs font-mono font-bold text-slate-950 shadow-xs">
+      <button type="button" onclick="copyText('refLink', this)" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 text-xs font-black border-2 border-sky-400 shadow-md cursor-pointer">نسخ</button>
     </div>
   </div>
   <?php endif; ?>
 
   <!-- بطاقات -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <div class="glass rounded-3xl p-4">
-      <p class="text-xs text-slate-400 font-bold"><?= $role === 'Sales' ? 'عملائي' : ($role === 'Manager' ? 'عملاء فريقي' : 'كل العملاء') ?></p>
-      <p class="text-3xl font-black text-white mt-1"><?= (int)$total ?></p>
+    <div class="glass rounded-3xl p-5 border-2 border-sky-300 flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl bg-sky-100 border-2 border-sky-300 flex items-center justify-center text-2xl text-sky-800 shadow-xs">
+        📑
+      </div>
+      <div>
+        <p class="text-xs text-slate-700 font-black uppercase tracking-wider"><?= $role === 'Sales' ? 'عملائي' : ($role === 'Manager' ? 'عملاء فريقي' : 'كل العملاء') ?></p>
+        <p class="text-3xl font-black text-slate-950 mt-0.5"><?= (int)$total ?></p>
+      </div>
     </div>
     <?php if ($role === 'Manager'): ?>
-    <div class="glass rounded-3xl p-4">
-      <p class="text-xs text-slate-400 font-bold">عدد السيلز في فريقي</p>
-      <p class="text-3xl font-black text-amber-400 mt-1"><?= count($teamRows) ?></p>
+    <div class="glass rounded-3xl p-5 border-2 border-sky-300 flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl bg-purple-100 border-2 border-purple-300 flex items-center justify-center text-2xl text-purple-800 shadow-xs">
+        👥
+      </div>
+      <div>
+        <p class="text-xs text-slate-700 font-black uppercase tracking-wider">عدد السيلز في فريقي</p>
+        <p class="text-3xl font-black text-slate-950 mt-0.5"><?= count($teamRows) ?></p>
+      </div>
     </div>
     <?php endif; ?>
   </div>
@@ -561,9 +592,9 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
   <div class="glass rounded-3xl p-4 sm:p-5">
     <p class="text-sm font-black text-white mb-3">فريقي</p>
     <div class="flex flex-wrap gap-2">
-      <a href="<?= h(pageUrl(['sales_id' => null, 'page' => null])) ?>" class="px-3 py-1.5 rounded-xl text-xs font-bold border <?= $filterId ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-amber-500 text-slate-950 border-amber-500' ?>">الكل</a>
+      <a href="<?= h(pageUrl(['sales_id' => null, 'page' => null])) ?>" class="px-3 py-1.5 rounded-xl text-xs font-black border-2 <?= $filterId ? 'bg-white text-slate-950 border-sky-300 shadow-xs' : 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' ?>">الكل</a>
       <?php foreach ($teamRows as $t): ?>
-        <a href="sales_portal.php?sales_id=<?= (int)$t['id'] ?>" class="px-3 py-1.5 rounded-xl text-xs font-bold border <?= $filterId === (int)$t['id'] ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-800 text-slate-200 border-slate-700' ?>">
+        <a href="sales_portal.php?sales_id=<?= (int)$t['id'] ?>" class="px-3 py-1.5 rounded-xl text-xs font-black border-2 <?= $filterId === (int)$t['id'] ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white text-slate-950 border-sky-300 shadow-xs' ?>">
           <?= h($t['name']) ?> <span class="font-mono opacity-80">(<?= (int)$t['cnt'] ?>)</span>
         </a>
       <?php endforeach; ?>
@@ -572,11 +603,11 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
   <?php endif; ?>
 
   <!-- بحث / فلتر -->
-  <form method="GET" action="sales_portal.php" class="glass rounded-3xl p-4 flex flex-col sm:flex-row gap-3">
+  <form method="GET" action="sales_portal.php" class="glass rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 border-2 border-sky-300 shadow-xl">
     <input type="text" name="q" value="<?= h($q) ?>" placeholder="ابحث بالاسم أو الهاتف أو كود الوحدة..."
-           class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-amber-400">
+           class="flex-1 px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-500 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
     <?php if ($role === 'Admin' && $teamRows): ?>
-      <select name="sales_id" class="px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white">
+      <select name="sales_id" class="px-3 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm font-bold shadow-xs focus:outline-none focus:border-sky-500">
         <option value="">كل السيلز</option>
         <?php foreach ($teamRows as $t): ?>
           <option value="<?= (int)$t['id'] ?>" <?= $filterId === (int)$t['id'] ? 'selected' : '' ?>><?= h($t['name']) ?></option>
@@ -585,26 +616,29 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
     <?php elseif ($role === 'Manager' && $filterId): ?>
       <input type="hidden" name="sales_id" value="<?= (int)$filterId ?>">
     <?php endif; ?>
-    <button class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-black">بحث</button>
+    <button class="px-6 py-3 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 text-sm font-black border-2 border-sky-400 shadow-md cursor-pointer">بحث</button>
   </form>
 
   <!-- جدول العملاء -->
   <div class="glass rounded-3xl overflow-hidden shadow-2xl">
     <div class="overflow-x-auto">
       <table class="w-full text-sm text-right">
-        <thead class="bg-slate-900 text-amber-400 text-xs font-black">
+        <thead class="bg-sky-200/95 text-slate-950 text-xs font-black border-b-2 border-sky-300">
           <tr>
-            <th class="p-3 w-12 text-center">#</th>
-            <th class="p-3 w-16">ID</th>
-            <th class="p-3">الاسم</th><th class="p-3">الهاتف</th>
-            <th class="p-3">المشروع</th><th class="p-3">مكان التعاقد</th><th class="p-3">كود الوحدة</th>
-            <?php if ($role !== 'Sales'): ?><th class="p-3">السيلز</th><?php endif; ?>
-            <th class="p-3">التاريخ</th><th class="p-3"></th>
+            <th class="p-3.5 w-12 text-center">#</th>
+            <th class="p-3.5 w-16">ID</th>
+            <th class="p-3.5">الاسم</th><th class="p-3.5">الهاتف</th>
+            <th class="p-3.5">المشروع</th><th class="p-3.5">مكان التعاقد</th><th class="p-3.5">كود الوحدة</th>
+            <?php if ($role !== 'Sales'): ?><th class="p-3.5">السيلز</th><?php endif; ?>
+            <th class="p-3.5">التاريخ</th><th class="p-3.5 text-center">إجراءات</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/80">
+        <tbody class="divide-y divide-sky-100 text-slate-950 font-bold bg-white">
         <?php if (!$customers): ?>
-          <tr><td colspan="10" class="p-10 text-center text-slate-400 font-bold">لا يوجد عملاء لعرضهم.</td></tr>
+          <tr><td colspan="10" class="p-12 text-center text-slate-950 font-black text-sm">
+            <div class="text-3xl mb-2">🏖️</div>
+            لا يوجد عملاء لعرضهم.
+          </td></tr>
         <?php endif; ?>
         <?php 
         $seq = $offset + 1;
@@ -616,29 +650,33 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
             $pName  = $cNames[$i] ?? ($cNames[0] ?? $c['name']);
             $pPhone = $cPhones[$i] ?? ($cPhones[0] ?? $c['phone']);
         ?>
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3 text-center font-bold text-amber-400 font-mono bg-slate-950/30">
+          <tr class="hover:bg-sky-50/90 transition-colors">
+            <td class="p-3 text-center font-black text-sky-950 font-mono bg-sky-50">
               <?= $seq++ ?>
             </td>
-            <td class="p-3 font-mono text-slate-400 text-xs whitespace-nowrap">
+            <td class="p-3 font-mono text-slate-950 text-xs font-black whitespace-nowrap">
               #<?= (int)$c['id'] ?>
               <?php if ($pCount > 1): ?>
-                <div class="text-[10px] text-amber-400 font-bold">(شريك <?= ($i + 1) ?> من <?= $pCount ?>)</div>
+                <div class="text-[10px] text-sky-800 font-black">(شريك <?= ($i + 1) ?> من <?= $pCount ?>)</div>
               <?php endif; ?>
             </td>
-            <td class="p-3 font-bold text-white">
+            <td class="p-3 font-black text-slate-950">
               <?= h($pName) ?>
               <?php if ($pCount > 1): ?>
-                <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 mr-1 font-bold whitespace-nowrap">شريك <?= ($i + 1) ?></span>
+                <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-sky-100 text-sky-950 border border-sky-300 mr-1 font-black whitespace-nowrap">شريك <?= ($i + 1) ?></span>
               <?php endif; ?>
             </td>
-            <td class="p-3 font-mono text-cyan-300" dir="ltr"><?= h($pPhone) ?></td>
-            <td class="p-3"><?= h($c['project']) ?></td>
-            <td class="p-3"><?= h($c['contract_location']) ?></td>
-            <td class="p-3 font-mono"><?= h($c['eoi_number']) ?></td>
-            <?php if ($role !== 'Sales'): ?><td class="p-3"><?= h($c['sales_name'] ?? '—') ?></td><?php endif; ?>
-            <td class="p-3 font-mono text-xs text-slate-400"><?= h(substr((string)$c['created_at'], 0, 10)) ?></td>
-            <td class="p-3"><a href="sales_portal.php?customer=<?= (int)$c['id'] ?>" class="text-amber-400 font-bold hover:underline">عرض</a></td>
+            <td class="p-3 font-mono font-black text-emerald-800 dir-ltr text-right"><?= h($pPhone) ?></td>
+            <td class="p-3 font-bold text-slate-950"><?= h($c['project']) ?></td>
+            <td class="p-3 font-bold text-slate-950"><?= h($c['contract_location']) ?></td>
+            <td class="p-3 font-mono font-black text-slate-950">
+              <span class="px-2 py-0.5 rounded-lg bg-sky-100 border border-sky-300"><?= h($c['eoi_number']) ?></span>
+            </td>
+            <?php if ($role !== 'Sales'): ?><td class="p-3 font-bold text-slate-950"><?= h($c['sales_name'] ?? '—') ?></td><?php endif; ?>
+            <td class="p-3 font-mono text-xs text-slate-800 font-bold"><?= h(substr((string)$c['created_at'], 0, 10)) ?></td>
+            <td class="p-3 text-center">
+              <a href="sales_portal.php?customer=<?= (int)$c['id'] ?>" class="px-3 py-1 bg-sky-100 hover:bg-sky-200 text-slate-950 font-black rounded-xl border border-sky-300 shadow-xs inline-block">عرض</a>
+            </td>
           </tr>
         <?php endfor; endforeach; ?>
         </tbody>
@@ -646,10 +684,10 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
     </div>
     <?php if ($pages > 1): ?>
     <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs">
-      <span class="text-slate-400">صفحة <?= $page ?> من <?= $pages ?> • <?= $total ?> عميل</span>
+      <span class="text-slate-950 font-black">صفحة <?= $page ?> من <?= $pages ?> • <?= $total ?> عميل</span>
       <div class="flex gap-2">
-        <?php if ($page > 1): ?><a class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700" href="<?= h(pageUrl(['page' => $page - 1])) ?>">السابق</a><?php endif; ?>
-        <?php if ($page < $pages): ?><a class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700" href="<?= h(pageUrl(['page' => $page + 1])) ?>">التالي</a><?php endif; ?>
+        <?php if ($page > 1): ?><a class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-950 font-black border-2 border-sky-300 shadow-xs" href="<?= h(pageUrl(['page' => $page - 1])) ?>">السابق</a><?php endif; ?>
+        <?php if ($page < $pages): ?><a class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-950 font-black border-2 border-sky-300 shadow-xs" href="<?= h(pageUrl(['page' => $page + 1])) ?>">التالي</a><?php endif; ?>
       </div>
     </div>
     <?php endif; ?>
@@ -658,38 +696,38 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
 <?php else: /* ───────── إدارة المستخدمين (أدمن) ───────── */ ?>
 
   <div class="glass rounded-3xl p-5">
-    <h2 class="font-black text-white mb-4">➕ إضافة مدير أو سيلز</h2>
+    <h2 class="font-black text-slate-950 mb-4">➕ إضافة مدير أو سيلز</h2>
     <form method="POST" action="sales_portal.php" class="grid grid-cols-1 md:grid-cols-12 gap-3" autocomplete="off">
       <input type="hidden" name="action" value="create_user">
       <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-      <input name="name" required placeholder="الاسم" class="md:col-span-3 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm">
-      <input name="email" type="email" required placeholder="البريد الإلكتروني" dir="ltr" class="md:col-span-3 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm">
+      <input name="name" required placeholder="الاسم" class="md:col-span-3 px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-bold shadow-xs">
+      <input name="email" type="email" required placeholder="البريد الإلكتروني" dir="ltr" class="md:col-span-3 px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-bold shadow-xs">
       <div class="md:col-span-3 flex gap-2">
-        <input name="password" id="newPw" type="text" required minlength="8" placeholder="كلمة المرور (8+)" dir="ltr" class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm font-mono">
-        <button type="button" onclick="document.getElementById('newPw').value = genPw()" class="px-3 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold">توليد</button>
+        <input name="password" id="newPw" type="text" required minlength="8" placeholder="كلمة المرور (8+)" dir="ltr" class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono font-bold shadow-xs">
+        <button type="button" onclick="document.getElementById('newPw').value = genPw()" class="px-3 rounded-xl bg-white hover:bg-sky-50 text-slate-950 font-black border-2 border-sky-300 shadow-xs cursor-pointer">توليد</button>
       </div>
-      <select name="role" id="roleSel" onchange="toggleMgr()" class="md:col-span-1 px-2 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm">
+      <select name="role" id="roleSel" onchange="toggleMgr()" class="md:col-span-1 px-2 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-bold shadow-xs">
         <option value="Sales">سيلز</option><option value="Manager">مدير</option>
       </select>
-      <select name="manager_id" id="mgrSel" class="md:col-span-2 px-2 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm">
+      <select name="manager_id" id="mgrSel" class="md:col-span-2 px-2 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-bold shadow-xs">
         <option value="">اختر المدير</option>
         <?php foreach ($managers as $m): ?><option value="<?= (int)$m['id'] ?>"><?= h($m['name']) ?></option><?php endforeach; ?>
       </select>
-      <button class="md:col-span-12 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-sm">إنشاء الحساب</button>
+      <button class="md:col-span-12 py-3 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 font-black text-sm border-2 border-sky-400 shadow-md cursor-pointer">إنشاء الحساب</button>
     </form>
   </div>
 
   <div class="glass rounded-3xl overflow-hidden shadow-2xl">
     <div class="overflow-x-auto">
       <table class="w-full text-sm text-right">
-        <thead class="bg-slate-900 text-amber-400 text-xs font-black">
+        <thead class="bg-sky-200/95 text-slate-950 text-xs font-black border-b-2 border-sky-300">
           <tr><th class="p-3">الاسم</th><th class="p-3">الإيميل</th><th class="p-3">الدور</th><th class="p-3">المدير</th>
               <th class="p-3 text-center">العملاء</th><th class="p-3 text-center">الحالة</th><th class="p-3">إجراءات</th></tr>
         </thead>
         <tbody class="divide-y divide-slate-800/80">
         <?php foreach ($allUsers as $u): $isSelf = ((int)$u['id'] === (int)$user['id']); ?>
-          <tr class="hover:bg-slate-800/40 align-top">
-            <td class="p-3 font-bold text-white"><?= h($u['name']) ?></td>
+          <tr class="hover:bg-sky-50/90 transition-colors align-top">
+            <td class="p-3 font-black text-slate-950"><?= h($u['name']) ?></td>
             <td class="p-3 font-mono text-xs text-cyan-300" dir="ltr"><?= h($u['email']) ?></td>
             <td class="p-3"><?= h($u['role']) ?></td>
             <td class="p-3">
@@ -698,13 +736,13 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
                   <input type="hidden" name="action" value="assign_manager">
                   <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                   <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                  <select name="manager_id" class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs">
+                  <select name="manager_id" class="px-2 py-1 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs">
                     <?php foreach ($managers as $m): ?>
                       <option value="<?= (int)$m['id'] ?>" <?= (int)$u['manager_id'] === (int)$m['id'] ? 'selected' : '' ?>><?= h($m['name']) ?></option>
                     <?php endforeach; ?>
                     <?php if (!$u['manager_id']): ?><option value="" selected>— بدون —</option><?php endif; ?>
                   </select>
-                  <button class="px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold">حفظ</button>
+                  <button class="px-2.5 py-1 rounded-xl bg-sky-100 hover:bg-sky-200 text-slate-950 border border-sky-300 text-xs font-black shadow-xs cursor-pointer">حفظ</button>
                 </form>
               <?php else: ?>—<?php endif; ?>
             </td>
@@ -721,7 +759,7 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
                   <input type="hidden" name="action" value="toggle_active">
                   <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                   <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                  <button class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold transition"><?= (int)$u['active'] ? 'تعطيل' : 'تفعيل' ?></button>
+                  <button class="px-2.5 py-1 rounded-xl bg-white hover:bg-sky-50 border-2 border-sky-300 text-slate-950 text-xs font-black shadow-xs transition cursor-pointer"><?= (int)$u['active'] ? 'تعطيل' : 'تفعيل' ?></button>
                 </form>
                 <form method="POST" action="sales_portal.php" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف الحساب (<?= h(addslashes($u['name'])) ?>) نهائياً؟');">
                   <input type="hidden" name="action" value="delete_user">
@@ -734,8 +772,8 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
                   <input type="hidden" name="action" value="reset_password">
                   <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                   <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                  <input name="new_password" type="text" minlength="8" required placeholder="باسورد جديد" dir="ltr" class="w-28 px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono">
-                  <button class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold">تغيير</button>
+                  <input name="new_password" type="text" minlength="8" required placeholder="باسورد جديد" dir="ltr" class="w-28 px-2 py-1 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-mono font-bold shadow-xs">
+                  <button class="px-2.5 py-1 rounded-xl bg-sky-100 hover:bg-sky-200 text-slate-950 border border-sky-300 text-xs font-black shadow-xs cursor-pointer">تغيير</button>
                 </form>
               </div>
               <?php if ($u['role'] === 'Sales'):

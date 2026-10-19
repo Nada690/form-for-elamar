@@ -1074,7 +1074,7 @@ try {
                         <span><?= htmlspecialchars($client['sales_name']) ?></span>
                       </a>
                     <?php else: ?>
-                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700" data-i18n="badgeDirect">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-black bg-sky-100 text-sky-950 border border-sky-300 shadow-xs" data-i18n="badgeDirect">
                         🌐 مباشر
                       </span>
                     <?php endif; ?>
@@ -1107,7 +1107,7 @@ try {
                   <!-- مكان توثيق العقد -->
                   <td class="p-4 text-xs font-bold">
                     <?php if ($isOutside): ?>
-                      <span class="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-400 border border-slate-700">
+                      <span class="px-2.5 py-1 rounded-xl bg-sky-50 text-slate-800 border border-sky-200 font-bold">
                         مستثنى (خارج مصر)
                       </span>
                     <?php else: ?>
@@ -1226,7 +1226,7 @@ try {
                           <button 
                             type="button" 
                             onclick="previewAttachment('<?= htmlspecialchars($f) ?>', '<?= $ext ?>')"
-                            class="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-mono text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
+                            class="px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 border border-sky-300 text-[10px] font-mono text-sky-950 font-black flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                           >
                             <span><?= ($ext === 'pdf') ? '📄' : '🖼️' ?></span>
                             <span>#<?= $fIdx+1 ?></span>
@@ -1289,7 +1289,7 @@ try {
           <span>✏️</span>
           <span data-i18n="editModalTitle">تعديل بيانات العقد والعميل</span>
         </h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
+        <button onclick="closeEditModal()" class="text-slate-500 hover:text-slate-950 text-xl font-black cursor-pointer">✕</button>
       </div>
 
       <form method="POST" action="view_clients.php" enctype="multipart/form-data" class="space-y-4 text-xs">
@@ -1302,12 +1302,12 @@ try {
             👤 مسؤول المبيعات (Sales Rep):
           </label>
           <?php if ($currentUserRole === 'Sales'): ?>
-            <div class="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 font-bold">
+            <div class="p-2.5 rounded-xl bg-sky-50 border-2 border-sky-300 text-slate-950 font-black">
               👤 <?= htmlspecialchars($currentUserName) ?> (حسابك الحالي)
             </div>
             <input type="hidden" name="edit_sales_id" id="edit_sales_id" value="<?= $currentUserId ?>">
           <?php else: ?>
-            <select name="edit_sales_id" id="edit_sales_id" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold">
+            <select name="edit_sales_id" id="edit_sales_id" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="" data-i18n="optDirectNoSales">-- مباشر (بدون وسيط / Direct) --</option>
               <?php foreach ($salesList as $s): ?>
                 <option value="<?= $s['id'] ?>">👤 <?= htmlspecialchars($s['name']) ?> (<?= htmlspecialchars($s['referral_code']) ?>)</option>
@@ -1320,11 +1320,11 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thUnit">كود الوحدة:</label>
-            <input type="text" name="edit_unit_code" id="edit_unit_code" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 font-mono text-sm focus:border-amber-400 focus:outline-none uppercase font-bold">
+            <input type="text" name="edit_unit_code" id="edit_unit_code" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none uppercase font-black shadow-xs">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">اسم العميل في البطاقة / الشركاء:</label>
-            <input type="text" name="edit_name" id="edit_name" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:border-amber-400 focus:outline-none font-semibold">
+            <input type="text" name="edit_name" id="edit_name" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
 
@@ -1332,14 +1332,14 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">مكان الإقامة الحالي:</label>
-            <select name="edit_residence_country" id="edit_residence_country" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-300 text-xs font-bold">
+            <select name="edit_residence_country" id="edit_residence_country" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="داخل جمهورية مصر العربية">🇪🇬 داخل جمهورية مصر العربية</option>
               <option value="خارج جمهورية مصر العربية">🌍 خارج جمهورية مصر العربية</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">مكان التوثيق (إن كان داخل مصر):</label>
-            <select name="edit_contract_location" id="edit_contract_location" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 text-xs font-bold">
+            <select name="edit_contract_location" id="edit_contract_location" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="القاهرة">القاهرة</option>
               <option value="الإسكندرية">الإسكندرية</option>
               <option value="خارج جمهورية مصر العربية">خارج جمهورية مصر العربية</option>
@@ -1351,11 +1351,11 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPhone">رقم الهاتف والتواصل:</label>
-            <input type="text" name="edit_phone" id="edit_phone" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400 font-mono text-sm focus:border-amber-400 focus:outline-none dir-ltr text-right">
+            <input type="text" name="edit_phone" id="edit_phone" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none dir-ltr text-right font-bold shadow-xs">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">البريد الإلكتروني للمراسلات:</label>
-            <input type="email" name="edit_email" id="edit_email" required class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-cyan-300 font-mono text-sm focus:border-amber-400 focus:outline-none dir-ltr text-right">
+            <input type="email" name="edit_email" id="edit_email" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none dir-ltr text-right font-bold shadow-xs">
           </div>
         </div>
 
@@ -1363,18 +1363,18 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblDocType">نوع الوثيقة:</label>
-            <select name="edit_id_type" id="edit_id_type" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold">
+            <select name="edit_id_type" id="edit_id_type" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="national_id">بطاقة الرقم القومي</option>
               <option value="passport">جواز السفر (Passport)</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblDocNum">رقم الوثيقة:</label>
-            <input type="text" name="edit_id_number" id="edit_id_number" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-sm focus:border-amber-400 focus:outline-none">
+            <input type="text" name="edit_id_number" id="edit_id_number" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">سعر الوحدة (EGP):</label>
-            <input type="number" step="any" name="edit_unit_price" id="edit_unit_price" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-300 font-mono text-sm focus:border-amber-400 focus:outline-none">
+            <input type="number" step="any" name="edit_unit_price" id="edit_unit_price" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
 
@@ -1382,7 +1382,7 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPlan">فترة السداد:</label>
-            <select name="edit_payment_period" id="edit_payment_period" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-amber-200 text-xs font-bold">
+            <select name="edit_payment_period" id="edit_payment_period" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="3 سنوات">3 سنوات</option>
               <option value="4 سنوات">4 سنوات</option>
               <option value="5 سنوات">5 سنوات</option>
@@ -1395,14 +1395,14 @@ try {
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">استكمال مقدم أكتوبر:</label>
-            <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold">
+            <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="نعم">نعم (تم الاستكمال)</option>
               <option value="لا">لا (لم يستكمل)</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">تاريخ الدفع:</label>
-            <input type="date" name="edit_payment_date" id="edit_payment_date" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:border-amber-400 focus:outline-none">
+            <input type="date" name="edit_payment_date" id="edit_payment_date" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
 
@@ -1410,11 +1410,11 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">العنوان في البطاقة / الهوية:</label>
-            <textarea name="edit_id_address" id="edit_id_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+            <textarea name="edit_id_address" id="edit_id_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">العنوان المعتمد للمراسلات:</label>
-            <textarea name="edit_correspondence_address" id="edit_correspondence_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+            <textarea name="edit_correspondence_address" id="edit_correspondence_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
         </div>
 
@@ -1422,11 +1422,11 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblNotes">ملاحظات عامة / خطة بديلة واستثناءات (اختياري):</label>
-            <textarea name="edit_notes" id="edit_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-amber-200 text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+            <textarea name="edit_notes" id="edit_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">ملاحظات عامة (اختياري):</label>
-            <textarea name="edit_general_notes" id="edit_general_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-xs focus:border-amber-400 focus:outline-none font-semibold"></textarea>
+            <textarea name="edit_general_notes" id="edit_general_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
         </div>
 
@@ -1502,7 +1502,7 @@ try {
         <span class="text-xs font-black text-slate-950 font-mono" id="lightboxTitle">معاينة المستند</span>
         <div class="flex items-center gap-2">
           <a id="lightboxDownloadBtn" href="#" target="_blank" download class="text-xs px-3 py-1 bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 font-black rounded-xl border border-sky-400 shadow-xs" data-i18n="btnDownloadDoc">تحميل</a>
-          <button onclick="closeLightbox()" class="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
+          <button onclick="closeLightbox()" class="text-slate-500 hover:text-slate-950 text-xl font-black cursor-pointer">✕</button>
         </div>
       </div>
       <div id="lightboxContent" class="w-full flex items-center justify-center overflow-auto max-h-[75vh]"></div>
@@ -1773,7 +1773,7 @@ try {
       if (Array.isArray(files) && files.length > 0) {
         files.forEach((f, idx) => {
           const div = document.createElement('div');
-          div.className = "flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs";
+          div.className = "flex items-center justify-between p-2.5 rounded-xl bg-white border-2 border-sky-200 text-xs font-bold shadow-xs";
           div.innerHTML = `
             <a href="${f}" target="_blank" class="text-amber-300 hover:underline font-mono truncate max-w-xs">📎 ${f}</a>
             <label class="flex items-center gap-1.5 text-red-400 font-bold text-[11px] cursor-pointer">
