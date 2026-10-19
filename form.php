@@ -705,6 +705,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
   <!-- ═══════════════ SCRIPT LOGIC ═══════════════ -->
   <script>
+    window.onerror = function(msg, url, line, col, err) {
+      document.body.innerHTML = '<div id="DEBUG_ERROR" style="color:red;font-size:24px;font-weight:bold;padding:20px;background:white;position:fixed;top:0;left:0;right:0;bottom:0;z-index:999999;">ERROR: ' + msg + ' at line ' + line + ':' + col + '<br><pre>' + (err ? (err.stack || err.message) : '') + '</pre></div>';
+    };
     // ── قائمة الدول والأكواد (أول 3 دول مثبتة ثم أبجدياً) ──
     const countryData = [
       // Top 3 pinned
@@ -1133,7 +1136,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           const curCorrCity = corrCitySelect ? corrCitySelect.value : '';
           handleClientCorrGovChange(cId, curCorrGovVal);
           if (corrCitySelect && curCorrCity) corrCitySelect.value = curCorrCity;
-        } else if (corrCitySelect) {
+        } else if (corrCitySelect && corrCitySelect.options && corrCitySelect.options.length > 0) {
           corrCitySelect.options[0].textContent = t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...');
         }
 
