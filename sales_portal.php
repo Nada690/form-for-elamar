@@ -205,9 +205,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             elseif (!in_array($role, ['Manager', 'Sales'], true))    $err = 'الدور غير صالح.';
 
             if (!$err && $role === 'Sales') {
-                $chk = $pdo->prepare("SELECT 1 FROM users WHERE id = :id AND role = 'Manager' AND active = 1");
-                $chk->execute([':id' => $mgrId]);
-                if (!$chk->fetchColumn()) $err = 'يجب اختيار مدير فعّال لهذا السيلز.';
+                if ($mgrId > 0) {
+                    $chk = $pdo->prepare("SELECT 1 FROM users WHERE id = :id AND role = 'Manager' AND active = 1");
+                    $chk->execute([':id' => $mgrId]);
+                    if (!$chk->fetchColumn()) $err = 'المدير المختار غير موجود أو غير نشط.';
+                } else {
+                    $mgrId = null;
+                }
             }
             if ($err) { flash($err, 'err'); redirectTo('?view=users'); }
 
@@ -218,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':e' => $email,
                     ':p' => password_hash($pw, PASSWORD_BCRYPT),
                     ':r' => $role,
-                    ':m' => $role === 'Sales' ? $mgrId : null,
+                    ':m' => ($role === 'Sales' && !empty($mgrId)) ? $mgrId : null,
                     ':c' => makeReferralCode($pdo, $name, $role),
                 ]);
             flash("تم إنشاء الحساب ({$name}) بنجاح.");
@@ -277,13 +281,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mid = (int)($_POST['manager_id'] ?? 0);
             $s = $pdo->prepare("SELECT 1 FROM users WHERE id = :id AND role = 'Sales'");
             $s->execute([':id' => $sid]);
-            $m = $pdo->prepare("SELECT 1 FROM users WHERE id = :id AND role = 'Manager'");
-            $m->execute([':id' => $mid]);
-            if (!$s->fetchColumn() || !$m->fetchColumn()) {
-                flash('بيانات غير صالحة.', 'err');
+            if (!$s->fetchColumn()) {
+                flash('المستخدم غير موجود أو ليس سيلز.', 'err');
+            } elseif ($mid > 0) {
+                $m = $pdo->prepare("SELECT 1 FROM users WHERE id = :id AND role = 'Manager' AND active = 1");
+                $m->execute([':id' => $mid]);
+                if (!$m->fetchColumn()) {
+                    flash('المدير المختار غير موجود أو غير نشط.', 'err');
+                } else {
+                    $pdo->prepare("UPDATE users SET manager_id = :m WHERE id = :id")->execute([':m' => $mid, ':id' => $sid]);
+                    flash('تم تحديث المدير المسؤول.');
+                }
             } else {
-                $pdo->prepare("UPDATE users SET manager_id = :m WHERE id = :id")->execute([':m' => $mid, ':id' => $sid]);
-                flash('تم تحديث المدير المسؤول.');
+                $pdo->prepare("UPDATE users SET manager_id = NULL WHERE id = :id")->execute([':id' => $sid]);
+                flash('تم فك الارتباط بالمدير (مباشر / الإدارة).');
             }
             redirectTo('?view=users');
         }
@@ -710,7 +721,7 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
         <option value="Sales">سيلز</option><option value="Manager">مدير</option>
       </select>
       <select name="manager_id" id="mgrSel" class="md:col-span-2 px-2 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-bold shadow-xs">
-        <option value="">اختر المدير</option>
+        <option value="">بدون مدير (مباشر / الإدارة)</option>
         <?php foreach ($managers as $m): ?><option value="<?= (int)$m['id'] ?>"><?= h($m['name']) ?></option><?php endforeach; ?>
       </select>
       <button class="md:col-span-12 py-3 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 font-black text-sm border-2 border-sky-400 shadow-md cursor-pointer">إنشاء الحساب</button>
@@ -737,10 +748,10 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
                   <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                   <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
                   <select name="manager_id" class="px-2 py-1 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs">
+                    <option value="" <?= empty($u['manager_id']) ? 'selected' : '' ?>>— بدون مدير —</option>
                     <?php foreach ($managers as $m): ?>
                       <option value="<?= (int)$m['id'] ?>" <?= (int)$u['manager_id'] === (int)$m['id'] ? 'selected' : '' ?>><?= h($m['name']) ?></option>
                     <?php endforeach; ?>
-                    <?php if (!$u['manager_id']): ?><option value="" selected>— بدون —</option><?php endif; ?>
                   </select>
                   <button class="px-2.5 py-1 rounded-xl bg-sky-100 hover:bg-sky-200 text-slate-950 border border-sky-300 text-xs font-black shadow-xs cursor-pointer">حفظ</button>
                 </form>
@@ -807,7 +818,7 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
     const isSales = document.getElementById('roleSel').value === 'Sales';
     const m = document.getElementById('mgrSel');
     m.style.display = isSales ? '' : 'none';
-    m.required = isSales;
+    m.required = false;
   }
   if (document.getElementById('roleSel')) toggleMgr();
 </script>
