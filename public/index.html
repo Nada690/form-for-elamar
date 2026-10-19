@@ -694,9 +694,9 @@
         badgePrimaryParty: "الطرف الأساسي",
         badgePartnerParty: "شريك بالعقد",
         btnRemovePartner: "حذف هذا الشريك",
-        labelPrimaryName: "اسم العميل كما هو في البطاقة الشخصية",
-        phPrimaryName: "(الاسم كاملاً ومطابقاً للهوية الشخصية)",
-        errPrimaryName: "اسم العميل كما هو في البطاقة الشخصية مطلوب",
+        labelPrimaryName: "اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط)",
+        phPrimaryName: "(الاسم كاملاً باللغة العربية مطابقاً للهوية)",
+        errPrimaryName: "اسم العميل مطلوب ويجب أن يكون باللغة العربية فقط",
         labelPrimaryPhone: "أرقام الهواتف والتواصل (يدعم الأرقام المحلية والدولية)",
         phSearchCountry: "بحث عن الدولة أو الكود...",
         errPrimaryPhone: "رقم الهاتف مطلوب وبصيغة صحيحة",
@@ -808,9 +808,9 @@
         badgePrimaryParty: "Primary Party",
         badgePartnerParty: "Contract Partner",
         btnRemovePartner: "Remove Partner",
-        labelPrimaryName: "Client Name as in ID",
-        phPrimaryName: "(Full name matching National ID or Passport)",
-        errPrimaryName: "Client name as in ID is required",
+        labelPrimaryName: "Client Name as in ID (Arabic Only)",
+        phPrimaryName: "(Full name in Arabic matching ID)",
+        errPrimaryName: "Client name is required (Arabic letters only)",
         labelPrimaryPhone: "Phone & Contact Numbers (Supports Local & International)",
         phSearchCountry: "Search country or dialing code...",
         errPrimaryPhone: "Phone number is required in a valid format",
@@ -4742,20 +4742,20 @@
           ${deleteBtn}
         </div>
 
-        <!-- 1. اسم العميل كما هو في البطاقة الشخصية -->
+        <!-- 1. اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط) -->
         <div class="form-group w-full">
           <label class="block text-xs font-black text-slate-950 mb-1.5">
-            <span data-i18n="labelPrimaryName">${currentLang === 'en' ? 'Client Name as in ID' : 'اسم العميل كما هو في البطاقة الشخصية'}</span>
+            <span data-i18n="labelPrimaryName">${currentLang === 'en' ? 'Client Name as in ID (Arabic Only)' : 'اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط)'}</span>
             <span class="text-red-500 font-bold">*</span>
           </label>
           <input
             type="text"
-            placeholder="${currentLang === 'en' ? '(Full name matching National ID or Passport)' : '(الاسم كاملاً ومطابقاً للهوية الشخصية)'}"
+            placeholder="${currentLang === 'en' ? '(Full name in Arabic matching ID)' : '(الاسم كاملاً باللغة العربية مطابقاً للهوية)'}"
             data-i18n-placeholder="phPrimaryName"
             class="client-name-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 bg-white"
-            oninput="validateField(this, val => val.length >= 3)"
+            oninput="handleClientNameInput(this)"
           />
-          <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" data-i18n="errPrimaryName">${currentLang === 'en' ? 'Client name as in ID is required' : 'اسم العميل كما هو في البطاقة الشخصية مطلوب'}</p>
+          <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" data-i18n="errPrimaryName">${currentLang === 'en' ? 'Client name is required (Arabic letters only)' : 'اسم العميل مطلوب ويجب أن يكون باللغة العربية فقط'}</p>
         </div>
 
         <!-- 2. أرقام الهواتف والتواصل (Dynamic Array / List) -->
@@ -5857,6 +5857,28 @@
       }
     }
 
+    function handleClientNameInput(input) {
+      if (!input) return false;
+      // السماح بالأحرف العربية وعلامات التشكيل والمسافات فقط (حذف أي حروف إنجليزية أو أرقام أو رموز فوراً)
+      const cleanVal = input.value.replace(/[^\u0621-\u064A\u064B-\u0652\s]/g, '');
+      if (input.value !== cleanVal) {
+        input.value = cleanVal;
+      }
+      const val = input.value.trim();
+      const isValid = /^[\u0621-\u064A\u064B-\u0652\s]{2,}$/.test(val);
+      input.classList.toggle('valid', isValid);
+      input.classList.toggle('invalid', !isValid && val.length > 0);
+      const errEl = input.parentElement ? input.parentElement.querySelector('.error-msg') : null;
+      if (errEl) {
+        if (!isValid && val.length > 0) {
+          errEl.classList.remove('hidden');
+        } else if (isValid) {
+          errEl.classList.add('hidden');
+        }
+      }
+      return isValid;
+    }
+
     function validateField(input, testFn) {
       const val = input.value.trim();
       const isValid = testFn(val);
@@ -5899,10 +5921,10 @@
 
         const isPrimary = (i === 0);
         const nameInput = card.querySelector('.client-name-input');
-        const nameVal = nameInput ? nameInput.value.trim() : '';
-        if (!nameVal || nameVal.length < 2) {
-          nameInput.classList.add('invalid');
-          nameInput.parentElement.querySelector('.error-msg')?.classList.remove('hidden');
+        const isNameValid = nameInput ? handleClientNameInput(nameInput) : false;
+        if (!isNameValid) {
+          nameInput?.classList.add('invalid');
+          nameInput?.parentElement?.querySelector('.error-msg')?.classList.remove('hidden');
           hasError = true;
         }
 

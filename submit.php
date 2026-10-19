@@ -355,9 +355,16 @@ if (!$sales_id && !empty($data['sales_id']) && is_numeric($data['sales_id'])) {
 // ── التحقق من صحة المدخلات (Strict Validation) ──
 $errors = [];
 
-// اسم العميل
+// اسم العميل (باللغة العربية فقط)
 if (empty($nameCombined) || mb_strlen($nameCombined) < 2) {
     $errors[] = ($lang === 'en') ? 'Client name as in National ID is required.' : 'اسم العميل كما هو في البطاقة الشخصية مطلوب.';
+} else {
+    foreach ($namesArr as $singleName) {
+        if (!preg_match('/^[\x{0621}-\x{064A}\x{064B}-\x{0652}\s]+$/u', trim($singleName))) {
+            $errors[] = ($lang === 'en') ? 'Client name must be written in Arabic characters only.' : 'يجب كتابة اسم العميل بالحروف العربية فقط.';
+            break;
+        }
+    }
 }
 
 // رقم الهاتف - التحقق الصارم بحسب الشروط
