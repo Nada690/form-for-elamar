@@ -956,6 +956,9 @@
       setLanguage(currentLang);
       
       document.addEventListener('click', (e) => {
+        if (!e.target.closest('.searchable-region-picker')) {
+          closeAllRegionPickerDropdowns();
+        }
         if (!e.target.closest('.country-picker')) {
           document.querySelectorAll('.country-dropdown').forEach(d => d.classList.add('hidden'));
         }
@@ -1061,37 +1064,43 @@
           subEl.innerText = isAbroad ? t.dropSubtitleOutside : t.dropSubtitleInside;
         }
 
-        // 4. Update address labels and dropdowns (Governorate/Country & City)
+        // 4. Update address labels and dropdowns (Searchable Region Picker for ID & standard select for correspondence)
         updateClientAddressLabels(cId);
+        renderRegionPickerItems(cId);
 
-        const govSelect = card.querySelector('.client-gov-select');
-        const corrGovSelect = card.querySelector('.client-corr-gov-select');
-        const curGovVal = govSelect ? govSelect.value : '';
-        const curCorrGovVal = corrGovSelect ? corrGovSelect.value : '';
+        const govInput = card.querySelector('.client-gov-select');
+        const curGovVal = govInput ? govInput.value : '';
+        const displayEl = card.querySelector('.region-picker-display');
 
-        populateRegionOptions(govSelect, isAbroad);
-        populateRegionOptions(corrGovSelect, isAbroad);
-
-        const citySelect = card.querySelector('.client-city-select');
         if (curGovVal) {
+          const cObj = isAbroad ? worldCountriesData.find(c => c.nameAr === curGovVal) : null;
+          const flag = cObj ? cObj.flag : (isAbroad ? '🌍' : '📍');
+          const dispName = (isEn && isAbroad && worldCountriesEn[curGovVal]) ? worldCountriesEn[curGovVal] : ((isEn && !isAbroad && egyptGovernoratesEn[curGovVal]) ? egyptGovernoratesEn[curGovVal] : curGovVal);
+          if (displayEl) {
+            displayEl.innerHTML = `<span class="region-flag text-base flex-shrink-0">${flag}</span><span class="region-name font-black truncate text-slate-950">${dispName}</span>`;
+          }
+          const citySelect = card.querySelector('.client-city-select');
           const curCity = citySelect ? citySelect.value : '';
           handleClientRegionChange(cId, curGovVal, 'id');
           if (citySelect && curCity) citySelect.value = curCity;
-        } else if (citySelect) {
-          citySelect.options[0].textContent = isAbroad 
-            ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
-            : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
+        } else if (displayEl) {
+          displayEl.innerHTML = isAbroad
+            ? `<span class="region-flag text-base flex-shrink-0">🌍</span><span class="region-name font-black truncate text-slate-950">${isEn ? 'Select Country...' : 'اختر الدولة...'}</span>`
+            : `<span class="region-flag text-base flex-shrink-0">🇪🇬</span><span class="region-name font-black truncate text-slate-950">${isEn ? 'Select Governorate...' : 'اختر المحافظة...'}</span>`;
         }
+
+        // Correspondence address: ALWAYS Egyptian governorates & cities
+        const corrGovSelect = card.querySelector('.client-corr-gov-select');
+        const curCorrGovVal = corrGovSelect ? corrGovSelect.value : '';
+        populateGovernorateOptions(corrGovSelect);
 
         const corrCitySelect = card.querySelector('.client-corr-city-select');
         if (curCorrGovVal) {
           const curCorrCity = corrCitySelect ? corrCitySelect.value : '';
-          handleClientRegionChange(cId, curCorrGovVal, 'corr');
+          handleClientCorrGovChange(cId, curCorrGovVal);
           if (corrCitySelect && curCorrCity) corrCitySelect.value = curCorrCity;
         } else if (corrCitySelect) {
-          corrCitySelect.options[0].textContent = isAbroad 
-            ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
-            : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
+          corrCitySelect.options[0].textContent = t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...');
         }
 
         // 5. Phone rows: placeholders and delete button titles and country list
@@ -2171,189 +2180,2438 @@
       "الوادي الجديد": "New Valley"
     };
 
-    // ── World Countries & Major Cities Dataset for Dynamic Address Picker (Outside Egypt) ──
-    const worldCountriesAndCities = {
-      "المملكة العربية السعودية": [
-        "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر", "الظهران", 
-        "الأحساء (الهفوف والمبرز)", "الجبيل", "الطائف", "القصيم (بريدة وعنيزة)", "تبوك", 
-        "خميس مشيط", "أبها", "حائل", "نجران", "جازان", "ينبع", "حفر الباطن", "الخرج", "عرعر"
-      ],
-      "الإمارات العربية المتحدة": [
-        "دبي", "أبوظبي", "الشارقة", "عجمان", "رأس الخيمة", "الفجيرة", "أم القيوين", "العين", "خورفكان"
-      ],
-      "الكويت": [
-        "مدينة الكويت (العاصمة)", "حولي", "السالمية", "الفروانية", "الأحمدي", "الجهراء", "مبارك الكبير", "الفحيحيل", "خيطان"
-      ],
-      "قطر": [
-        "الدوحة", "الريان", "الوكرة", "الخور", "لوسيل", "أم صلال", "الظعاين", "الشحانية", "مسيعيد"
-      ],
-      "سلطنة عمان": [
-        "مسقط", "صلالة", "صحار", "نزوى", "صور", "السيب", "بوشر", "مطرح", "البريمي", "الرستاق"
-      ],
-      "البحرين": [
-        "المنامة", "المحرق", "الرفاع", "مدينة عيسى", "مدينة حمد", "سترة", "البديع", "الجفير", "سار"
-      ],
-      "الأردن": [
-        "عمان", "إربد", "الزرقاء", "العقبة", "السلط", "مادبا", "جرش", "الكرك", "المفرق"
-      ],
-      "العراق": [
-        "بغداد", "البصرة", "أربيل", "الموصل", "النجف", "كربلاء", "السليمانية", "كركوك", "الحلة"
-      ],
-      "لبنان": [
-        "بيروت", "طرابلس", "صيدا", "جونيه", "زحلة", "صور", "جبيل"
-      ],
-      "فلسطين": [
-        "القدس", "رام الله", "غزة", "نابلس", "الخليل", "بيت لحم", "جنين", "طولكرم", "أريحا"
-      ],
-      "السودان": [
-        "الخرطوم", "أم درمان", "الخرطوم بحري", "بورتسودان", "كسلا", "ود مدني", "عطبرة"
-      ],
-      "ليبيا": [
-        "طرابلس", "بنغازي", "مصراتة", "الزاوية", "البيضاء", "طبرق", "سرت", "سبها"
-      ],
-      "تونس": [
-        "تونس العاصمة", "صفاقس", "سوسة", "نابل", "المنستير", "بنزرت", "القيروان"
-      ],
-      "الجزائر": [
-        "الجزائر العاصمة", "وهران", "قسنطينة", "عنابة", "سطيف", "باتنة", "تلمسان", "البليدة"
-      ],
-      "المغرب": [
-        "الدار البيضاء", "الرباط", "مراكش", "طنجة", "فاس", "أكادير", "مكناس", "وجدة", "تطوان"
-      ],
-      "اليمن": [
-        "صنعاء", "عدن", "تعز", "الحديدة", "المكلا", "إب", "مأرب"
-      ],
-      "سوريا": [
-        "دمشق", "ريف دمشق", "حلب", "حمص", "اللاذقية", "طرطوس", "حماة"
-      ],
-      "موريتانيا": [
-        "نواكشوط", "نواذيبو", "روصو"
-      ],
-      "الولايات المتحدة الأمريكية (USA)": [
-        "نيويورك (New York)", "كاليفورنيا (California)", "تكساس (Texas)", "فلوريدا (Florida)", 
-        "إلينوي (Chicago - Illinois)", "واشنطن (Washington)", "نيوجيرسي (New Jersey)", 
-        "ماساتشوستس (Boston)", "فرجينيا (Virginia)", "بنسلفانيا (Pennsylvania)", 
-        "جورجيا (Atlanta)", "ميشيغان (Michigan)", "نورث كارولاينا", "أوهايو", "كولورادو"
-      ],
-      "كندا (Canada)": [
-        "تورونتو (Toronto)", "مونتريال (Montreal)", "فانكوفر (Vancouver)", "أوتاوا (Ottawa)", 
-        "كالغاري (Calgary)", "إدمونتون (Edmonton)", "كيبك سيتي (Quebec City)", "وينيبيغ"
-      ],
-      "المملكة المتحدة (بريطانيا - UK)": [
-        "لندن (London)", "مانشستر (Manchester)", "برمنغهام (Birmingham)", "ليفربول (Liverpool)", 
-        "ليدز (Leeds)", "إدنبرة (Edinburgh)", "غلاسكو (Glasgow)", "كارديف (Cardiff)", "بريستول", "نيوكاسل"
-      ],
-      "ألمانيا (Germany)": [
-        "برلين (Berlin)", "ميونخ (Munich)", "فرانكفورت (Frankfurt)", "هامبورغ (Hamburg)", 
-        "كولونيا (Cologne)", "شتوتغارت (Stuttgart)", "دوسلدورف (Dusseldorf)", "دورتموند", "لايبزيغ"
-      ],
-      "فرنسا (France)": [
-        "باريس (Paris)", "ليون (Lyon)", "مارسيليا (Marseille)", "نيس (Nice)", 
-        "تولوز (Toulouse)", "بوردو (Bordeaux)", "ستراسبورغ (Strasbourg)", "ليل (Lille)"
-      ],
-      "إيطاليا (Italy)": [
-        "روما (Rome)", "ميلانو (Milan)", "نابولي (Naples)", "تورينو (Turin)", 
-        "فلورنسا (Florence)", "بولونيا (Bologna)", "البندقية (Venice)", "جنوى"
-      ],
-      "إسبانيا (Spain)": [
-        "مدريد (Madrid)", "برشلونة (Barcelona)", "فالنسيا (Valencia)", "إشبيلية (Seville)", 
-        "سرقسطة (Zaragoza)", "مالقة (Malaga)", "بلباو (Bilbao)"
-      ],
-      "تركيا (Turkey)": [
-        "إسطنبول (Istanbul)", "أنقرة (Ankara)", "إزمير (Izmir)", "بورصة (Bursa)", 
-        "أنطاليا (Antalya)", "غازي عنتاب", "قونية", "طرابزون", "أضنة"
-      ],
-      "هولندا (Netherlands)": [
-        "أمستردام (Amsterdam)", "روتردام (Rotterdam)", "لاهاي (The Hague)", "أوترخت (Utrecht)", "أيندهوفن"
-      ],
-      "سويسرا (Switzerland)": [
-        "زيورخ (Zurich)", "جنيف (Geneva)", "بازل (Basel)", "برن (Bern)", "لوزان (Lausanne)"
-      ],
-      "السويد (Sweden)": [
-        "ستوكهولم (Stockholm)", "غوتنبرغ (Gothenburg)", "مالمو (Malmo)", "أوبسالا"
-      ],
-      "النمسا (Austria)": [
-        "فيينا (Vienna)", "غراتس (Graz)", "لينتس (Linz)", "سالزبورغ (Salzburg)", "إنسبروك"
-      ],
-      "بلجيكا (Belgium)": [
-        "بروكسل (Brussels)", "أنتويرب (Antwerp)", "غنت (Ghent)", "بروج (Bruges)", "لييج"
-      ],
-      "اليونان (Greece)": [
-        "أثينا (Athens)", "سالونيك (Thessaloniki)", "باتراس (Patras)", "هيراكليون"
-      ],
-      "البرتغال (Portugal)": [
-        "لشبونة (Lisbon)", "بورتو (Porto)", "براغا (Braga)", "كويمبرا"
-      ],
-      "روسيا (Russia)": [
-        "موسكو (Moscow)", "سانت بطرسبرغ (St. Petersburg)", "نوفوسيبيرسك", "يكاترينبورغ", "كازان"
-      ],
-      "أستراليا (Australia)": [
-        "سيدني (Sydney)", "ملبورن (Melbourne)", "بريزبان (Brisbane)", "بيرث (Perth)", 
-        "أديلايد (Adelaide)", "كانبرا (Canberra)", "جولد كوست"
-      ],
-      "الصين (China)": [
-        "بكين (Beijing)", "شنغهاي (Shanghai)", "قوانغتشو (Guangzhou)", "شنزن (Shenzhen)", "تشنغدو"
-      ],
-      "اليابان (Japan)": [
-        "طوكيو (Tokyo)", "أوساكا (Osaka)", "يوكوهاما (Yokohama)", "ناغويا (Nagoya)", "كيوتو (Kyoto)"
-      ],
-      "الهند (India)": [
-        "نيودلهي (New Delhi)", "مومباي (Mumbai)", "بنغالور (Bangalore)", "حيدر أباد", "تشيناي"
-      ],
-      "ماليزيا (Malaysia)": [
-        "كوالالمبور (Kuala Lumpur)", "بينانغ (Penang)", "جوهور بهرو", "سلاغور"
-      ],
-      "البرازيل (Brazil)": [
-        "ساو باولو (Sao Paulo)", "ريو دي جانيرو (Rio de Janeiro)", "برازيليا (Brasilia)"
-      ],
-      "دولة أخرى / غير مدرجة": [
-        "العاصمة / مدينة رئيسية", "مدينة / منطقة أخرى"
-      ]
-    };
+    // ── World Countries & Major Cities Dataset across all 6 Continents ──
+    const worldCountriesData = [
+  {
+    "nameAr": "مصر",
+    "nameEn": "Egypt",
+    "flag": "🇪🇬",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "القاهرة",
+      "الجيزة",
+      "الإسكندرية",
+      "الشيخ زايد",
+      "6 أكتوبر",
+      "التجمع الخامس",
+      "المنصورة",
+      "طنطا",
+      "بورسعيد",
+      "الإسماعيلية",
+      "السويس",
+      "الغردقة",
+      "شرم الشيخ",
+      "أسيوط",
+      "سوهاج",
+      "الأقصر",
+      "أسوان"
+    ]
+  },
+  {
+    "nameAr": "المملكة العربية السعودية",
+    "nameEn": "Saudi Arabia",
+    "flag": "🇸🇦",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "الرياض",
+      "جدة",
+      "مكة المكرمة",
+      "المدينة المنورة",
+      "الدمام",
+      "الخبر",
+      "الظهران",
+      "الأحساء",
+      "الجبيل",
+      "الطائف",
+      "القصيم (بريدة)",
+      "تبوك",
+      "خميس مشيط",
+      "أبها",
+      "حائل",
+      "نجران",
+      "جازان",
+      "ينبع",
+      "حفر الباطن",
+      "الخرج"
+    ]
+  },
+  {
+    "nameAr": "الإمارات العربية المتحدة",
+    "nameEn": "United Arab Emirates",
+    "flag": "🇦🇪",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "دبي",
+      "أبوظبي",
+      "الشارقة",
+      "عجمان",
+      "رأس الخيمة",
+      "الفجيرة",
+      "أم القيوين",
+      "العين",
+      "خورفكان"
+    ]
+  },
+  {
+    "nameAr": "الكويت",
+    "nameEn": "Kuwait",
+    "flag": "🇰🇼",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "مدينة الكويت",
+      "حولي",
+      "السالمية",
+      "الفروانية",
+      "الأحمدي",
+      "الجهراء",
+      "مبارك الكبير",
+      "الفحيحيل"
+    ]
+  },
+  {
+    "nameAr": "قطر",
+    "nameEn": "Qatar",
+    "flag": "🇶🇦",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "الدوحة",
+      "الريان",
+      "الوكرة",
+      "الخور",
+      "لوسيل",
+      "أم صلال",
+      "الظعاين",
+      "الشحانية"
+    ]
+  },
+  {
+    "nameAr": "سلطنة عمان",
+    "nameEn": "Oman",
+    "flag": "🇴🇲",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "مسقط",
+      "صلالة",
+      "صحار",
+      "نزوى",
+      "صور",
+      "السيب",
+      "بوشر",
+      "مطرح",
+      "البريمي"
+    ]
+  },
+  {
+    "nameAr": "البحرين",
+    "nameEn": "Bahrain",
+    "flag": "🇧🇭",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "المنامة",
+      "المحرق",
+      "الرفاع",
+      "مدينة عيسى",
+      "مدينة حمد",
+      "سترة",
+      "البديع"
+    ]
+  },
+  {
+    "nameAr": "الأردن",
+    "nameEn": "Jordan",
+    "flag": "🇯🇴",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "عمان",
+      "إربد",
+      "الزرقاء",
+      "العقبة",
+      "السلط",
+      "مادبا",
+      "جرش",
+      "الكرك"
+    ]
+  },
+  {
+    "nameAr": "العراق",
+    "nameEn": "Iraq",
+    "flag": "🇮🇶",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "بغداد",
+      "البصرة",
+      "أربيل",
+      "الموصل",
+      "النجف",
+      "كربلاء",
+      "السليمانية",
+      "كركوك"
+    ]
+  },
+  {
+    "nameAr": "لبنان",
+    "nameEn": "Lebanon",
+    "flag": "🇱🇧",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "بيروت",
+      "طرابلس",
+      "صيدا",
+      "جونيه",
+      "زحلة",
+      "صور",
+      "جبيل"
+    ]
+  },
+  {
+    "nameAr": "فلسطين",
+    "nameEn": "Palestine",
+    "flag": "🇵🇸",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "القدس",
+      "رام الله",
+      "غزة",
+      "نابلس",
+      "الخليل",
+      "بيت لحم",
+      "جنين",
+      "طولكرم"
+    ]
+  },
+  {
+    "nameAr": "السودان",
+    "nameEn": "Sudan",
+    "flag": "🇸🇩",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "الخرطوم",
+      "أم درمان",
+      "بورتسودان",
+      "كسلا",
+      "ود مدني",
+      "عطبرة"
+    ]
+  },
+  {
+    "nameAr": "ليبيا",
+    "nameEn": "Libya",
+    "flag": "🇱🇾",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "طرابلس",
+      "بنغازي",
+      "مصراتة",
+      "الزاوية",
+      "البيضاء",
+      "طبرق",
+      "سرت"
+    ]
+  },
+  {
+    "nameAr": "تونس",
+    "nameEn": "Tunisia",
+    "flag": "🇹🇳",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "تونس العاصمة",
+      "صفاقس",
+      "سوسة",
+      "نابل",
+      "المنستير",
+      "بنزرت"
+    ]
+  },
+  {
+    "nameAr": "الجزائر",
+    "nameEn": "Algeria",
+    "flag": "🇩🇿",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "الجزائر العاصمة",
+      "وهران",
+      "قسنطينة",
+      "عنابة",
+      "سطيف",
+      "باتنة"
+    ]
+  },
+  {
+    "nameAr": "المغرب",
+    "nameEn": "Morocco",
+    "flag": "🇲🇦",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "الدار البيضاء",
+      "الرباط",
+      "مراكش",
+      "طنجة",
+      "فاس",
+      "أكادير",
+      "مكناس"
+    ]
+  },
+  {
+    "nameAr": "اليمن",
+    "nameEn": "Yemen",
+    "flag": "🇾🇪",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "صنعاء",
+      "عدن",
+      "تعز",
+      "الحديدة",
+      "المكلا",
+      "إب"
+    ]
+  },
+  {
+    "nameAr": "سوريا",
+    "nameEn": "Syria",
+    "flag": "🇸🇾",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "دمشق",
+      "ريف دمشق",
+      "حلب",
+      "حمص",
+      "اللاذقية",
+      "طرطوس",
+      "حماة"
+    ]
+  },
+  {
+    "nameAr": "موريتانيا",
+    "nameEn": "Mauritania",
+    "flag": "🇲🇷",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "pinned": true,
+    "cities": [
+      "نواكشوط",
+      "نواذيبو",
+      "روصو"
+    ]
+  },
+  {
+    "nameAr": "الصومال",
+    "nameEn": "Somalia",
+    "flag": "🇸🇴",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "مقديشو",
+      "هرجيسا",
+      "بوساسو"
+    ]
+  },
+  {
+    "nameAr": "جيبوتي",
+    "nameEn": "Djibouti",
+    "flag": "🇩🇯",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "جيبوتي العاصمة",
+      "علي صبيح"
+    ]
+  },
+  {
+    "nameAr": "جزر القمر",
+    "nameEn": "Comoros",
+    "flag": "🇰🇲",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "موروني",
+      "موتسامودو"
+    ]
+  },
+  {
+    "nameAr": "الولايات المتحدة الأمريكية (USA)",
+    "nameEn": "United States (USA)",
+    "flag": "🇺🇸",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "pinned": true,
+    "cities": [
+      "نيويورك (New York)",
+      "كاليفورنيا (California)",
+      "تكساس (Texas)",
+      "فلوريدا (Florida)",
+      "إلينوي (Chicago - Illinois)",
+      "واشنطن (Washington)",
+      "نيوجيرسي (New Jersey)",
+      "ماساتشوستس (Boston)",
+      "فرجينيا (Virginia)",
+      "بنسلفانيا (Pennsylvania)",
+      "جورجيا (Atlanta)",
+      "ميشيغان (Michigan)",
+      "نورث كارولاينا",
+      "أوهايو",
+      "كولورادو"
+    ]
+  },
+  {
+    "nameAr": "كندا (Canada)",
+    "nameEn": "Canada",
+    "flag": "🇨🇦",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "pinned": true,
+    "cities": [
+      "تورونتو (Toronto)",
+      "مونتريال (Montreal)",
+      "فانكوفر (Vancouver)",
+      "أوتاوا (Ottawa)",
+      "كالغاري (Calgary)",
+      "إدمونتون (Edmonton)",
+      "كيبك سيتي (Quebec City)"
+    ]
+  },
+  {
+    "nameAr": "المكسيك",
+    "nameEn": "Mexico",
+    "flag": "🇲🇽",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "مكسيكو سيتي (Mexico City)",
+      "غوادالاخارا",
+      "مونتيري",
+      "كانكون",
+      "بويبلا"
+    ]
+  },
+  {
+    "nameAr": "بنما",
+    "nameEn": "Panama",
+    "flag": "🇵🇦",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "بنما سيتي",
+      "كولون"
+    ]
+  },
+  {
+    "nameAr": "كوستاريكا",
+    "nameEn": "Costa Rica",
+    "flag": "🇨🇷",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "سان خوسيه",
+      "ألاخويلا"
+    ]
+  },
+  {
+    "nameAr": "كوبا",
+    "nameEn": "Cuba",
+    "flag": "🇨🇺",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "هافانا (Havana)",
+      "سانتياغو دي كوبا"
+    ]
+  },
+  {
+    "nameAr": "جمهورية الدومينيكان",
+    "nameEn": "Dominican Republic",
+    "flag": "🇩🇴",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "سانتو دومينغو",
+      "سانتياغو"
+    ]
+  },
+  {
+    "nameAr": "جامايكا",
+    "nameEn": "Jamaica",
+    "flag": "🇯🇲",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "كينغستون",
+      "مونتيغو باي"
+    ]
+  },
+  {
+    "nameAr": "غواتيمالا",
+    "nameEn": "Guatemala",
+    "flag": "🇬🇹",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "غواتيمالا سيتي"
+    ]
+  },
+  {
+    "nameAr": "هندوراس",
+    "nameEn": "Honduras",
+    "flag": "🇭🇳",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "تيغوسيغالبا",
+      "سان بيدرو سولا"
+    ]
+  },
+  {
+    "nameAr": "السلفادور",
+    "nameEn": "El Salvador",
+    "flag": "🇸🇻",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "سان سلفادور"
+    ]
+  },
+  {
+    "nameAr": "نيكاراغوا",
+    "nameEn": "Nicaragua",
+    "flag": "🇳🇮",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "ماناغوا"
+    ]
+  },
+  {
+    "nameAr": "هايتي",
+    "nameEn": "Haiti",
+    "flag": "🇭🇹",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "بورت أو برانس"
+    ]
+  },
+  {
+    "nameAr": "باهاماس",
+    "nameEn": "Bahamas",
+    "flag": "🇧🇸",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "ناساو"
+    ]
+  },
+  {
+    "nameAr": "ترينيداد وتوباغو",
+    "nameEn": "Trinidad and Tobago",
+    "flag": "🇹🇹",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "بورت أوف سبين"
+    ]
+  },
+  {
+    "nameAr": "باربادوس",
+    "nameEn": "Barbados",
+    "flag": "🇧🇧",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "بريدج تاون"
+    ]
+  },
+  {
+    "nameAr": "بليز",
+    "nameEn": "Belize",
+    "flag": "🇧🇿",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "بلموبان",
+      "بليز سيتي"
+    ]
+  },
+  {
+    "nameAr": "سانت لوسيا",
+    "nameEn": "Saint Lucia",
+    "flag": "🇱🇨",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "كاستريس"
+    ]
+  },
+  {
+    "nameAr": "أنتيغوا وباربودا",
+    "nameEn": "Antigua and Barbuda",
+    "flag": "🇦🇬",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "سانت جونز"
+    ]
+  },
+  {
+    "nameAr": "غرينادا",
+    "nameEn": "Grenada",
+    "flag": "🇬🇩",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "سانت جورجز"
+    ]
+  },
+  {
+    "nameAr": "سانت فنسنت والغرينادين",
+    "nameEn": "Saint Vincent",
+    "flag": "🇻🇨",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "كينغستاون"
+    ]
+  },
+  {
+    "nameAr": "سانت كيتس ونيفيس",
+    "nameEn": "Saint Kitts and Nevis",
+    "flag": "🇰🇳",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "باستير"
+    ]
+  },
+  {
+    "nameAr": "دومينيكا",
+    "nameEn": "Dominica",
+    "flag": "🇩🇲",
+    "continentAr": "أمريكا الشمالية",
+    "continentEn": "North America",
+    "cities": [
+      "روسو"
+    ]
+  },
+  {
+    "nameAr": "البرازيل (Brazil)",
+    "nameEn": "Brazil",
+    "flag": "🇧🇷",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "ساو باولو (Sao Paulo)",
+      "ريو دي جانيرو (Rio de Janeiro)",
+      "برازيليا (Brasilia)",
+      "سلفادور",
+      "فورتاليزا"
+    ]
+  },
+  {
+    "nameAr": "الأرجنتين",
+    "nameEn": "Argentina",
+    "flag": "🇦🇷",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "بوينس آيرس (Buenos Aires)",
+      "قرطبة",
+      "روزاريو",
+      "ميندوزا"
+    ]
+  },
+  {
+    "nameAr": "كولومبيا",
+    "nameEn": "Colombia",
+    "flag": "🇨🇴",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "بوغوتا (Bogota)",
+      "ميديلين",
+      "كالي",
+      "بارانكيا"
+    ]
+  },
+  {
+    "nameAr": "تشيلي",
+    "nameEn": "Chile",
+    "flag": "🇨🇱",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "سانتياغو (Santiago)",
+      "فالبارايسو",
+      "كونسيبسيون"
+    ]
+  },
+  {
+    "nameAr": "بيرو",
+    "nameEn": "Peru",
+    "flag": "🇵🇪",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "ليما (Lima)",
+      "أريكيبا",
+      "كوزكو"
+    ]
+  },
+  {
+    "nameAr": "فنزويلا",
+    "nameEn": "Venezuela",
+    "flag": "🇻🇪",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "كاراكاس (Caracas)",
+      "ماراكايبو",
+      "فالنسيا"
+    ]
+  },
+  {
+    "nameAr": "الإكوادور",
+    "nameEn": "Ecuador",
+    "flag": "🇪🇨",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "كيتو (Quito)",
+      "غواياكيل",
+      "كوينكا"
+    ]
+  },
+  {
+    "nameAr": "بوليفيا",
+    "nameEn": "Bolivia",
+    "flag": "🇧🇴",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "لاباز",
+      "سانتا كروز",
+      "سوكري"
+    ]
+  },
+  {
+    "nameAr": "باراغواي",
+    "nameEn": "Paraguay",
+    "flag": "🇵🇾",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "أسونسيون"
+    ]
+  },
+  {
+    "nameAr": "أوروغواي",
+    "nameEn": "Uruguay",
+    "flag": "🇺🇾",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "مونتيفيديو"
+    ]
+  },
+  {
+    "nameAr": "غيانا",
+    "nameEn": "Guyana",
+    "flag": "🇬🇾",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "جورج تاون"
+    ]
+  },
+  {
+    "nameAr": "سورينام",
+    "nameEn": "Suriname",
+    "flag": "🇸🇷",
+    "continentAr": "أمريكا الجنوبية",
+    "continentEn": "South America",
+    "cities": [
+      "باراماريبو"
+    ]
+  },
+  {
+    "nameAr": "المملكة المتحدة (بريطانيا - UK)",
+    "nameEn": "United Kingdom (UK)",
+    "flag": "🇬🇧",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "لندن (London)",
+      "مانشستر (Manchester)",
+      "برمنغهام (Birmingham)",
+      "ليفربول (Liverpool)",
+      "ليدز (Leeds)",
+      "إدنبرة (Edinburgh)",
+      "غلاسكو (Glasgow)",
+      "كارديف (Cardiff)",
+      "بريستول",
+      "نيوكاسل"
+    ]
+  },
+  {
+    "nameAr": "ألمانيا",
+    "nameEn": "Germany",
+    "flag": "🇩🇪",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "برلين (Berlin)",
+      "ميونخ (Munich)",
+      "فرانكفورت (Frankfurt)",
+      "هامبورغ (Hamburg)",
+      "كولونيا (Cologne)",
+      "شتوتغارت (Stuttgart)",
+      "دوسلدورف (Dusseldorf)",
+      "دورتموند",
+      "لايبزيغ"
+    ]
+  },
+  {
+    "nameAr": "فرنسا",
+    "nameEn": "France",
+    "flag": "🇫🇷",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "باريس (Paris)",
+      "ليون (Lyon)",
+      "مارسيليا (Marseille)",
+      "نيس (Nice)",
+      "تولوز (Toulouse)",
+      "بوردو (Bordeaux)",
+      "ستراسبورغ (Strasbourg)",
+      "ليل (Lille)"
+    ]
+  },
+  {
+    "nameAr": "إيطاليا",
+    "nameEn": "Italy",
+    "flag": "🇮🇹",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "روما (Rome)",
+      "ميلانو (Milan)",
+      "نابولي (Naples)",
+      "تورينو (Turin)",
+      "فلورنسا (Florence)",
+      "بولونيا (Bologna)",
+      "البندقية (Venice)",
+      "جنوى"
+    ]
+  },
+  {
+    "nameAr": "إسبانيا",
+    "nameEn": "Spain",
+    "flag": "🇪🇸",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "مدريد (Madrid)",
+      "برشلونة (Barcelona)",
+      "فالنسيا (Valencia)",
+      "إشبيلية (Seville)",
+      "سرقسطة (Zaragoza)",
+      "مالقة (Malaga)",
+      "بلباو (Bilbao)"
+    ]
+  },
+  {
+    "nameAr": "هولندا",
+    "nameEn": "Netherlands",
+    "flag": "🇳🇱",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "أمستردام (Amsterdam)",
+      "روتردام (Rotterdam)",
+      "لاهاي (The Hague)",
+      "أوترخت (Utrecht)",
+      "أيندهوفن"
+    ]
+  },
+  {
+    "nameAr": "سويسرا",
+    "nameEn": "Switzerland",
+    "flag": "🇨🇭",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "pinned": true,
+    "cities": [
+      "زيورخ (Zurich)",
+      "جنيف (Geneva)",
+      "بازل (Basel)",
+      "برن (Bern)",
+      "لوزان (Lausanne)"
+    ]
+  },
+  {
+    "nameAr": "السويد",
+    "nameEn": "Sweden",
+    "flag": "🇸🇪",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "ستوكهولم (Stockholm)",
+      "غوتنبرغ (Gothenburg)",
+      "مالمو (Malmo)",
+      "أوبسالا"
+    ]
+  },
+  {
+    "nameAr": "النمسا",
+    "nameEn": "Austria",
+    "flag": "🇦🇹",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "فيينا (Vienna)",
+      "غراتس (Graz)",
+      "لينتس (Linz)",
+      "سالزبورغ (Salzburg)",
+      "إنسبروك"
+    ]
+  },
+  {
+    "nameAr": "بلجيكا",
+    "nameEn": "Belgium",
+    "flag": "🇧🇪",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "بروكسل (Brussels)",
+      "أنتويرب (Antwerp)",
+      "غنت (Ghent)",
+      "بروج (Bruges)",
+      "لييج"
+    ]
+  },
+  {
+    "nameAr": "اليونان",
+    "nameEn": "Greece",
+    "flag": "🇬🇷",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "أثينا (Athens)",
+      "سالونيك (Thessaloniki)",
+      "باتراس (Patras)",
+      "هيراكليون"
+    ]
+  },
+  {
+    "nameAr": "البرتغال",
+    "nameEn": "Portugal",
+    "flag": "🇵🇹",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "لشبونة (Lisbon)",
+      "بورتو (Porto)",
+      "براغا (Braga)",
+      "كويمبرا"
+    ]
+  },
+  {
+    "nameAr": "روسيا",
+    "nameEn": "Russia",
+    "flag": "🇷🇺",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "موسكو (Moscow)",
+      "سانت بطرسبرغ (St. Petersburg)",
+      "نوفوسيبيرسك",
+      "يكاترينبورغ",
+      "كازان"
+    ]
+  },
+  {
+    "nameAr": "بولندا",
+    "nameEn": "Poland",
+    "flag": "🇵🇱",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "وارسو (Warsaw)",
+      "كراكوف (Krakow)",
+      "غدانسك",
+      "فروتسواف",
+      "بوزنان"
+    ]
+  },
+  {
+    "nameAr": "أوكرانيا",
+    "nameEn": "Ukraine",
+    "flag": "🇺🇦",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "كييف (Kyiv)",
+      "لفيف (Lviv)",
+      "أوديسا (Odesa)",
+      "خاركيف"
+    ]
+  },
+  {
+    "nameAr": "النرويج",
+    "nameEn": "Norway",
+    "flag": "🇳🇴",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "أوسلو (Oslo)",
+      "بيرغن (Bergen)",
+      "تروندهايم",
+      "ستافانغر"
+    ]
+  },
+  {
+    "nameAr": "الدنمارك",
+    "nameEn": "Denmark",
+    "flag": "🇩🇰",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "كوبنهاغن (Copenhagen)",
+      "آرهوس",
+      "أودنسه"
+    ]
+  },
+  {
+    "nameAr": "فنلندا",
+    "nameEn": "Finland",
+    "flag": "🇫🇮",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "هلسنكي (Helsinki)",
+      "إسبو",
+      "تامبيري",
+      "فانتا"
+    ]
+  },
+  {
+    "nameAr": "أيرلندا",
+    "nameEn": "Ireland",
+    "flag": "🇮🇪",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "دبلن (Dublin)",
+      "كورك (Cork)",
+      "غالواي",
+      "ليمريك"
+    ]
+  },
+  {
+    "nameAr": "جمهورية التشيك",
+    "nameEn": "Czech Republic",
+    "flag": "🇨🇿",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "براغ (Prague)",
+      "برنو",
+      "أوسترافا"
+    ]
+  },
+  {
+    "nameAr": "المجر",
+    "nameEn": "Hungary",
+    "flag": "🇭🇺",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "بودابست (Budapest)",
+      "ديبريتسين",
+      "سيغيد"
+    ]
+  },
+  {
+    "nameAr": "رومانيا",
+    "nameEn": "Romania",
+    "flag": "🇷🇴",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "بوخارست (Bucharest)",
+      "كلوج نابوكا",
+      "تيميشوارا"
+    ]
+  },
+  {
+    "nameAr": "كرواتيا",
+    "nameEn": "Croatia",
+    "flag": "🇭🇷",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "زغرب (Zagreb)",
+      "سبليت (Split)",
+      "رييكا",
+      "دوبروفنيك"
+    ]
+  },
+  {
+    "nameAr": "صربيا",
+    "nameEn": "Serbia",
+    "flag": "🇷🇸",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "بلغراد (Belgrade)",
+      "نوفي ساد",
+      "نيش"
+    ]
+  },
+  {
+    "nameAr": "سلوفاكيا",
+    "nameEn": "Slovakia",
+    "flag": "🇸🇰",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "براتيسلافا (Bratislava)",
+      "كوشيتسه"
+    ]
+  },
+  {
+    "nameAr": "بلغاريا",
+    "nameEn": "Bulgaria",
+    "flag": "🇧🇬",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "صوفيا (Sofia)",
+      "بلوفديف",
+      "فارنا"
+    ]
+  },
+  {
+    "nameAr": "بيلاروسيا",
+    "nameEn": "Belarus",
+    "flag": "🇧🇾",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "مينسك (Minsk)",
+      "غوميل",
+      "بريست"
+    ]
+  },
+  {
+    "nameAr": "سلوفينيا",
+    "nameEn": "Slovenia",
+    "flag": "🇸🇮",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "ليوبليانا (Ljubljana)",
+      "ماريبور"
+    ]
+  },
+  {
+    "nameAr": "قبرص",
+    "nameEn": "Cyprus",
+    "flag": "🇨🇾",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "نيقوسيا (Nicosia)",
+      "ليماسول",
+      "لارنكا",
+      "بافوس"
+    ]
+  },
+  {
+    "nameAr": "ليتوانيا",
+    "nameEn": "Lithuania",
+    "flag": "🇱🇹",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "فيلنيوس (Vilnius)",
+      "كاوناس"
+    ]
+  },
+  {
+    "nameAr": "لاتفيا",
+    "nameEn": "Latvia",
+    "flag": "🇱🇻",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "ريغا (Riga)",
+      "داوغافبيلس"
+    ]
+  },
+  {
+    "nameAr": "إستونيا",
+    "nameEn": "Estonia",
+    "flag": "🇪🇪",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "تالين (Tallinn)",
+      "تارتو"
+    ]
+  },
+  {
+    "nameAr": "البوسنة والهرسك",
+    "nameEn": "Bosnia & Herzegovina",
+    "flag": "🇧🇦",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "سراييفو (Sarajevo)",
+      "بانيا لوكا",
+      "موستار"
+    ]
+  },
+  {
+    "nameAr": "ألبانيا",
+    "nameEn": "Albania",
+    "flag": "🇦🇱",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "تيرانا (Tirana)",
+      "دوريس",
+      "فلورا"
+    ]
+  },
+  {
+    "nameAr": "مقدونيا الشمالية",
+    "nameEn": "North Macedonia",
+    "flag": "🇲🇰",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "سكوبيه (Skopje)",
+      "بيتولا"
+    ]
+  },
+  {
+    "nameAr": "مولدوفا",
+    "nameEn": "Moldova",
+    "flag": "🇲🇩",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "كيشيناو (Chisinau)"
+    ]
+  },
+  {
+    "nameAr": "مالطا",
+    "nameEn": "Malta",
+    "flag": "🇲🇹",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "فاليتا (Valletta)",
+      "سليمة"
+    ]
+  },
+  {
+    "nameAr": "لوكسمبورغ",
+    "nameEn": "Luxembourg",
+    "flag": "🇱🇺",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "لوكسمبورغ العاصمة"
+    ]
+  },
+  {
+    "nameAr": "أيسلندا",
+    "nameEn": "Iceland",
+    "flag": "🇮🇸",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "ريكيافيك (Reykjavik)"
+    ]
+  },
+  {
+    "nameAr": "الجبل الأسود",
+    "nameEn": "Montenegro",
+    "flag": "🇲🇪",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "بودغوريتسا (Podgorica)",
+      "كوتور"
+    ]
+  },
+  {
+    "nameAr": "موناكو",
+    "nameEn": "Monaco",
+    "flag": "🇲🇨",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "موناكو"
+    ]
+  },
+  {
+    "nameAr": "أندورا",
+    "nameEn": "Andorra",
+    "flag": "🇦🇩",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "أندورا لا فيلا"
+    ]
+  },
+  {
+    "nameAr": "ليختنشتاين",
+    "nameEn": "Liechtenstein",
+    "flag": "🇱🇮",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "فادوز"
+    ]
+  },
+  {
+    "nameAr": "سان مارينو",
+    "nameEn": "San Marino",
+    "flag": "🇸🇲",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "سان مارينو"
+    ]
+  },
+  {
+    "nameAr": "الفاتيكان",
+    "nameEn": "Vatican City",
+    "flag": "🇻🇦",
+    "continentAr": "أوروبا",
+    "continentEn": "Europe",
+    "cities": [
+      "مدينة الفاتيكان"
+    ]
+  },
+  {
+    "nameAr": "تركيا",
+    "nameEn": "Turkey",
+    "flag": "🇹🇷",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "pinned": true,
+    "cities": [
+      "إسطنبول (Istanbul)",
+      "أنقرة (Ankara)",
+      "إزمير (Izmir)",
+      "بورصة (Bursa)",
+      "أنطاليا (Antalya)",
+      "غازي عنتاب",
+      "قونية",
+      "طرابزون",
+      "أضنة"
+    ]
+  },
+  {
+    "nameAr": "الصين",
+    "nameEn": "China",
+    "flag": "🇨🇳",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "بكين (Beijing)",
+      "شنغهاي (Shanghai)",
+      "قوانغتشو (Guangzhou)",
+      "شنزن (Shenzhen)",
+      "تشنغدو",
+      "هانغتشو"
+    ]
+  },
+  {
+    "nameAr": "اليابان",
+    "nameEn": "Japan",
+    "flag": "🇯🇵",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "طوكيو (Tokyo)",
+      "أوساكا (Osaka)",
+      "يوكوهاما (Yokohama)",
+      "ناغويا (Nagoya)",
+      "كيوتو (Kyoto)",
+      "سابورو"
+    ]
+  },
+  {
+    "nameAr": "الهند",
+    "nameEn": "India",
+    "flag": "🇮🇳",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "نيودلهي (New Delhi)",
+      "مومباي (Mumbai)",
+      "بنغالور (Bangalore)",
+      "حيدر أباد",
+      "تشيناي",
+      "كولكاتا"
+    ]
+  },
+  {
+    "nameAr": "ماليزيا",
+    "nameEn": "Malaysia",
+    "flag": "🇲🇾",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "كوالالمبور (Kuala Lumpur)",
+      "بينانغ (Penang)",
+      "جوهور بهرو",
+      "سلاغور",
+      "كوتا كينابالو"
+    ]
+  },
+  {
+    "nameAr": "إندونيسيا",
+    "nameEn": "Indonesia",
+    "flag": "🇮🇩",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "جاكرتا (Jakarta)",
+      "سورابايا",
+      "باندونغ",
+      "بالي (Bali)",
+      "ميدان"
+    ]
+  },
+  {
+    "nameAr": "سنغافورة",
+    "nameEn": "Singapore",
+    "flag": "🇸🇬",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "سنغافورة (العاصمة)"
+    ]
+  },
+  {
+    "nameAr": "كوريا الجنوبية",
+    "nameEn": "South Korea",
+    "flag": "🇰🇷",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "سول (Seoul)",
+      "بوسان (Busan)",
+      "إنتشون",
+      "دايغو"
+    ]
+  },
+  {
+    "nameAr": "تايلاند",
+    "nameEn": "Thailand",
+    "flag": "🇹🇭",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "بانكوك (Bangkok)",
+      "بوكيت (Phuket)",
+      "تشيانغ ماي",
+      "باتايا"
+    ]
+  },
+  {
+    "nameAr": "فيتنام",
+    "nameEn": "Vietnam",
+    "flag": "🇻🇳",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "هانوي (Hanoi)",
+      "هو تشي منه (Ho Chi Minh)",
+      "دا نانغ"
+    ]
+  },
+  {
+    "nameAr": "الفلبين",
+    "nameEn": "Philippines",
+    "flag": "🇵🇭",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "مانيلا (Manila)",
+      "كيزون سيتي",
+      "سيبو",
+      "دافاو"
+    ]
+  },
+  {
+    "nameAr": "باكستان",
+    "nameEn": "Pakistan",
+    "flag": "🇵🇰",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "إسلام آباد (Islamabad)",
+      "كراتشي (Karachi)",
+      "لاهور (Lahore)",
+      "فيصل آباد"
+    ]
+  },
+  {
+    "nameAr": "بنغلاديش",
+    "nameEn": "Bangladesh",
+    "flag": "🇧🇩",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "دكا (Dhaka)",
+      "شيتاغونغ",
+      "سيلهيت"
+    ]
+  },
+  {
+    "nameAr": "سريلانكا",
+    "nameEn": "Sri Lanka",
+    "flag": "🇱🇰",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "كولومبو (Colombo)",
+      "كاندي",
+      "غالي"
+    ]
+  },
+  {
+    "nameAr": "كازاخستان",
+    "nameEn": "Kazakhstan",
+    "flag": "🇰🇿",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "أستانا (Astana)",
+      "ألماتي (Almaty)",
+      "شيمكنت"
+    ]
+  },
+  {
+    "nameAr": "أوزبكستان",
+    "nameEn": "Uzbekistan",
+    "flag": "🇺🇿",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "طشقند (Tashkent)",
+      "سمرقند (Samarkand)",
+      "بخارى"
+    ]
+  },
+  {
+    "nameAr": "أذربيجان",
+    "nameEn": "Azerbaijan",
+    "flag": "🇦🇿",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "باكو (Baku)",
+      "غنجة",
+      "سومقاييت"
+    ]
+  },
+  {
+    "nameAr": "جورجيا",
+    "nameEn": "Georgia",
+    "flag": "🇬🇪",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "تبليسي (Tbilisi)",
+      "باتومي (Batumi)",
+      "كوتايسي"
+    ]
+  },
+  {
+    "nameAr": "أرمينيا",
+    "nameEn": "Armenia",
+    "flag": "🇦🇲",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "يريفان (Yerevan)",
+      "غيومري"
+    ]
+  },
+  {
+    "nameAr": "إيران",
+    "nameEn": "Iran",
+    "flag": "🇮🇷",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "طهران (Tehran)",
+      "مشهد",
+      "أصفهان",
+      "شيراز",
+      "تبريز"
+    ]
+  },
+  {
+    "nameAr": "أفغانستان",
+    "nameEn": "Afghanistan",
+    "flag": "🇦🇫",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "كابول",
+      "هرات",
+      "مزار شريف"
+    ]
+  },
+  {
+    "nameAr": "نيبال",
+    "nameEn": "Nepal",
+    "flag": "🇳🇵",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "كاتماندو",
+      "بوكارا"
+    ]
+  },
+  {
+    "nameAr": "ميانمار (بورما)",
+    "nameEn": "Myanmar",
+    "flag": "🇲🇲",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "نايبيداو",
+      "يانغون",
+      "ماندالاي"
+    ]
+  },
+  {
+    "nameAr": "كمبوديا",
+    "nameEn": "Cambodia",
+    "flag": "🇰🇭",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "بنوم بنه",
+      "سيام ريب"
+    ]
+  },
+  {
+    "nameAr": "لاوس",
+    "nameEn": "Laos",
+    "flag": "🇱🇦",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "فينتيان",
+      "لوانغ برابانغ"
+    ]
+  },
+  {
+    "nameAr": "بروناي",
+    "nameEn": "Brunei",
+    "flag": "🇧🇳",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "بندر سري بكاوان"
+    ]
+  },
+  {
+    "nameAr": "منغوليا",
+    "nameEn": "Mongolia",
+    "flag": "🇲🇳",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "أولان باتور"
+    ]
+  },
+  {
+    "nameAr": "طاجيكستان",
+    "nameEn": "Tajikistan",
+    "flag": "🇹🇯",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "دوشنبه",
+      "خجند"
+    ]
+  },
+  {
+    "nameAr": "تركمانستان",
+    "nameEn": "Turkmenistan",
+    "flag": "🇹🇲",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "عشق آباد",
+      "تركمنباشي"
+    ]
+  },
+  {
+    "nameAr": "قيرغيزستان",
+    "nameEn": "Kyrgyzstan",
+    "flag": "🇰🇬",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "بيشكك",
+      "أوش"
+    ]
+  },
+  {
+    "nameAr": "جزر المالديف",
+    "nameEn": "Maldives",
+    "flag": "🇲🇻",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "ماليه (Male)"
+    ]
+  },
+  {
+    "nameAr": "بوتان",
+    "nameEn": "Bhutan",
+    "flag": "🇧🇹",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "تيمفو"
+    ]
+  },
+  {
+    "nameAr": "تيمور الشرقية",
+    "nameEn": "Timor-Leste",
+    "flag": "🇹🇱",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "ديلي"
+    ]
+  },
+  {
+    "nameAr": "تايوان",
+    "nameEn": "Taiwan",
+    "flag": "🇹🇼",
+    "continentAr": "آسيا",
+    "continentEn": "Asia",
+    "cities": [
+      "تايبيه (Taipei)",
+      "كاوهسيونغ",
+      "تايتشونغ"
+    ]
+  },
+  {
+    "nameAr": "جنوب إفريقيا",
+    "nameEn": "South Africa",
+    "flag": "🇿🇦",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "جوهانسبرغ (Johannesburg)",
+      "كيب تاون (Cape Town)",
+      "ديربان (Durban)",
+      "بريتوريا"
+    ]
+  },
+  {
+    "nameAr": "نيجيريا",
+    "nameEn": "Nigeria",
+    "flag": "🇳🇬",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "لاغوس (Lagos)",
+      "أبوجا (Abuja)",
+      "إبادان",
+      "كانو"
+    ]
+  },
+  {
+    "nameAr": "كينيا",
+    "nameEn": "Kenya",
+    "flag": "🇰🇪",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "نيروبي (Nairobi)",
+      "مومباسا (Mombasa)",
+      "كيسومو"
+    ]
+  },
+  {
+    "nameAr": "غانا",
+    "nameEn": "Ghana",
+    "flag": "🇬🇭",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "أكرا (Accra)",
+      "كوماسي",
+      "تامالي"
+    ]
+  },
+  {
+    "nameAr": "إثيوبيا",
+    "nameEn": "Ethiopia",
+    "flag": "🇪🇹",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "أديس أبابا (Addis Ababa)",
+      "ديرة داوا",
+      "بحر دار"
+    ]
+  },
+  {
+    "nameAr": "السنغال",
+    "nameEn": "Senegal",
+    "flag": "🇸🇳",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "داكار (Dakar)",
+      "توبا",
+      "ثيس"
+    ]
+  },
+  {
+    "nameAr": "كوت ديفوار (ساحل العاج)",
+    "nameEn": "Ivory Coast",
+    "flag": "🇨🇮",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "أبيدجان (Abidjan)",
+      "ياموسوكرو",
+      "بواكي"
+    ]
+  },
+  {
+    "nameAr": "الكاميرون",
+    "nameEn": "Cameroon",
+    "flag": "🇨🇲",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "ياوندي (Yaounde)",
+      "دوالا",
+      "غاروا"
+    ]
+  },
+  {
+    "nameAr": "تنزانيا",
+    "nameEn": "Tanzania",
+    "flag": "🇹🇿",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "دار السلام (Dar es Salaam)",
+      "دودوما",
+      "زنجبار"
+    ]
+  },
+  {
+    "nameAr": "أوغندا",
+    "nameEn": "Uganda",
+    "flag": "🇺🇬",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "كمبالا (Kampala)",
+      "عنتيبي",
+      "جينجا"
+    ]
+  },
+  {
+    "nameAr": "رواندا",
+    "nameEn": "Rwanda",
+    "flag": "🇷🇼",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "كيغالي (Kigali)",
+      "غيسيني",
+      "بوتاري"
+    ]
+  },
+  {
+    "nameAr": "أنغولا",
+    "nameEn": "Angola",
+    "flag": "🇦🇴",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "لواندا",
+      "هوامبو",
+      "لوبانغو"
+    ]
+  },
+  {
+    "nameAr": "جمهورية الكونغو الديمقراطية",
+    "nameEn": "DR Congo",
+    "flag": "🇨🇩",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "كينشاسا",
+      "لوبومباشي",
+      "غوما"
+    ]
+  },
+  {
+    "nameAr": "جمهورية الكونغو",
+    "nameEn": "Congo",
+    "flag": "🇨🇬",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "برازافيل",
+      "بوانت نوار"
+    ]
+  },
+  {
+    "nameAr": "زامبيا",
+    "nameEn": "Zambia",
+    "flag": "🇿🇲",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "لوساكا",
+      "كيتوي",
+      "ندولا"
+    ]
+  },
+  {
+    "nameAr": "زيمبابوي",
+    "nameEn": "Zimbabwe",
+    "flag": "🇿🇼",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "هراري",
+      "بولاوايو"
+    ]
+  },
+  {
+    "nameAr": "ناميبيا",
+    "nameEn": "Namibia",
+    "flag": "🇳🇦",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "ويندهوك",
+      "والفيس باي"
+    ]
+  },
+  {
+    "nameAr": "بوتسوانا",
+    "nameEn": "Botswana",
+    "flag": "🇧🇼",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "غابورون",
+      "فرانسيستاون"
+    ]
+  },
+  {
+    "nameAr": "موزمبيق",
+    "nameEn": "Mozambique",
+    "flag": "🇲🇿",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "مابوتو",
+      "بيرا",
+      "نامبولا"
+    ]
+  },
+  {
+    "nameAr": "مدغشقر",
+    "nameEn": "Madagascar",
+    "flag": "🇲🇬",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "أنتاناناريفو",
+      "تواماسينا"
+    ]
+  },
+  {
+    "nameAr": "مالي",
+    "nameEn": "Mali",
+    "flag": "🇲🇱",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "باماكو",
+      "سيكاسو",
+      "موبتي"
+    ]
+  },
+  {
+    "nameAr": "النيجر",
+    "nameEn": "Niger",
+    "flag": "🇳🇪",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "نيامي",
+      "مارادي",
+      "زيندر"
+    ]
+  },
+  {
+    "nameAr": "تشاد",
+    "nameEn": "Chad",
+    "flag": "🇹🇩",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "انجمينا",
+      "موندو"
+    ]
+  },
+  {
+    "nameAr": "بوركينا فاسو",
+    "nameEn": "Burkina Faso",
+    "flag": "🇧🇫",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "واغادوغو",
+      "بوبوديولاسو"
+    ]
+  },
+  {
+    "nameAr": "غينيا",
+    "nameEn": "Guinea",
+    "flag": "🇬🇳",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "كوناكري",
+      "كانكان"
+    ]
+  },
+  {
+    "nameAr": "سيراليون",
+    "nameEn": "Sierra Leone",
+    "flag": "🇸🇱",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "فريتاون",
+      "بو"
+    ]
+  },
+  {
+    "nameAr": "ليبيريا",
+    "nameEn": "Liberia",
+    "flag": "🇱🇷",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "مونروفيا",
+      "غبارنغا"
+    ]
+  },
+  {
+    "nameAr": "الغابون",
+    "nameEn": "Gabon",
+    "flag": "🇬🇦",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "ليبرفيل",
+      "بورت جنتيل"
+    ]
+  },
+  {
+    "nameAr": "إريتريا",
+    "nameEn": "Eritrea",
+    "flag": "🇪🇷",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "أسمرة",
+      "عصب",
+      "مصوع"
+    ]
+  },
+  {
+    "nameAr": "غامبيا",
+    "nameEn": "Gambia",
+    "flag": "🇬🇲",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "بانجول",
+      "سيريكوندا"
+    ]
+  },
+  {
+    "nameAr": "بينين",
+    "nameEn": "Benin",
+    "flag": "🇧🇯",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "بورتو نوفو",
+      "كوتونو"
+    ]
+  },
+  {
+    "nameAr": "توغو",
+    "nameEn": "Togo",
+    "flag": "🇹🇬",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "لومي",
+      "سوكودي"
+    ]
+  },
+  {
+    "nameAr": "موريشيوس",
+    "nameEn": "Mauritius",
+    "flag": "🇲🇺",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "بورت لويس",
+      "فاكواس"
+    ]
+  },
+  {
+    "nameAr": "سيشل",
+    "nameEn": "Seychelles",
+    "flag": "🇸🇨",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "فيكتوريا"
+    ]
+  },
+  {
+    "nameAr": "الرأس الأخضر",
+    "nameEn": "Cape Verde",
+    "flag": "🇨🇻",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "برايا",
+      "منديلو"
+    ]
+  },
+  {
+    "nameAr": "غينيا الاستوائية",
+    "nameEn": "Equatorial Guinea",
+    "flag": "🇬🇶",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "مالابو",
+      "باتا"
+    ]
+  },
+  {
+    "nameAr": "جنوب السودان",
+    "nameEn": "South Sudan",
+    "flag": "🇸🇸",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "جوبا",
+      "واو",
+      "ملكال"
+    ]
+  },
+  {
+    "nameAr": "بوروندي",
+    "nameEn": "Burundi",
+    "flag": "🇧🇮",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "غيتيغا",
+      "بوجومبورا"
+    ]
+  },
+  {
+    "nameAr": "ملاوي",
+    "nameEn": "Malawi",
+    "flag": "🇲🇼",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "ليلونغوي",
+      "بلانتيري"
+    ]
+  },
+  {
+    "nameAr": "ليسوتو",
+    "nameEn": "Lesotho",
+    "flag": "🇱🇸",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "ماسيرو"
+    ]
+  },
+  {
+    "nameAr": "إي سواتيني (سوازيلاند)",
+    "nameEn": "Eswatini",
+    "flag": "🇸🇿",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "مبابان",
+      "مانزيني"
+    ]
+  },
+  {
+    "nameAr": "جمهورية إفريقيا الوسطى",
+    "nameEn": "Central African Republic",
+    "flag": "🇨🇫",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "بانغي"
+    ]
+  },
+  {
+    "nameAr": "ساو تومي وبرينسيب",
+    "nameEn": "Sao Tome and Principe",
+    "flag": "🇸🇹",
+    "continentAr": "إفريقيا",
+    "continentEn": "Africa",
+    "cities": [
+      "ساو تومي"
+    ]
+  },
+  {
+    "nameAr": "أستراليا (Australia)",
+    "nameEn": "Australia",
+    "flag": "🇦🇺",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "pinned": true,
+    "cities": [
+      "سيدني (Sydney)",
+      "ملبورن (Melbourne)",
+      "بريزبان (Brisbane)",
+      "بيرث (Perth)",
+      "أديلايد (Adelaide)",
+      "كانبرا (Canberra)",
+      "جولد كوست"
+    ]
+  },
+  {
+    "nameAr": "نيوزيلندا",
+    "nameEn": "New Zealand",
+    "flag": "🇳🇿",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "أوكلاند (Auckland)",
+      "ويلينغتون (Wellington)",
+      "كرايستشرش",
+      "هاميلتون"
+    ]
+  },
+  {
+    "nameAr": "فيجي",
+    "nameEn": "Fiji",
+    "flag": "🇫🇯",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "سوفا",
+      "نادي"
+    ]
+  },
+  {
+    "nameAr": "بابوا غينيا الجديدة",
+    "nameEn": "Papua New Guinea",
+    "flag": "🇵🇬",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "بورت مورسبي"
+    ]
+  },
+  {
+    "nameAr": "ساموا",
+    "nameEn": "Samoa",
+    "flag": "🇼🇸",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "أبيا"
+    ]
+  },
+  {
+    "nameAr": "فانواتو",
+    "nameEn": "Vanuatu",
+    "flag": "🇻🇺",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "بورت فيلا"
+    ]
+  },
+  {
+    "nameAr": "جزر سليمان",
+    "nameEn": "Solomon Islands",
+    "flag": "🇸🇧",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "هونيارا"
+    ]
+  },
+  {
+    "nameAr": "تونغا",
+    "nameEn": "Tonga",
+    "flag": "🇹🇴",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "نوكو ألوفا"
+    ]
+  },
+  {
+    "nameAr": "ميكرونيزيا",
+    "nameEn": "Micronesia",
+    "flag": "🇫🇲",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "باليكير"
+    ]
+  },
+  {
+    "nameAr": "بالاو",
+    "nameEn": "Palau",
+    "flag": "🇵🇼",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "نغيرولمود"
+    ]
+  },
+  {
+    "nameAr": "جزر مارشال",
+    "nameEn": "Marshall Islands",
+    "flag": "🇲🇭",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "ماجورو"
+    ]
+  },
+  {
+    "nameAr": "كيريباتي",
+    "nameEn": "Kiribati",
+    "flag": "🇰🇮",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "تاراوا"
+    ]
+  },
+  {
+    "nameAr": "ناورو",
+    "nameEn": "Nauru",
+    "flag": "🇳🇷",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "يارين"
+    ]
+  },
+  {
+    "nameAr": "توفالو",
+    "nameEn": "Tuvalu",
+    "flag": "🇹🇻",
+    "continentAr": "أستراليا وأوقيانوسيا",
+    "continentEn": "Oceania",
+    "cities": [
+      "فونافوتي"
+    ]
+  },
+  {
+    "nameAr": "دولة أخرى / غير مدرجة",
+    "nameEn": "Other Country / Unlisted",
+    "flag": "🌐",
+    "continentAr": "أخرى",
+    "continentEn": "Other",
+    "cities": [
+      "العاصمة / مدينة رئيسية",
+      "مدينة / منطقة أخرى"
+    ]
+  }
+];
 
-    const worldCountriesEn = {
-      "المملكة العربية السعودية": "Saudi Arabia",
-      "الإمارات العربية المتحدة": "United Arab Emirates",
-      "الكويت": "Kuwait",
-      "قطر": "Qatar",
-      "سلطنة عمان": "Oman",
-      "البحرين": "Bahrain",
-      "الأردن": "Jordan",
-      "العراق": "Iraq",
-      "لبنان": "Lebanon",
-      "فلسطين": "Palestine",
-      "السودان": "Sudan",
-      "ليبيا": "Libya",
-      "تونس": "Tunisia",
-      "الجزائر": "Algeria",
-      "المغرب": "Morocco",
-      "اليمن": "Yemen",
-      "سوريا": "Syria",
-      "موريتانيا": "Mauritania",
-      "الولايات المتحدة الأمريكية (USA)": "United States (USA)",
-      "كندا (Canada)": "Canada",
-      "المملكة المتحدة (بريطانيا - UK)": "United Kingdom (UK)",
-      "ألمانيا (Germany)": "Germany",
-      "فرنسا (France)": "France",
-      "إيطاليا (Italy)": "Italy",
-      "إسبانيا (Spain)": "Spain",
-      "تركيا (Turkey)": "Turkey",
-      "هولندا (Netherlands)": "Netherlands",
-      "سويسرا (Switzerland)": "Switzerland",
-      "السويد (Sweden)": "Sweden",
-      "النمسا (Austria)": "Austria",
-      "بلجيكا (Belgium)": "Belgium",
-      "اليونان (Greece)": "Greece",
-      "البرتغال (Portugal)": "Portugal",
-      "روسيا (Russia)": "Russia",
-      "أستراليا (Australia)": "Australia",
-      "الصين (China)": "China",
-      "اليابان (Japan)": "Japan",
-      "الهند (India)": "India",
-      "ماليزيا (Malaysia)": "Malaysia",
-      "البرازيل (Brazil)": "Brazil",
-      "دولة أخرى / غير مدرجة": "Other Country / Unlisted"
-    };
+    const worldCountriesAndCities = {};
+    const worldCountriesEn = {};
+    worldCountriesData.forEach(c => {
+      worldCountriesAndCities[c.nameAr] = c.cities || [];
+      worldCountriesEn[c.nameAr] = c.nameEn;
+    });
 
     // ── Client Card Repeater State & Logic ──
     let clientCardSequence = 0;
@@ -2607,12 +4865,35 @@
                 <label class="block text-[11px] font-black text-slate-700 mb-1">
                   <span class="client-lbl-gov-text" data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
-                <select
-                  class="client-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
-                  onchange="handleClientRegionChange(${clientId}, this.value, 'id')"
-                >
-                  <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
-                </select>
+                <!-- Searchable Region/Country Picker with Search Bar -->
+                <div class="searchable-region-picker relative w-full" id="regionPicker_${clientId}">
+                  <button
+                    type="button"
+                    onclick="toggleRegionPickerDropdown(${clientId}, this)"
+                    class="region-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                  >
+                    <span class="region-picker-display flex items-center gap-2 truncate">
+                      <span class="region-flag text-base flex-shrink-0">🇪🇬</span>
+                      <span class="region-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</span>
+                    </span>
+                    <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                  </button>
+
+                  <input type="hidden" class="client-gov-select" value="" />
+
+                  <div class="region-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[280px] sm:min-w-[320px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="relative mb-2">
+                      <input 
+                        type="text" 
+                        placeholder="${currentLang === 'en' ? 'Search country or continent...' : 'ابحث عن الدولة أو القارة (مثال: مصر، السعودية، فرنسا، كندا)...'}" 
+                        oninput="filterRegionPicker(${clientId}, this)" 
+                        class="region-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
+                      />
+                      <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                    </div>
+                    <div class="region-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -2666,7 +4947,7 @@
                   </label>
                   <select
                     class="client-corr-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
-                    onchange="handleClientRegionChange(${clientId}, this.value, 'corr')"
+                    onchange="handleClientCorrGovChange(${clientId}, this.value)"
                   >
                     <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
                   </select>
@@ -2986,19 +5267,28 @@
           : '(مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)';
       }
 
-      // Update labels (المحافظة -> الدولة, etc.)
+      // Update labels (المحافظة -> الدولة) for ID address ONLY!
       updateClientAddressLabels(clientId);
 
-      // Re-populate dropdowns
-      const govSelect = card.querySelector('.client-gov-select');
-      const corrGovSelect = card.querySelector('.client-corr-gov-select');
+      // Refresh the Searchable Region Picker items for ID address
+      renderRegionPickerItems(clientId);
 
-      populateRegionOptions(govSelect, isOutside);
-      populateRegionOptions(corrGovSelect, isOutside);
+      const displayEl = card.querySelector('.region-picker-display');
+      const hiddenInput = card.querySelector('.client-gov-select');
+      if (displayEl) {
+        displayEl.innerHTML = isOutside
+          ? `<span class="region-flag text-base flex-shrink-0">🌍</span><span class="region-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Select Country...' : 'اختر الدولة...'}</span>`
+          : `<span class="region-flag text-base flex-shrink-0">🇪🇬</span><span class="region-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</span>`;
+      }
+      if (hiddenInput) {
+        hiddenInput.value = '';
+      }
 
-      // Reset city selects and combined addresses
+      // Reset ID city select
       handleClientRegionChange(clientId, '', 'id');
-      handleClientRegionChange(clientId, '', 'corr');
+
+      // The correspondence address is NEVER touched or modified!
+      // "الجزء الخاص بعنوان المرسالات لا يتاثر بشي"
 
       updateContractLocationVisibility();
     }
@@ -3032,11 +5322,12 @@
       const lblCity = card.querySelector('.client-lbl-city-text');
       if (lblCity) lblCity.innerText = cityLabelText;
 
+      // Note: Correspondence address labels always remain Governorate & City
       const corrLblGov = card.querySelector('.client-corr-lbl-gov-text');
-      if (corrLblGov) corrLblGov.innerText = govLabelText;
+      if (corrLblGov) corrLblGov.innerText = t.lblGovernorate || (isEn ? 'Governorate' : 'المحافظة');
 
       const corrLblCity = card.querySelector('.client-corr-lbl-city-text');
-      if (corrLblCity) corrLblCity.innerText = cityLabelText;
+      if (corrLblCity) corrLblCity.innerText = t.lblCity || (isEn ? 'City / District / Area' : 'المدينة / الحي / المركز');
     }
 
     function updateContractLocationVisibility() {
@@ -3052,55 +5343,250 @@
       }
     }
 
-    // ── Dynamic Address Picker (Governorate/Country & City Dropdowns + Street Details) ──
+    // ── Searchable Region Picker for ID / Residence Address (Search Bar + Egypt #1 + All Continents) ──
+    function renderRegionPickerItems(clientId) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const scrollContainer = card.querySelector('.region-picker-scroll');
+      if (!scrollContainer) return;
+      scrollContainer.innerHTML = '';
+
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
+      const isEn = (currentLang === 'en');
+
+      if (isOutside) {
+        // Group 1: Egypt #1 & Popular Countries
+        const pinnedHeading = document.createElement('div');
+        pinnedHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start flex items-center justify-between";
+        pinnedHeading.innerHTML = `<span>${isEn ? '⭐ Egypt & Popular Countries' : '⭐ مصر والدول الأكثر استخداماً'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">194 دولة</span>`;
+        scrollContainer.appendChild(pinnedHeading);
+
+        const pinnedCountries = worldCountriesData.filter(c => c.pinned);
+        pinnedCountries.forEach(c => {
+          scrollContainer.appendChild(createCountryPickerItemEl(c, clientId));
+        });
+
+        const divider = document.createElement('div');
+        divider.className = "border-t-2 border-sky-100 my-1.5";
+        scrollContainer.appendChild(divider);
+
+        // Group 2: All other countries across all continents
+        const allHeading = document.createElement('div');
+        allHeading.className = "text-[10px] font-black text-slate-700 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start";
+        allHeading.innerText = isEn ? '🌍 All World Countries (All Continents)' : '🌍 باقي دول العالم (كافة القارات)';
+        scrollContainer.appendChild(allHeading);
+
+        const otherCountries = worldCountriesData.filter(c => !c.pinned);
+        otherCountries.forEach(c => {
+          scrollContainer.appendChild(createCountryPickerItemEl(c, clientId));
+        });
+      } else {
+        // Inside Egypt: 27 Egyptian Governorates
+        const govHeading = document.createElement('div');
+        govHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start flex items-center justify-between";
+        govHeading.innerHTML = `<span>${isEn ? '🇪🇬 Egyptian Governorates' : '🇪🇬 محافظات جمهورية مصر العربية'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">27 محافظة</span>`;
+        scrollContainer.appendChild(govHeading);
+
+        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+          if (gov.includes('خارج')) return;
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = "region-picker-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start";
+          item.setAttribute('data-name-ar', gov);
+          item.setAttribute('data-name-en', egyptGovernoratesEn[gov] || gov);
+          item.setAttribute('data-continent-ar', 'مصر');
+          item.setAttribute('data-continent-en', 'Egypt');
+
+          const displayName = isEn ? (egyptGovernoratesEn[gov] || gov) : gov;
+          item.innerHTML = `
+            <span class="flex items-center gap-2 truncate">
+              <span class="text-sm">📍</span>
+              <span class="truncate font-black text-xs text-slate-950">${displayName}</span>
+            </span>
+            <span class="text-[9px] text-sky-800 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">مصر</span>
+          `;
+
+          item.onclick = (e) => {
+            e.stopPropagation();
+            selectRegionPickerItem(clientId, { nameAr: gov, nameEn: egyptGovernoratesEn[gov] || gov, flag: '📍' }, false);
+          };
+          scrollContainer.appendChild(item);
+        });
+      }
+    }
+
+    function createCountryPickerItemEl(c, clientId) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = "region-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start";
+      item.setAttribute('data-name-ar', c.nameAr);
+      item.setAttribute('data-name-en', c.nameEn);
+      item.setAttribute('data-continent-ar', c.continentAr || '');
+      item.setAttribute('data-continent-en', c.continentEn || '');
+
+      const isEn = (currentLang === 'en');
+      const displayName = isEn ? c.nameEn : c.nameAr;
+      const displayContinent = isEn ? c.continentEn : c.continentAr;
+
+      item.innerHTML = `
+        <span class="flex items-center gap-2 truncate">
+          <span class="text-base flex-shrink-0">${c.flag}</span>
+          <span class="truncate font-black text-xs text-slate-950">${displayName}</span>
+        </span>
+        <span class="text-[9px] text-slate-600 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 flex-shrink-0 ml-2 font-mono">${displayContinent}</span>
+      `;
+
+      item.onclick = (e) => {
+        e.stopPropagation();
+        selectRegionPickerItem(clientId, c, true);
+      };
+      return item;
+    }
+
+    function selectRegionPickerItem(clientId, itemData, isOutside) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+
+      const displayEl = card.querySelector('.region-picker-display');
+      const hiddenInput = card.querySelector('.client-gov-select');
+      const dropdown = card.querySelector('.region-picker-dropdown');
+
+      const isEn = (currentLang === 'en');
+      const chosenName = isEn ? itemData.nameEn : itemData.nameAr;
+      const storageValue = itemData.nameAr;
+
+      if (displayEl) {
+        displayEl.innerHTML = `
+          <span class="region-flag text-base flex-shrink-0">${itemData.flag || (isOutside ? '🌍' : '📍')}</span>
+          <span class="region-name font-black truncate text-slate-950">${chosenName}</span>
+        `;
+      }
+
+      if (hiddenInput) {
+        hiddenInput.value = storageValue;
+        hiddenInput.classList.remove('invalid');
+      }
+
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+      }
+
+      handleClientRegionChange(clientId, storageValue, 'id');
+    }
+
+    function filterRegionPicker(clientId, searchInput) {
+      const q = searchInput.value.trim().toLowerCase();
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+
+      const items = card.querySelectorAll('.region-picker-item');
+      items.forEach(item => {
+        const ar = (item.getAttribute('data-name-ar') || '').toLowerCase();
+        const en = (item.getAttribute('data-name-en') || '').toLowerCase();
+        const contAr = (item.getAttribute('data-continent-ar') || '').toLowerCase();
+        const contEn = (item.getAttribute('data-continent-en') || '').toLowerCase();
+        const match = ar.includes(q) || en.includes(q) || contAr.includes(q) || contEn.includes(q);
+        item.style.display = match ? 'flex' : 'none';
+      });
+    }
+
+    function toggleRegionPickerDropdown(clientId, btn) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const dropdown = card.querySelector('.region-picker-dropdown');
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+      closeAllRegionPickerDropdowns();
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = dropdown.querySelector('.region-picker-search');
+        if (searchInput) {
+          searchInput.value = '';
+          filterRegionPicker(clientId, searchInput);
+          setTimeout(() => searchInput.focus(), 50);
+        }
+      }
+    }
+
+    function closeAllRegionPickerDropdowns() {
+      document.querySelectorAll('.region-picker-dropdown').forEach(d => d.classList.add('hidden'));
+    }
+
     function initClientAddressFields(clientId) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
 
-      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
       updateClientAddressLabels(clientId);
+      renderRegionPickerItems(clientId);
 
-      const govSelect = card.querySelector('.client-gov-select');
+      // Correspondence address ALWAYS has Egyptian Governorates!
       const corrGovSelect = card.querySelector('.client-corr-gov-select');
-
-      populateRegionOptions(govSelect, isOutside);
-      populateRegionOptions(corrGovSelect, isOutside);
+      populateGovernorateOptions(corrGovSelect);
     }
 
-    function populateRegionOptions(selectEl, isOutside) {
+    function populateGovernorateOptions(selectEl) {
       if (!selectEl) return;
       const currentVal = selectEl.value;
       const isEn = (currentLang === 'en');
       const t = translations[currentLang] || {};
 
-      if (isOutside) {
-        selectEl.innerHTML = `<option value="">${t.optSelectCountry || (isEn ? 'Select Country...' : 'اختر الدولة...')}</option>`;
-        Object.keys(worldCountriesAndCities).forEach(cName => {
-          const opt = document.createElement('option');
-          opt.value = cName;
-          const display = (isEn && worldCountriesEn[cName]) ? worldCountriesEn[cName] : cName;
-          opt.textContent = display;
-          opt.className = "bg-white text-slate-950 font-bold";
-          selectEl.appendChild(opt);
-        });
-        if (currentVal && worldCountriesAndCities[currentVal]) {
-          selectEl.value = currentVal;
-        }
-      } else {
-        selectEl.innerHTML = `<option value="">${t.optSelectGov || (isEn ? 'Select Governorate...' : 'اختر المحافظة...')}</option>`;
-        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
-          if (gov.includes('خارج')) return;
-          const opt = document.createElement('option');
-          opt.value = gov;
-          const display = (isEn && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov;
-          opt.textContent = display;
-          opt.className = "bg-white text-slate-950 font-bold";
-          selectEl.appendChild(opt);
-        });
-        if (currentVal && egyptGovernoratesAndCities[currentVal] && !currentVal.includes('خارج')) {
-          selectEl.value = currentVal;
-        }
+      selectEl.innerHTML = `<option value="">${t.optSelectGov || (isEn ? 'Select Governorate...' : 'اختر المحافظة...')}</option>`;
+      Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+        if (gov.includes('خارج')) return;
+        const opt = document.createElement('option');
+        opt.value = gov;
+        const display = (isEn && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov;
+        opt.textContent = display;
+        opt.className = "bg-white text-slate-950 font-bold";
+        selectEl.appendChild(opt);
+      });
+      if (currentVal && egyptGovernoratesAndCities[currentVal] && !currentVal.includes('خارج')) {
+        selectEl.value = currentVal;
       }
+    }
+
+    function handleClientCorrGovChange(clientId, govVal) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+
+      const citySelect = card.querySelector('.client-corr-city-select');
+      if (!citySelect) return;
+      citySelect.innerHTML = '';
+
+      if (!govVal) {
+        citySelect.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = (currentLang === 'en') ? 'Select Governorate first...' : 'اختر المحافظة أولاً...';
+        opt.className = "bg-white text-slate-950 font-bold";
+        citySelect.appendChild(opt);
+      } else {
+        citySelect.disabled = false;
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = (currentLang === 'en') ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...';
+        defaultOpt.className = "bg-white text-slate-950 font-bold";
+        citySelect.appendChild(defaultOpt);
+
+        const cities = egyptGovernoratesAndCities[govVal] || [];
+        cities.forEach(city => {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = city;
+          opt.className = "bg-white text-slate-950 font-bold";
+          citySelect.appendChild(opt);
+        });
+
+        const otherOpt = document.createElement('option');
+        otherOpt.value = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
+        otherOpt.textContent = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
+        otherOpt.className = "bg-white text-slate-950 font-bold";
+        citySelect.appendChild(otherOpt);
+      }
+
+      updateCombinedAddress(clientId, 'corr');
     }
 
     function handleClientRegionChange(clientId, regionVal, type) {
@@ -3165,7 +5651,6 @@
 
     // Aliases for compatibility
     const handleClientGovChange = handleClientRegionChange;
-    const populateGovernorateOptions = (sel) => populateRegionOptions(sel, false);
 
     function handleClientCityChange(clientId, cityVal, type) {
       updateCombinedAddress(clientId, type);
