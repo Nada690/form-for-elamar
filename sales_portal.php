@@ -312,12 +312,33 @@ function pageHead(string $title): void { ?>
   <title><?= h($title) ?> | مجموعة العمار</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <style>
+    <style>
+    body {
+      background-color: #dbeafe !important;
+      background-image: 
+        radial-gradient(at 0% 0%, #bae6fd 0px, transparent 55%),
+        radial-gradient(at 100% 0%, #bfdbfe 0px, transparent 50%),
+        radial-gradient(at 50% 100%, #e0f2fe 0px, transparent 65%) !important;
+      background-attachment: fixed !important;
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
     html { font-family: 'Cairo', sans-serif; }
-    .glass { background: rgba(15,23,42,.88); border: 1px solid rgba(255,255,255,.08); }
+    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div {
+      font-weight: 700;
+    }
+    label {
+      color: #000000 !important;
+      font-weight: 800 !important;
+    }
+    .glass { 
+      background: rgba(255, 255, 255, 0.95); 
+      border: 2px solid #7dd3fc;
+      box-shadow: 0 20px 50px -10px rgba(2, 132, 199, 0.15), 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
+<body class="min-h-screen text-slate-950">
 <?php }
 
 function flashBox(?array $flash): void {
@@ -333,8 +354,8 @@ if (!$user) {
     <div class="glass w-full max-w-md rounded-3xl p-7 shadow-2xl">
       <div class="text-center mb-6">
         <img src="logo.png" alt="Logo" class="h-16 mx-auto mb-3 object-contain">
-        <h1 class="text-xl font-black text-white">بوابة المبيعات</h1>
-        <p class="text-xs text-amber-400 font-bold mt-1">دخول السيلز والمديرين</p>
+        <h1 class="text-xl font-black text-slate-950">بوابة المبيعات</h1>
+        <p class="text-xs text-sky-950 font-black mt-1">دخول السيلز والمديرين</p>
       </div>
       <?php flashBox($flash); ?>
       <form method="POST" action="sales_portal.php" autocomplete="on" class="space-y-4">
@@ -343,14 +364,14 @@ if (!$user) {
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1.5">البريد الإلكتروني</label>
           <input type="email" name="email" required autofocus dir="ltr"
-                 class="w-full px-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amber-400">
+                 class="w-full px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1.5">كلمة المرور</label>
           <input type="password" name="password" required dir="ltr"
-                 class="w-full px-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amber-400">
+                 class="w-full px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
         </div>
-        <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-sm hover:from-amber-400 hover:to-amber-500">
+        <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 font-black text-sm hover:from-sky-500 hover:to-blue-600 border-2 border-sky-400 shadow-md cursor-pointer">
           دخول
         </button>
       </form>

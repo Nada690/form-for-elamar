@@ -178,18 +178,18 @@ try {
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 lg:p-8 selection:bg-amber-500/30 selection:text-amber-200">
+<body class="min-h-screen p-3 sm:p-6 lg:p-8 text-slate-950 selection:bg-sky-200 selection:text-slate-950">
 
   <!-- Ambient Glow -->
-  <div class="fixed top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed top-0 right-1/4 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-0 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
   <div class="max-w-7xl mx-auto space-y-6 relative z-10">
 
     <!-- ═══════════════ HEADER ═══════════════ -->
-    <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border border-slate-800">
+    <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border-2 border-sky-300">
       <div class="flex items-center gap-4">
-        <div class="p-2 rounded-2xl bg-gradient-to-tr from-amber-500/20 via-amber-400/10 to-transparent border border-amber-500/30 shadow-lg">
+        <div class="p-2 rounded-2xl bg-gradient-to-tr from-sky-400/20 via-blue-400/10 to-transparent border-2 border-sky-300 shadow-md">
           <img src="logo.png" alt="Logo" class="h-12 w-auto object-contain">
         </div>
         <div>
@@ -199,10 +199,10 @@ try {
             </span>
             <span class="text-xs text-slate-400" data-i18n="headerBadge">منظومة المبيعات</span>
           </div>
-          <h1 class="text-xl sm:text-2xl font-black text-white mt-1" data-i18n="headerTitle">
+          <h1 class="text-xl sm:text-2xl font-black text-slate-950 mt-1" data-i18n="headerTitle">
             إدارة مسؤولي المبيعات والروابط المخصصة
           </h1>
-          <p class="text-xs text-slate-400" data-i18n="headerSub">
+          <p class="text-xs text-slate-700 font-bold" data-i18n="headerSub">
             توليد روابط فورمة فريدة لكل موظف لمعرفة مصدر كل عميل مسجل تلقائياً
           </p>
         </div>
@@ -213,17 +213,17 @@ try {
         <button 
           id="langToggleBtn" 
           onclick="toggleLanguage()" 
-          class="px-3.5 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md"
+          class="px-3.5 py-2 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-300 text-slate-950 text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm"
         >
           <span>🌐</span>
           <span id="langBtnText">English</span>
         </button>
 
-        <a href="view_clients.php" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold rounded-2xl transition-all border border-slate-700 flex items-center gap-2 shadow-sm">
+        <a href="view_clients.php" class="px-4 py-2.5 bg-white hover:bg-sky-50 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all border-2 border-sky-300 flex items-center gap-2 shadow-sm">
           <span>📊</span>
           <span data-i18n="btnDashboard">لوحة تحكم العملاء</span>
         </a>
-        <a href="form.php" target="_blank" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-lg hover:shadow-amber-500/20 flex items-center gap-2">
+        <a href="form.php" target="_blank" class="px-4 py-2.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-md border-2 border-sky-400 flex items-center gap-2">
           <span>🔗</span>
           <span data-i18n="btnPublicForm">معاينة الفورم العام</span>
         </a>
@@ -266,21 +266,21 @@ try {
       
       <!-- إجمالي الموظفين -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4 hover:border-slate-700 transition-all">
-        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl text-amber-400 shadow-inner">
+        <div class="w-14 h-14 rounded-2xl bg-sky-100 border-2 border-sky-300 flex items-center justify-center text-2xl text-sky-800 shadow-xs">
           👥
         </div>
         <div>
           <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="cardTotalSales">إجمالي مسؤولي المبيعات</p>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-3xl font-black text-white count-up" data-target="<?= $totalSales ?>"><?= $totalSales ?></span>
-            <span class="text-xs text-amber-400 font-semibold" data-i18n="cardTotalSalesSub">موظف مسجل</span>
+            <span class="text-3xl font-black text-slate-950 count-up" data-target="<?= $totalSales ?>"><?= $totalSales ?></span>
+            <span class="text-xs text-sky-950 font-black" data-i18n="cardTotalSalesSub">موظف مسجل</span>
           </div>
         </div>
       </div>
 
       <!-- الروابط النشطة -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4 hover:border-slate-700 transition-all">
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl text-emerald-400 shadow-inner">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center text-2xl text-emerald-800 shadow-xs">
           ⚡
         </div>
         <div>
@@ -294,7 +294,7 @@ try {
 
       <!-- العقود المسجلة عبر السيلز -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4 hover:border-slate-700 transition-all">
-        <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-2xl text-blue-400 shadow-inner">
+        <div class="w-14 h-14 rounded-2xl bg-blue-100 border-2 border-blue-300 flex items-center justify-center text-2xl text-blue-800 shadow-xs">
           📑
         </div>
         <div>
@@ -309,12 +309,12 @@ try {
     </div>
 
     <!-- ═══════════════ CREATE SALES EMPLOYEE CARD ═══════════════ -->
-    <div class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-800 shadow-2xl relative overflow-hidden">
-      <div class="h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-600 absolute top-0 left-0 right-0"></div>
+    <div class="glass-card rounded-3xl p-6 sm:p-7 border-2 border-sky-300 shadow-2xl relative overflow-hidden">
+      <div class="h-2 bg-gradient-to-r from-sky-400 via-blue-500 to-sky-400 absolute top-0 left-0 right-0"></div>
 
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h2 class="text-lg font-black text-white flex items-center gap-2.5">
+          <h2 class="text-lg font-black text-slate-950 flex items-center gap-2.5">
             <span class="p-1.5 rounded-xl bg-amber-500/20 text-amber-400 text-sm">➕</span>
             <span data-i18n="createCardTitle">إضافة موظف مبيعات جديد وتوليد الرابط المخصص</span>
           </h2>
@@ -340,7 +340,7 @@ try {
             data-i18n-placeholder="phRepName"
             required
             oninput="updatePreviewSlug(this.value)"
-            class="w-full px-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all font-semibold"
+            class="w-full px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-400/30 transition-all font-bold shadow-xs"
           >
         </div>
 
@@ -354,7 +354,7 @@ try {
             name="email" 
             placeholder="name@company.com"
             required
-            class="w-full px-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-cyan-300 placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all font-mono"
+            class="w-full px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-400/30 transition-all font-mono font-bold shadow-xs"
           >
         </div>
 
@@ -362,7 +362,7 @@ try {
         <div class="md:col-span-3 flex items-end">
           <button 
             type="submit" 
-            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl hover:shadow-amber-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 font-black text-sm shadow-lg border-2 border-sky-400 transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <span>✨</span>
             <span data-i18n="btnGenerateLink">توليد الرابط المخصص</span>
@@ -383,15 +383,15 @@ try {
     </div>
 
     <!-- ═══════════════ TABLE & TEAM LIST ═══════════════ -->
-    <div class="glass-card rounded-3xl border border-slate-800 shadow-2xl overflow-hidden">
+    <div class="glass-card rounded-3xl border-2 border-sky-300 shadow-2xl overflow-hidden">
       
       <!-- Table Header & Search -->
-      <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900/60">
+      <div class="p-5 border-b-2 border-sky-200 flex flex-col sm:flex-row justify-between items-center gap-4 bg-sky-100/90">
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <div class="p-2 rounded-xl bg-slate-800 text-amber-400">📋</div>
           <div>
-            <h2 class="font-black text-base sm:text-lg text-white" data-i18n="tableTitle">قائمة مسؤولي المبيعات والروابط المخصصة</h2>
-            <p class="text-xs text-slate-400" data-i18n="tableSub">انسخ الرابط أو شارك QR Code مع العميل، وستظهر العقود باسم الموظف فوراً في الداشبورد</p>
+            <h2 class="font-black text-base sm:text-lg text-slate-950" data-i18n="tableTitle">قائمة مسؤولي المبيعات والروابط المخصصة</h2>
+            <p class="text-xs text-slate-700 font-bold" data-i18n="tableSub">انسخ الرابط أو شارك QR Code مع العميل، وستظهر العقود باسم الموظف فوراً في الداشبورد</p>
           </div>
         </div>
 
@@ -404,7 +404,7 @@ try {
               placeholder="ابحث بالاسم أو البريد..." 
               data-i18n-placeholder="phSearchSales"
               oninput="filterSalesTable(this.value)"
-              class="w-full pl-4 pr-9 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs focus:outline-none focus:border-amber-400 transition-all"
+              class="w-full pl-4 pr-9 py-2.5 rounded-xl bg-sky-50/80 border-2 border-sky-300 text-slate-950 placeholder-slate-500 text-xs focus:outline-none focus:border-sky-500 transition-all font-bold shadow-xs"
             >
             <span class="absolute right-3 top-2.5 text-slate-400 text-sm">🔍</span>
           </div>
@@ -414,7 +414,7 @@ try {
       <!-- Table Body -->
       <div class="overflow-x-auto">
         <table class="w-full text-xs sm:text-sm text-right" id="salesTable">
-          <thead class="bg-slate-900 text-amber-400 font-black border-b border-slate-800 text-[11px] sm:text-xs uppercase tracking-wider">
+          <thead class="bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-300 text-[11px] sm:text-xs uppercase tracking-wider">
             <tr>
               <th class="p-4 w-14 text-center">#</th>
               <th class="p-4" data-i18n="thRep">الموظف</th>
@@ -425,7 +425,7 @@ try {
               <th class="p-4 text-center" data-i18n="thActions">الإجراءات</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-800/80 text-slate-200" id="salesTableBody">
+          <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="salesTableBody">
             <?php if (empty($salesEmployees)): ?>
               <tr>
                 <td colspan="7" class="p-12 text-center text-slate-400 font-semibold" data-i18n="noSalesFound">
@@ -438,7 +438,7 @@ try {
                 $fullLink = $fullBaseUrl . '/form.php?slug=' . urlencode($sales['slug']);
                 $initials = mb_substr($sales['name'], 0, 1, 'UTF-8');
               ?>
-                <tr class="hover:bg-slate-800/40 transition-colors sales-row" data-name="<?= htmlspecialchars(mb_strtolower($sales['name']), ENT_QUOTES, 'UTF-8') ?>" data-email="<?= htmlspecialchars(strtolower($sales['email']), ENT_QUOTES, 'UTF-8') ?>">
+                <tr class="hover:bg-sky-50/90 transition-colors sales-row" data-name="<?= htmlspecialchars(mb_strtolower($sales['name']), ENT_QUOTES, 'UTF-8') ?>" data-email="<?= htmlspecialchars(strtolower($sales['email']), ENT_QUOTES, 'UTF-8') ?>">
                   
                   <!-- ID -->
                   <td class="p-4 text-center font-mono text-slate-400 text-xs font-bold">

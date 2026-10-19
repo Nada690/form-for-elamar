@@ -121,40 +121,57 @@ if (!$isAuthenticated):
   <title>تسجيل دخول المسؤول | مجموعة العمار</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
+    <style>
+    body {
+      background-color: #dbeafe !important;
+      background-image: 
+        radial-gradient(at 0% 0%, #bae6fd 0px, transparent 55%),
+        radial-gradient(at 100% 0%, #bfdbfe 0px, transparent 50%),
+        radial-gradient(at 50% 100%, #e0f2fe 0px, transparent 65%) !important;
+      background-attachment: fixed !important;
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
     html[dir="rtl"] { font-family: 'Cairo', sans-serif; }
     html[dir="ltr"] { font-family: 'Plus Jakarta Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div {
+      font-weight: 700;
+    }
+    label {
+      color: #000000 !important;
+      font-weight: 800 !important;
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden text-slate-950">
   
-  <div class="fixed top-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed top-1/4 right-1/4 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-1/4 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
-  <div class="w-full max-w-md bg-slate-900/95 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden backdrop-blur-2xl z-10">
-    <div class="h-1.5 bg-gradient-to-r from-amber-500 via-amber-200 to-amber-600 absolute top-0 left-0 right-0"></div>
+  <div class="w-full max-w-md bg-white/95 border-2 border-sky-300 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden backdrop-blur-2xl z-10">
+    <div class="h-2 bg-gradient-to-r from-sky-400 via-blue-500 to-sky-400 absolute top-0 left-0 right-0"></div>
 
     <div class="flex justify-end mb-2">
-      <button onclick="toggleLoginLang()" class="text-xs font-bold text-amber-300 hover:text-white px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700">
+      <button onclick="toggleLoginLang()" class="text-xs font-black text-slate-950 hover:bg-sky-100 px-3 py-1 rounded-xl bg-white border-2 border-sky-300 shadow-xs cursor-pointer">
         🌐 <span id="loginLangBtnText">English</span>
       </button>
     </div>
 
-    <div class="inline-block p-1 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-200 to-amber-600 mb-4 shadow-xl">
-      <div class="bg-slate-950 p-2.5 rounded-xl">
+    <div class="inline-block p-1.5 rounded-2xl bg-gradient-to-tr from-sky-400 via-blue-400 to-sky-200 mb-4 shadow-lg border border-sky-300">
+      <div class="bg-white p-2.5 rounded-xl">
         <img src="logo.png" alt="Logo" class="h-12 w-auto mx-auto object-contain">
       </div>
     </div>
 
-    <h2 class="text-2xl font-black text-white mb-1" id="loginHeading">
+    <h2 class="text-2xl font-black text-slate-950 mb-1" id="loginHeading">
       بوابة تسجيل الدخول الموحدة
     </h2>
-    <p class="text-xs text-amber-400 font-bold mb-6" id="loginSubheading">
+    <p class="text-xs text-sky-950 font-black mb-6" id="loginSubheading">
       منطقة آمنة لدخول موظفي المبيعات والمديرين والإدارة المركزية
     </p>
 
     <?php if ($authError): ?>
-      <div class="bg-red-500/15 border border-red-500/40 text-red-300 text-xs p-3 rounded-2xl mb-4 font-bold text-right" id="loginErrorBox">
+      <div class="bg-red-50 border-2 border-red-300 text-red-700 text-xs p-3 rounded-2xl mb-4 font-black text-right shadow-xs" id="loginErrorBox">
         ⚠️ <?= htmlspecialchars($authError, ENT_QUOTES, 'UTF-8'); ?>
       </div>
     <?php endif; ?>
@@ -162,7 +179,7 @@ if (!$isAuthenticated):
     <form method="POST" action="view_clients.php" class="space-y-4">
       <div class="text-right" id="loginFormContainer">
         
-        <label class="block text-xs font-bold text-slate-300 mb-1.5" id="lblUsername">
+        <label class="block text-xs font-black text-slate-950 mb-1.5" id="lblUsername">
           البريد الإلكتروني (Email):
         </label>
         <input 
@@ -171,10 +188,10 @@ if (!$isAuthenticated):
           value="<?= htmlspecialchars($_POST['login_email'] ?? '') ?>"
           placeholder="example@elamar.com" 
           required 
-          class="w-full px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all font-mono mb-3 dir-ltr text-right"
+          class="w-full px-4 py-3 rounded-xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-400/30 transition-all font-bold mb-3 dir-ltr text-right"
         >
 
-        <label class="block text-xs font-bold text-slate-300 mb-1.5" id="lblPassword">
+        <label class="block text-xs font-black text-slate-950 mb-1.5" id="lblPassword">
           كلمة المرور:
         </label>
         <div class="relative">
@@ -185,12 +202,12 @@ if (!$isAuthenticated):
             placeholder="••••••••" 
             required 
             autofocus
-            class="w-full px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all font-mono"
+            class="w-full px-4 py-3 rounded-xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-400 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-400/30 transition-all font-mono font-bold"
           >
           <button 
             type="button" 
             onclick="const p = document.getElementById('adminPwdInput'); p.type = p.type === 'password' ? 'text' : 'password';" 
-            class="absolute left-3 top-3.5 text-xs text-slate-400 hover:text-white cursor-pointer"
+            class="absolute left-3 top-3.5 text-xs text-slate-500 hover:text-slate-950 cursor-pointer font-bold"
           >
             👁️
           </button>
@@ -200,14 +217,14 @@ if (!$isAuthenticated):
       <button 
         type="submit" 
         id="loginSubmitBtn"
-        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl hover:shadow-amber-500/25 transition-all cursor-pointer mt-2"
+        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 font-black text-sm shadow-xl hover:shadow-sky-500/25 transition-all cursor-pointer mt-2 border-2 border-sky-400"
       >
         دخول لوحة التحكم
       </button>
     </form>
 
-    <div class="mt-6 pt-5 border-t border-slate-800 flex justify-center text-xs text-slate-400">
-      <a href="form.php" class="hover:text-amber-400 transition-colors" id="loginBackForm">
+    <div class="mt-6 pt-5 border-t-2 border-sky-200 flex justify-center text-xs text-slate-700 font-bold">
+      <a href="form.php" class="hover:text-sky-950 hover:underline transition-colors" id="loginBackForm">
         ← العودة لاستمارة التعاقد
       </a>
     </div>
@@ -669,30 +686,62 @@ try {
     * { 
       transition: background-color 0.2s ease, border-color 0.2s ease;
     }
+    body {
+      background-color: #dbeafe !important;
+      background-image: 
+        radial-gradient(at 0% 0%, #bae6fd 0px, transparent 55%),
+        radial-gradient(at 100% 0%, #bfdbfe 0px, transparent 50%),
+        radial-gradient(at 50% 100%, #e0f2fe 0px, transparent 65%) !important;
+      background-attachment: fixed !important;
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
     html[dir="rtl"] { font-family: 'Cairo', sans-serif; }
     html[dir="ltr"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     .font-mono { font-family: 'Plus Jakarta Sans', monospace; }
     
+    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div {
+      font-weight: 700;
+    }
+    label {
+      color: #000000 !important;
+      font-weight: 800 !important;
+    }
+
     .glass-card {
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.96) !important;
+      backdrop-filter: blur(28px) !important;
+      -webkit-backdrop-filter: blur(28px) !important;
+      border: 2px solid #7dd3fc !important;
+      box-shadow: 0 20px 50px -10px rgba(2, 132, 199, 0.15), 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .glass-input, input, select, textarea {
+      background: #ffffff !important;
+      border: 2px solid #7dd3fc !important;
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
+    .glass-input:focus, input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #0284c7 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35) !important;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 lg:p-8 selection:bg-slate-400/25 selection:text-white">
+<body class="min-h-screen p-3 sm:p-6 lg:p-8 text-slate-950 selection:bg-sky-200 selection:text-slate-950">
 
   <!-- Ambient light -->
-  <div class="fixed top-0 right-10 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-0 left-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed top-0 right-10 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-0 left-10 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
   <div class="max-w-[1700px] mx-auto space-y-6 relative z-10">
 
     <!-- ═══════════════ TOP HEADER ═══════════════ -->
-    <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border border-slate-800">
+    <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border-2 border-sky-300">
       
       <div class="flex items-center gap-4">
-        <div class="p-2 rounded-2xl bg-gradient-to-tr from-amber-500/20 via-amber-400/10 to-transparent border border-amber-500/30 shadow-lg">
+        <div class="p-2 rounded-2xl bg-gradient-to-tr from-sky-400/20 via-blue-400/10 to-transparent border-2 border-sky-300 shadow-md">
           <img src="logo.png" alt="Logo" class="h-12 w-auto object-contain">
         </div>
         <div>
@@ -700,11 +749,11 @@ try {
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black <?= $currentUserRole === 'Admin' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : ($currentUserRole === 'Manager' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30') ?>">
               <?= strtoupper($currentUserRole) ?> PANEL
             </span>
-            <span class="text-xs text-white font-bold bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">
+            <span class="text-xs text-slate-950 font-black bg-white px-2.5 py-1 rounded-xl border-2 border-sky-300 shadow-xs">
               👤 <?= htmlspecialchars($currentUserName) ?>
             </span>
           </div>
-          <h1 class="text-xl sm:text-2xl font-black text-white mt-1" data-i18n="dashTitle">
+          <h1 class="text-xl sm:text-2xl font-black text-slate-950 mt-1" data-i18n="dashTitle">
             <?php if ($currentUserRole === 'Sales'): ?>
               لوحة تحكم مستشار المبيعات | عقود شورز
             <?php elseif ($currentUserRole === 'Manager'): ?>
@@ -713,7 +762,7 @@ try {
               لوحة تحكم وإدارة عقود شورز الساحلية
             <?php endif; ?>
           </h1>
-          <p class="text-xs text-slate-400" data-i18n="dashSub">
+          <p class="text-xs text-slate-700 font-bold" data-i18n="dashSub">
             <?php if ($currentUserRole === 'Sales'): ?>
               متابعة واستعراض العملاء المسجلين تحت حسابك المباشر مع رابط الإحالة الخاص بك
             <?php elseif ($currentUserRole === 'Manager'): ?>
@@ -733,7 +782,7 @@ try {
           <button 
             type="button" 
             onclick="copyMySurveyLink('<?= htmlspecialchars($currentUserRef) ?>')"
-            class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-xl hover:shadow-amber-500/25 flex items-center gap-2 cursor-pointer"
+            class="px-4 py-2.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-lg border-2 border-sky-400 flex items-center gap-2 cursor-pointer"
           >
             <span>🔗</span>
             <span data-i18n="btnCopySurveyLink">نسخ رابط الاستبيان الخاص بي</span>
@@ -744,7 +793,7 @@ try {
         <button 
           id="langToggleBtn" 
           onclick="toggleLanguage()" 
-          class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs sm:text-sm font-bold rounded-2xl transition-all border border-amber-500/30 flex items-center gap-1.5 cursor-pointer shadow-sm hover:border-amber-400"
+          class="px-3.5 py-2 bg-white hover:bg-sky-50 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all border-2 border-sky-300 flex items-center gap-1.5 cursor-pointer shadow-sm"
         >
           <span>🌐</span> <span id="langBtnText">English</span>
         </button>
@@ -768,12 +817,12 @@ try {
         </button>
 
         <!-- New Form -->
-        <a href="form.php<?= ($currentUserRole === 'Sales') ? '?ref=' . urlencode($currentUserRef) : '' ?>" target="_blank" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-md flex items-center gap-1.5">
+        <a href="form.php<?= ($currentUserRole === 'Sales') ? '?ref=' . urlencode($currentUserRef) : '' ?>" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-md border-2 border-sky-400 flex items-center gap-1.5">
           <span>+</span> <span data-i18n="btnNewForm">استمارة التعاقد</span>
         </a>
 
         <!-- Logout -->
-        <a href="view_clients.php?logout=1" class="px-3 py-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-xs sm:text-sm font-bold rounded-2xl transition-all" data-i18n="btnLogout">
+        <a href="view_clients.php?logout=1" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-300 text-xs sm:text-sm font-black rounded-2xl transition-all shadow-xs" data-i18n="btnLogout">
           تسجيل خروج
         </a>
       </div>
@@ -796,25 +845,25 @@ try {
       
       <!-- إجمالي العقود -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl text-amber-400">
+        <div class="w-14 h-14 rounded-2xl bg-sky-100 border-2 border-sky-300 flex items-center justify-center text-2xl text-sky-800 shadow-xs">
           📑
         </div>
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpiTotal">إجمالي العقود المسجلة</p>
+          <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpiTotal">إجمالي العقود المسجلة</p>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-3xl font-black text-white count-up" data-target="<?= $totalClients ?>"><?= $totalClients ?></span>
-            <span class="text-xs text-amber-400 font-semibold" data-i18n="kpiTotalSub">عقد معتمد</span>
+            <span class="text-3xl font-black text-slate-950 count-up" data-target="<?= $totalClients ?>"><?= $totalClients ?></span>
+            <span class="text-xs text-sky-950 font-black" data-i18n="kpiTotalSub">عقد معتمد</span>
           </div>
         </div>
       </div>
 
       <!-- حالة سداد مقدم أكتوبر -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl text-emerald-400">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center text-2xl text-emerald-800 shadow-xs">
           💳
         </div>
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpi5Percent">سداد مقدم أكتوبر</p>
+          <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpi5Percent">سداد مقدم أكتوبر</p>
           <div class="flex items-center gap-2 mt-1.5">
             <?php foreach ($paidStats as $ps): ?>
               <span class="px-2.5 py-0.5 rounded-lg text-xs font-black <?= ($ps['paid_5_percent'] === 'نعم') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30' ?>">
@@ -827,14 +876,14 @@ try {
 
       <!-- توزيع الفروع -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-2xl text-cyan-400">
+        <div class="w-14 h-14 rounded-2xl bg-blue-100 border-2 border-blue-300 flex items-center justify-center text-2xl text-blue-800 shadow-xs">
           🏛️
         </div>
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpiBranches">فروع ومكان التوثيق</p>
+          <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpiBranches">فروع ومكان التوثيق</p>
           <div class="flex items-center gap-2 mt-1.5 flex-wrap">
             <?php foreach ($locStats as $ls): ?>
-              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-800 text-cyan-300 border border-slate-700">
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-sky-100 text-sky-950 border border-sky-300 shadow-xs">
                 <?= htmlspecialchars($ls['contract_location'] ?: 'غير محدد') ?>: <?= $ls['count'] ?>
               </span>
             <?php endforeach; ?>
@@ -844,11 +893,11 @@ try {
 
       <!-- مسؤولو المبيعات -->
       <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-2xl text-purple-400">
+        <div class="w-14 h-14 rounded-2xl bg-purple-100 border-2 border-purple-300 flex items-center justify-center text-2xl text-purple-800 shadow-xs">
           👥
         </div>
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="kpiSalesTeam">فريق المبيعات</p>
+          <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpiSalesTeam">فريق المبيعات</p>
           <div class="flex items-baseline gap-2 mt-0.5">
             <span class="text-3xl font-black text-purple-400 count-up" data-target="<?= count($salesList) ?>"><?= count($salesList) ?></span>
             <span class="text-xs text-slate-400 font-semibold" data-i18n="kpiSalesTeamSub">موظف نشط</span>
@@ -869,7 +918,7 @@ try {
           placeholder="بحث سريع: اسم العميل، الهاتف، كود الوحدة، السيلز..." 
           data-i18n-placeholder="phSearchClients"
           oninput="liveFilterClients(this.value)"
-          class="w-full pl-4 pr-10 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-amber-400 transition-all font-semibold"
+          class="w-full pl-4 pr-10 py-3 rounded-2xl bg-sky-50/80 border-2 border-sky-300 text-slate-950 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold shadow-xs"
         >
         <span class="absolute right-3.5 top-3.5 text-slate-400 text-sm">🔍</span>
       </div>
@@ -886,7 +935,7 @@ try {
           <select 
             name="sales_id" 
             onchange="this.form.submit()" 
-            class="px-3 py-2.5 bg-slate-900 border border-slate-700 text-amber-300 text-xs font-bold rounded-xl cursor-pointer focus:outline-none focus:border-amber-400"
+            class="px-3 py-2.5 bg-white border-2 border-sky-300 text-slate-950 text-xs font-black rounded-xl cursor-pointer focus:outline-none focus:border-sky-500 shadow-xs"
           >
             <option value="" data-i18n="optAllSales">
               <?= $currentUserRole === 'Manager' ? 'كل موظفي فريقي (عرض الكل)' : 'كل موظفي Sales (عرض الكل)' ?>
@@ -906,7 +955,7 @@ try {
           <select 
             name="location" 
             onchange="this.form.submit()" 
-            class="px-3 py-2.5 bg-slate-900 border border-slate-700 text-cyan-300 text-xs font-bold rounded-xl cursor-pointer focus:outline-none focus:border-amber-400"
+            class="px-3 py-2.5 bg-white border-2 border-sky-300 text-slate-950 text-xs font-black rounded-xl cursor-pointer focus:outline-none focus:border-sky-500 shadow-xs"
           >
             <option value="" data-i18n="optAllBranches">كل الأماكن</option>
             <option value="القاهرة" <?= ($filterLoc === 'القاهرة') ? 'selected' : '' ?> data-i18n="optCairoBranch">🏛️ القاهرة</option>
@@ -916,7 +965,7 @@ try {
         </div>
 
         <?php if ($filterSalesId !== null || !empty($filterLoc)): ?>
-          <a href="view_clients.php" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-red-400 text-xs font-bold rounded-xl border border-slate-700" data-i18n="btnClearFilters">
+          <a href="view_clients.php" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-black rounded-xl border-2 border-red-300 shadow-xs" data-i18n="btnClearFilters">
             ✕ إلغاء الفلترة
           </a>
         <?php endif; ?>
@@ -928,19 +977,19 @@ try {
     <!-- ═══════════════ MAIN CLIENTS TABLE ═══════════════ -->
     <div class="glass-card rounded-3xl border border-slate-800 shadow-2xl overflow-hidden">
       
-      <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/60">
+      <div class="p-5 border-b-2 border-sky-200 flex justify-between items-center bg-sky-100/90">
         <div class="flex items-center gap-3">
-          <h2 class="font-black text-base sm:text-lg text-white" data-i18n="tblTitle">جدول عقود واستبيانات العملاء</h2>
-          <span class="text-xs bg-amber-500/15 text-amber-300 border border-amber-500/30 px-3 py-0.5 rounded-full font-mono font-bold" id="visibleRowsCount">
+          <h2 class="font-black text-base sm:text-lg text-slate-950" data-i18n="tblTitle">جدول عقود واستبيانات العملاء</h2>
+          <span class="text-xs bg-white text-slate-950 border-2 border-sky-300 px-3 py-0.5 rounded-full font-mono font-black shadow-xs" id="visibleRowsCount">
             <?= count($clients) ?> عقد
           </span>
         </div>
-        <span class="text-xs text-slate-400 font-mono">آخر تحديث: <?= date('Y-m-d H:i') ?></span>
+        <span class="text-xs text-slate-700 font-mono font-bold">آخر تحديث: <?= date('Y-m-d H:i') ?></span>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-xs sm:text-sm text-right" id="clientsTable">
-          <thead class="bg-slate-900 text-amber-400 font-black border-b border-slate-800 text-[11px] sm:text-xs uppercase tracking-wider">
+          <thead class="bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-300 text-[11px] sm:text-xs uppercase tracking-wider">
             <tr>
               <th class="p-4 w-12 text-center">#</th>
               <th class="p-4 w-16">ID</th>
@@ -961,7 +1010,7 @@ try {
               <th class="p-4 text-center" data-i18n="thActions">إجراءات</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-800/80 text-slate-200" id="clientsTableBody">
+          <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="clientsTableBody">
             <?php if (empty($clients)): ?>
               <tr>
                 <td colspan="17" class="p-14 text-center text-slate-400 font-semibold" data-i18n="noClientsFound">
@@ -996,20 +1045,20 @@ try {
                   $rawPhone = preg_replace('/[^0-9]/', '', (string)$pPhone);
               ?>
                 <tr 
-                  class="hover:bg-slate-800/40 transition-colors client-row" 
+                  class="hover:bg-sky-50/90 transition-colors client-row" 
                   data-search="<?= htmlspecialchars(mb_strtolower($pName . ' ' . $pPhone . ' ' . $client['eoi_number'] . ' ' . ($client['sales_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
                 >
                   
                   <!-- م (تسلسلي مرئي) -->
-                  <td class="p-4 text-center font-bold text-amber-400 font-mono bg-slate-950/30">
+                  <td class="p-4 text-center font-black text-sky-950 font-mono bg-sky-50/80">
                     <?= $seq++ ?>
                   </td>
 
                   <!-- ID -->
-                  <td class="p-4 text-slate-400 font-mono text-xs font-bold whitespace-nowrap">
+                  <td class="p-4 text-slate-800 font-mono text-xs font-black whitespace-nowrap">
                     #<?= htmlspecialchars($client['id']) ?>
                     <?php if ($partnerCount > 1): ?>
-                      <div class="text-[10px] text-amber-400 font-bold mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
+                      <div class="text-[10px] text-sky-800 font-black mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
                     <?php endif; ?>
                   </td>
 
@@ -1032,11 +1081,11 @@ try {
                   </td>
 
                   <!-- كود الوحدة مع السعر إن وجد -->
-                  <td class="p-4 font-mono font-black text-amber-300">
+                  <td class="p-4 font-mono font-black text-slate-950">
                     <button 
                       type="button"
                       onclick="copyText('<?= htmlspecialchars($client['eoi_number']) ?>')" 
-                      class="bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-xl border border-amber-500/20 text-xs cursor-pointer block"
+                      class="bg-sky-100 hover:bg-sky-200 px-2.5 py-1 rounded-xl border-2 border-sky-300 text-slate-950 text-xs cursor-pointer block font-black shadow-xs"
                       title="Click to copy unit code"
                     >
                       <?= htmlspecialchars($client['eoi_number']) ?>
@@ -1070,7 +1119,7 @@ try {
                   </td>
 
                   <!-- اسم العميل والشركاء -->
-                  <td class="p-4 font-bold text-white max-w-[200px] break-words">
+                  <td class="p-4 font-black text-slate-950 max-w-[200px] break-words">
                     <?= htmlspecialchars($pName) ?>
                     <?php if ($partnerCount > 1): ?>
                       <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 mr-1 font-bold whitespace-nowrap">شريك <?= ($pIdx + 1) ?></span>
@@ -1201,7 +1250,7 @@ try {
                       <button 
                         type="button"
                         onclick="openEditModal(<?= $clientJson ?>)"
-                        class="p-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        class="p-2 bg-sky-100 hover:bg-sky-200 text-slate-950 border-2 border-sky-300 rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs"
                         title="Edit / تعديل بيانات العقد"
                       >
                         ✏️
@@ -1211,7 +1260,7 @@ try {
                       <button 
                         type="button"
                         onclick="confirmDeleteClient(<?= $client['id'] ?>, '<?= htmlspecialchars(addslashes($client['name']), ENT_QUOTES) ?>')"
-                        class="p-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        class="p-2 bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-300 rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs"
                         title="Delete / حذف"
                       >
                         🗑️
@@ -1233,10 +1282,10 @@ try {
 
   <!-- ═══════════════ EDIT CLIENT MODAL ═══════════════ -->
   <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md hidden overflow-y-auto">
-    <div class="glass-card max-w-2xl w-full p-6 sm:p-8 rounded-3xl border border-amber-500/30 shadow-2xl relative my-8">
+    <div class="glass-card max-w-2xl w-full p-6 sm:p-8 rounded-3xl border-2 border-sky-400 shadow-2xl relative my-8 bg-white text-slate-950">
       
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-        <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+        <h3 class="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2">
           <span>✏️</span>
           <span data-i18n="editModalTitle">تعديل بيانات العقد والعميل</span>
         </h3>
@@ -1399,10 +1448,10 @@ try {
 
         <!-- أزرار الإجراءات -->
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-          <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold cursor-pointer" data-i18n="btnCancel">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 bg-white hover:bg-sky-50 rounded-xl text-xs font-black text-slate-950 border-2 border-sky-300 cursor-pointer shadow-xs" data-i18n="btnCancel">
             إلغاء
           </button>
-          <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl text-xs shadow-lg cursor-pointer" data-i18n="btnSaveEdit">
+          <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 font-black rounded-xl text-xs shadow-lg border-2 border-sky-400 cursor-pointer" data-i18n="btnSaveEdit">
             💾 حفظ التعديلات
           </button>
         </div>
@@ -1414,12 +1463,12 @@ try {
 
   <!-- ═══════════════ DELETE CONFIRMATION MODAL ═══════════════ -->
   <div id="deleteClientModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
-    <div class="glass-card max-w-md w-full p-6 rounded-3xl border border-red-500/40 text-center shadow-2xl">
+    <div class="glass-card max-w-md w-full p-6 rounded-3xl border-2 border-red-300 text-center shadow-2xl bg-white text-slate-950">
       <div class="w-14 h-14 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center text-2xl mx-auto mb-3">
         ⚠️
       </div>
-      <h3 class="text-base font-black text-white mb-1" data-i18n="delClientModalTitle">تأكيد حذف عقد العميل</h3>
-      <p class="text-xs text-slate-300 mb-5" id="delClientModalDesc">
+      <h3 class="text-base font-black text-slate-950 mb-1" data-i18n="delClientModalTitle">تأكيد حذف عقد العميل</h3>
+      <p class="text-xs text-slate-700 font-bold mb-5" id="delClientModalDesc">
         هل أنت متأكد تماماً من حذف سجل هذا العميل ومرفقاته؟ لن يمكن استرجاع البيانات بعد الحذف.
       </p>
 
@@ -1430,7 +1479,7 @@ try {
         <button 
           type="button" 
           onclick="closeDeleteClientModal()" 
-          class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
+          class="px-5 py-2.5 bg-white hover:bg-sky-50 text-slate-950 font-black rounded-xl text-xs border-2 border-sky-300 cursor-pointer shadow-xs"
           data-i18n="btnCancel"
         >
           إلغاء
@@ -1448,11 +1497,11 @@ try {
 
   <!-- ═══════════════ ATTACHMENT LIGHTBOX PREVIEW MODAL ═══════════════ -->
   <div id="attachmentLightbox" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden" onclick="closeLightbox()">
-    <div class="max-w-4xl w-full max-h-[90vh] bg-slate-900 border border-slate-700 rounded-3xl p-4 shadow-2xl relative flex flex-col items-center" onclick="event.stopPropagation()">
+    <div class="max-w-4xl w-full max-h-[90vh] bg-white border-2 border-sky-400 rounded-3xl p-4 shadow-2xl relative flex flex-col items-center text-slate-950" onclick="event.stopPropagation()">
       <div class="w-full flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
-        <span class="text-xs font-bold text-amber-300 font-mono" id="lightboxTitle">معاينة المستند</span>
+        <span class="text-xs font-black text-slate-950 font-mono" id="lightboxTitle">معاينة المستند</span>
         <div class="flex items-center gap-2">
-          <a id="lightboxDownloadBtn" href="#" target="_blank" download class="text-xs px-3 py-1 bg-amber-500 text-slate-950 font-bold rounded-lg" data-i18n="btnDownloadDoc">تحميل</a>
+          <a id="lightboxDownloadBtn" href="#" target="_blank" download class="text-xs px-3 py-1 bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 font-black rounded-xl border border-sky-400 shadow-xs" data-i18n="btnDownloadDoc">تحميل</a>
           <button onclick="closeLightbox()" class="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
         </div>
       </div>
