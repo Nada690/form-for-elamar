@@ -495,13 +495,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                           <span id="unitAutoHintText" class="hidden"></span>
                         </div>
                         <div id="unit_multi_choices" class="hidden mt-2 flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-sky-200">
-                          <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">الوحدات المسجلة لهذا العميل:</span>
+                          <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">الوحدات المسجلة لهذا العميل (انقر للاختيار):</span>
                           <div id="unit_pills" class="flex flex-wrap gap-1.5"></div>
                           <div id="unitPillsContainer" class="hidden"></div>
+                          <p id="unitAllSelectedPrimary" class="text-[11px] text-emerald-700 font-black hidden">✓ تم اختيار كل وحدات العميل</p>
                         </div>
                       </div>
 
                       <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errUnitCode" data-i18n="errUnitCode">كود الوحدة مطلوب</p>
+                      <p class="duplicate-unit-warning text-xs font-black text-amber-600 mt-1 hidden" id="duplicateUnitWarnPrimary"></p>
                     </div>
 
                     <!-- فترة السداد والنسبة (خطة السداد) -->
@@ -1688,6 +1690,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       setTimeout(() => {
         div.classList.remove('opacity-0', 'translate-y-2');
       }, 20);
+      if (typeof refreshAllUnitsPills === 'function') {
+        refreshAllUnitsPills();
+      }
     }
 
     let extraPhoneCounter = 0;
@@ -1856,7 +1861,18 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               />
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
             </div>
+
+            <!-- أزرار الوحدات المتبقية لنفس الرقم القومي -->
+            <div class="extra-unit-pills-box hidden mt-2 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 transition-all">
+              <div class="flex items-center justify-between gap-1 mb-1.5">
+                <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">${currentLang === 'en' ? 'Remaining units for this client (Click to select):' : 'الوحدات المتبقية لهذا العميل (انقر للاختيار):'}</span>
+              </div>
+              <div class="extra-unit-pills flex flex-wrap gap-1.5"></div>
+              <p class="extra-unit-all-selected text-[11px] text-emerald-700 font-black hidden">${currentLang === 'en' ? '✓ All client units have been selected' : '✓ تم اختيار كل وحدات العميل'}</p>
+            </div>
+
             <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-unit-error" data-i18n="errUnitCode">${currentLang === 'en' ? 'Unit code is required' : 'كود الوحدة مطلوب'}</p>
+            <p class="duplicate-unit-warning text-xs font-black text-amber-600 mt-1 hidden"></p>
           </div>
 
           <!-- فترة السداد للوحدة الإضافية (مطابقة تماماً للوحدة 1) -->
@@ -1919,13 +1935,21 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       setTimeout(() => {
         div.classList.remove('opacity-0', 'translate-y-2');
       }, 20);
+      if (typeof refreshAllUnitsPills === 'function') {
+        refreshAllUnitsPills();
+      }
     }
 
     function removeExtraUnit(btn) {
       const block = btn.closest('.unit-block');
       if (block) {
         block.classList.add('opacity-0', '-translate-y-2');
-        setTimeout(() => block.remove(), 250);
+        setTimeout(() => {
+          block.remove();
+          if (typeof refreshAllUnitsPills === 'function') {
+            refreshAllUnitsPills();
+          }
+        }, 250);
       }
     }
 
@@ -5211,9 +5235,143 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     }
 
     
-    // ── Auto-lookup unit and customer name from National ID / Passport ──
+    // ── Global Customer Units State & Multi-Card Unit Pills Management ──
+    let currentClientUnits = [];
+    window.currentClientUnits = currentClientUnits;
+    let currentLookupNationalId = '';
+
     function getUnitCodeInput() {
       return document.getElementById('unit_code') || document.getElementById('unitCode');
+    }
+
+    function getAllUnitItems() {
+      const items = [];
+      const primaryInput = getUnitCodeInput();
+      if (primaryInput) {
+        items.push({
+          input: primaryInput,
+          isPrimary: true,
+          container: document.getElementById('unit_multi_choices'),
+          pillsEl: document.getElementById('unit_pills'),
+          allSelectedEl: document.getElementById('unitAllSelectedPrimary'),
+          warnEl: document.getElementById('duplicateUnitWarnPrimary')
+        });
+      }
+      const extraBlocks = document.querySelectorAll('#unitsContainer .unit-block:not(:first-child)');
+      extraBlocks.forEach(blk => {
+        const inp = blk.querySelector('input[name="extra_unit_codes[]"]');
+        if (inp) {
+          items.push({
+            input: inp,
+            isPrimary: false,
+            container: blk.querySelector('.extra-unit-pills-box'),
+            pillsEl: blk.querySelector('.extra-unit-pills'),
+            allSelectedEl: blk.querySelector('.extra-unit-all-selected'),
+            warnEl: blk.querySelector('.duplicate-unit-warning')
+          });
+        }
+      });
+      return items;
+    }
+
+    function checkDuplicateUnits() {
+      const items = getAllUnitItems();
+      const counts = {};
+      items.forEach(item => {
+        const val = item.input.value.trim().toUpperCase();
+        if (val) counts[val] = (counts[val] || 0) + 1;
+      });
+
+      let hasDuplicates = false;
+      items.forEach(item => {
+        const val = item.input.value.trim().toUpperCase();
+        if (val && counts[val] > 1) {
+          hasDuplicates = true;
+          if (item.warnEl) {
+            item.warnEl.innerHTML = (currentLang === 'en')
+              ? `⚠️ Unit code (<bdi dir="ltr">${val}</bdi>) is already selected in another card`
+              : `⚠️ كود الوحدة (<bdi dir="ltr">${val}</bdi>) تم اختياره بالفعل في بطاقة أخرى`;
+            item.warnEl.classList.remove('hidden');
+          }
+          item.input.classList.add('invalid');
+          item.input.classList.remove('valid');
+        } else {
+          if (item.warnEl) item.warnEl.classList.add('hidden');
+        }
+      });
+      return hasDuplicates;
+    }
+
+    function refreshAllUnitsPills() {
+      const items = getAllUnitItems();
+
+      // 1. Check for duplicates across all cards
+      checkDuplicateUnits();
+
+      // 2. Render pills for each card based on currentClientUnits
+      items.forEach(item => {
+        if (!item.container || !item.pillsEl) return;
+
+        // If no units loaded for current client, hide pills container
+        if (!currentClientUnits || currentClientUnits.length === 0) {
+          item.container.classList.add('hidden');
+          item.pillsEl.innerHTML = '';
+          if (item.allSelectedEl) item.allSelectedEl.classList.add('hidden');
+          return;
+        }
+
+        // Units chosen in OTHER cards (excluding this card's own value)
+        const otherChosen = items
+          .filter(other => other !== item)
+          .map(other => other.input.value.trim().toUpperCase())
+          .filter(Boolean);
+
+        // Units available for this card: client units not chosen in other cards
+        const available = currentClientUnits.filter(u => !otherChosen.includes(u.toUpperCase()));
+
+        // For Primary Card: only show pills box if client has multiple units
+        if (item.isPrimary && currentClientUnits.length <= 1) {
+          item.container.classList.add('hidden');
+          return;
+        }
+
+        if (available.length === 0) {
+          // All client units have been selected across cards
+          item.container.classList.remove('hidden');
+          item.pillsEl.innerHTML = '';
+          if (item.allSelectedEl) {
+            item.allSelectedEl.textContent = (currentLang === 'en')
+              ? '✓ All client units have been selected'
+              : '✓ تم اختيار كل وحدات العميل';
+            item.allSelectedEl.classList.remove('hidden');
+          }
+        } else {
+          if (item.allSelectedEl) item.allSelectedEl.classList.add('hidden');
+          item.container.classList.remove('hidden');
+          item.pillsEl.innerHTML = '';
+
+          available.forEach(u => {
+            const pill = document.createElement('button');
+            pill.type = 'button';
+            const isCur = (item.input.value.trim().toUpperCase() === u.toUpperCase());
+            pill.className = `px-3 py-1.5 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
+              isCur 
+                ? 'bg-sky-600 text-white border-sky-700 shadow-sm' 
+                : 'bg-white text-slate-950 border-sky-300 hover:bg-sky-100 shadow-2xs'
+            }`;
+            pill.innerHTML = `<bdi dir="ltr">${u}</bdi>`;
+            pill.onclick = () => {
+              item.input.value = u;
+              item.input.classList.add('valid');
+              item.input.classList.remove('invalid');
+              item.input.dispatchEvent(new Event('input', { bubbles: true }));
+              item.input.dispatchEvent(new Event('change', { bubbles: true }));
+              refreshAllUnitsPills();
+            };
+            item.pillsEl.appendChild(pill);
+          });
+        }
+      });
     }
 
     function normalizeIdForLookup(str) {
@@ -5232,14 +5390,14 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       const hintText = document.getElementById('unit_msg') || document.getElementById('unitAutoHintText');
       const hintIcon = document.getElementById('unit_msg_icon');
       const hintMsgBox = document.getElementById('unit_msg_box');
-      const multiBox = document.getElementById('unit_multi_choices') || document.getElementById('unitMultiChoices');
-      const pillsContainer = document.getElementById('unit_pills') || document.getElementById('unitPillsContainer');
       const unitInput = getUnitCodeInput();
       const errUnit = document.getElementById('errUnitCode');
 
       if (!normId || normId.length < 5) {
         if (hintBox) hintBox.classList.add('hidden');
-        if (multiBox) multiBox.classList.add('hidden');
+        currentClientUnits = [];
+        window.currentClientUnits = [];
+        refreshAllUnitsPills();
         return;
       }
 
@@ -5276,14 +5434,22 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       if (data && data.found) {
         const unitVal = data.unit_code || data.unit || (data.units && data.units[0]) || '';
 
-        // Auto-fill unit code into input and trigger events
+        // Save into global variable currentClientUnits (Requirement 1)
+        currentClientUnits = (data.units && data.units.length > 0) ? [...data.units] : [unitVal];
+        window.currentClientUnits = currentClientUnits;
+        currentLookupNationalId = normId;
+
+        // Auto-fill primary unit code into input if empty or previously auto-filled
         if (unitInput) {
-          unitInput.value = unitVal;
-          unitInput.classList.add('valid');
-          unitInput.classList.remove('invalid');
-          unitInput.dispatchEvent(new Event('input', { bubbles: true }));
-          unitInput.dispatchEvent(new Event('change', { bubbles: true }));
-          if (errUnit) errUnit.classList.add('hidden');
+          if (!unitInput.value.trim() || unitInput.dataset.autoFilled === 'true') {
+            unitInput.value = unitVal;
+            unitInput.dataset.autoFilled = 'true';
+            unitInput.classList.add('valid');
+            unitInput.classList.remove('invalid');
+            unitInput.dispatchEvent(new Event('input', { bubbles: true }));
+            unitInput.dispatchEvent(new Event('change', { bubbles: true }));
+            if (errUnit) errUnit.classList.add('hidden');
+          }
         }
 
         // Auto-fill customer name if empty or very short
@@ -5311,46 +5477,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           }
         }
 
-        // Handle multiple units if client has more than one
-        const allUnits = data.units && data.units.length > 0 ? data.units : [unitVal];
-        if (allUnits.length > 1 && multiBox && pillsContainer) {
-          multiBox.classList.remove('hidden');
-          pillsContainer.innerHTML = '';
-          allUnits.forEach((u) => {
-            const pill = document.createElement('button');
-            pill.type = 'button';
-            const isCur = (unitInput && unitInput.value.trim() === u);
-            pill.className = `px-3 py-1.5 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
-              isCur 
-                ? 'bg-sky-600 text-white border-sky-700 shadow-sm' 
-                : 'bg-white text-slate-950 border-sky-300 hover:bg-sky-100 shadow-2xs'
-            }`;
-            pill.innerHTML = `<bdi dir="ltr">${u}</bdi>`;
-            pill.onclick = () => {
-              if (unitInput) {
-                unitInput.value = u;
-                unitInput.classList.add('valid');
-                unitInput.classList.remove('invalid');
-                unitInput.dispatchEvent(new Event('input', { bubbles: true }));
-                unitInput.dispatchEvent(new Event('change', { bubbles: true }));
-                if (errUnit) errUnit.classList.add('hidden');
-              }
-              pillsContainer.querySelectorAll('button').forEach(btn => {
-                const active = btn.textContent.trim() === u;
-                btn.className = `px-3 py-1.5 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
-                  active 
-                    ? 'bg-sky-600 text-white border-sky-700 shadow-sm' 
-                    : 'bg-white text-slate-950 border-sky-300 hover:bg-sky-100 shadow-2xs'
-                }`;
-              });
-            };
-            pillsContainer.appendChild(pill);
-          });
-        } else if (multiBox) {
-          multiBox.classList.add('hidden');
-        }
+        // Refresh pills across all unit cards (Primary + Extra)
+        refreshAllUnitsPills();
+
       } else {
         // Not found message
+        currentClientUnits = [];
+        window.currentClientUnits = [];
+        refreshAllUnitsPills();
+
         if (hintBox) {
           hintBox.classList.remove('hidden');
           hintBox.className = 'mt-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-950 transition-all';
@@ -5360,7 +5495,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             hintText.textContent = (currentLang === 'en') ? 'This National ID / Passport was not found' : 'الرقم ده مش موجود';
           }
         }
-        if (multiBox) multiBox.classList.add('hidden');
       }
     }
 
@@ -5372,6 +5506,20 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       const errEl = card.querySelector('.client-id-error');
 
       if (errEl) errEl.classList.add('hidden');
+
+      // Requirement 6: If primary card ID is cleared or changed, reset currentClientUnits and refresh pills
+      if (clientId === 1 || clientId === '1') {
+        const clean = normalizeIdForLookup(val);
+        if (clean !== currentLookupNationalId) {
+          currentLookupNationalId = clean;
+          currentClientUnits = [];
+          window.currentClientUnits = [];
+          if (typeof refreshAllUnitsPills === 'function') refreshAllUnitsPills();
+          const hintBox = document.getElementById('unitAutoHint');
+          if (hintBox) hintBox.classList.add('hidden');
+        }
+      }
+
       if (!val) {
         input.classList.remove('valid', 'invalid');
         return false;
@@ -5397,6 +5545,18 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       if (typeof lookupUnitByNationalId === 'function') lookupUnitByNationalId(val, clientId);
       return isValid;
     }
+
+    // Real-time reactive updates on any unit input change or typing
+    document.addEventListener('input', function(e) {
+      if (e.target && (e.target.id === 'unit_code' || e.target.name === 'unit_code' || e.target.name === 'extra_unit_codes[]' || e.target.classList.contains('extra-unit-input'))) {
+        if (typeof refreshAllUnitsPills === 'function') refreshAllUnitsPills();
+      }
+    });
+    document.addEventListener('change', function(e) {
+      if (e.target && (e.target.id === 'unit_code' || e.target.name === 'unit_code' || e.target.name === 'extra_unit_codes[]' || e.target.classList.contains('extra-unit-input'))) {
+        if (typeof refreshAllUnitsPills === 'function') refreshAllUnitsPills();
+      }
+    });
 
     function setClientResidence(clientId, value) {
       clientResidenceMap[clientId] = value;
@@ -6260,6 +6420,14 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           idAddress: idAddrInput ? idAddrInput.value.trim() : '',
           correspondenceAddress: corrAddrInput ? corrAddrInput.value.trim() : ''
         });
+      }
+
+      // Check for duplicate units across all unit cards
+      if (typeof checkDuplicateUnits === 'function' && checkDuplicateUnits()) {
+        alert(currentLang === 'en'
+          ? 'There are duplicate unit codes across cards. Please ensure each unit is unique before submitting.'
+          : 'يوجد تكرار في كود الوحدة بين البطاقات. يرجى التأكد من عدم تكرار أي وحدة قبل الإرسال.');
+        hasError = true;
       }
 
       // التحقق من بيانات الوحدة ونظام السداد (Section 02)
