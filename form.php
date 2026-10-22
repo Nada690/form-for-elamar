@@ -466,7 +466,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                   <div id="primaryUnitDetailsContainer" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
                     <!-- كود الوحدة (إدخال مباشر بدون قائمة منسدلة + جلب تلقائي بالرقم القومي) -->
                     <div class="sm:col-span-12 form-group">
-                      <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitCode">
+                      <label class="block text-xs font-black text-slate-950 mb-1.5" for="unit_code">
                         <span class="text-slate-950 font-black" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
                         <span class="text-red-500 font-bold">*</span>
                       </label>
@@ -474,8 +474,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                       <div class="relative">
                         <input
                           type="text"
-                          id="unitCode"
+                          id="unit_code"
                           name="unit_code"
+                          data-alias="unitCode"
                           dir="ltr"
                           autocomplete="off"
                           placeholder="أدخل كود الوحدة (مثال: J49-26)..."
@@ -487,14 +488,16 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                       </div>
 
                       <!-- تنبيه الجلب التلقائي وقائمة الوحدات المتعددة إن وجدت -->
-                      <div id="unitAutoHint" class="hidden mt-2 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 transition-all">
-                        <div class="flex items-center gap-1.5 text-emerald-700 font-black">
-                          <span>✓</span>
-                          <span id="unitAutoHintText">تم جلب كود الوحدة تلقائياً بناءً على الرقم القومي</span>
+                      <div id="unitAutoHint" class="hidden mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all">
+                        <div class="flex items-center gap-1.5 text-emerald-700 font-black" id="unit_msg_box">
+                          <span id="unit_msg_icon">✓</span>
+                          <span id="unit_msg">تم جلب كود الوحدة تلقائياً بناءً على الرقم القومي</span>
+                          <span id="unitAutoHintText" class="hidden"></span>
                         </div>
-                        <div id="unitMultiChoices" class="hidden mt-2 flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-sky-200">
+                        <div id="unit_multi_choices" class="hidden mt-2 flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-sky-200">
                           <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">الوحدات المسجلة لهذا العميل:</span>
-                          <div id="unitPillsContainer" class="flex flex-wrap gap-1.5"></div>
+                          <div id="unit_pills" class="flex flex-wrap gap-1.5"></div>
+                          <div id="unitPillsContainer" class="hidden"></div>
                         </div>
                       </div>
 
@@ -1033,7 +1036,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
 
       // Update static primary unit picker placeholder if empty
-      const unitCodeInput = document.getElementById('unitCode');
+      const unitCodeInput = getUnitCodeInput();
       if (unitCodeInput) {
         unitCodeInput.placeholder = translations[lang]?.phInputUnit || (lang === 'en' ? 'Enter Unit Code (e.g. J49-26)...' : 'أدخل كود الوحدة (مثال: J49-26)...');
       }
@@ -4813,6 +4816,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             </label>
             <input
               type="text"
+              ${isPrimary ? 'id="national_id"' : ''}
               maxlength="14"
               placeholder="${currentLang === 'en' ? 'Enter exactly 14 digits for National ID' : 'أدخل 14 رقماً بالضبط للبطاقة الشخصية'}"
               class="client-id-number glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-mono font-black tracking-wider border-2 border-sky-300 focus:border-sky-500 bg-white"
@@ -5208,6 +5212,10 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
     
     // ── Auto-lookup unit and customer name from National ID / Passport ──
+    function getUnitCodeInput() {
+      return document.getElementById('unit_code') || document.getElementById('unitCode');
+    }
+
     function normalizeIdForLookup(str) {
       if (!str) return '';
       const arabicNumerals = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
@@ -5218,78 +5226,141 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       return s.replace(/[\s\-_–—]/g, '').toUpperCase().trim();
     }
 
-    function lookupUnitByNationalId(rawId, clientId) {
+    async function lookupUnitByNationalId(rawId, clientId) {
       const normId = normalizeIdForLookup(rawId);
       const hintBox = document.getElementById('unitAutoHint');
-      const hintText = document.getElementById('unitAutoHintText');
-      const multiBox = document.getElementById('unitMultiChoices');
-      const pillsContainer = document.getElementById('unitPillsContainer');
-      const unitInput = document.getElementById('unitCode');
+      const hintText = document.getElementById('unit_msg') || document.getElementById('unitAutoHintText');
+      const hintIcon = document.getElementById('unit_msg_icon');
+      const hintMsgBox = document.getElementById('unit_msg_box');
+      const multiBox = document.getElementById('unit_multi_choices') || document.getElementById('unitMultiChoices');
+      const pillsContainer = document.getElementById('unit_pills') || document.getElementById('unitPillsContainer');
+      const unitInput = getUnitCodeInput();
       const errUnit = document.getElementById('errUnitCode');
 
-      if (!normId || normId.length < 5 || !window.customerUnitsLookup) {
+      if (!normId || normId.length < 5) {
+        if (hintBox) hintBox.classList.add('hidden');
+        if (multiBox) multiBox.classList.add('hidden');
         return;
       }
 
-      const matches = window.customerUnitsLookup[normId];
-      if (matches && matches.length > 0) {
-        // Auto-fill primary unit code
+      let data = null;
+
+      // 1. Try fetching from lookup_unit.php backend first
+      try {
+        const res = await fetch('lookup_unit.php?national_id=' + encodeURIComponent(normId));
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (err) {
+        // Fallback silently if offline or on static Vercel
+      }
+
+      // 2. Fallback to client-side window.customerUnitsLookup (for static / Vercel hosting)
+      if (!data || typeof data.found === 'undefined') {
+        if (window.customerUnitsLookup && window.customerUnitsLookup[normId]) {
+          const matches = window.customerUnitsLookup[normId];
+          const units = [...new Set(matches.map(m => m.unit))];
+          data = {
+            found: true,
+            unit_code: units[0],
+            unit: units[0],
+            name: matches[0].name,
+            units: units,
+            total_units: units.length
+          };
+        } else {
+          data = { found: false, message: 'الرقم ده مش موجود' };
+        }
+      }
+
+      if (data && data.found) {
+        const unitVal = data.unit_code || data.unit || (data.units && data.units[0]) || '';
+
+        // Auto-fill unit code into input and trigger events
         if (unitInput) {
-          unitInput.value = matches[0].unit;
+          unitInput.value = unitVal;
           unitInput.classList.add('valid');
           unitInput.classList.remove('invalid');
+          unitInput.dispatchEvent(new Event('input', { bubbles: true }));
+          unitInput.dispatchEvent(new Event('change', { bubbles: true }));
           if (errUnit) errUnit.classList.add('hidden');
         }
 
-        // Auto-fill customer name if empty or short
+        // Auto-fill customer name if empty or very short
         const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById(`clientCard_1`);
         if (card) {
           const nameInput = card.querySelector('.client-name-input');
           if (nameInput && (!nameInput.value.trim() || nameInput.value.trim().length < 2)) {
-            nameInput.value = matches[0].name;
+            nameInput.value = data.name;
             if (typeof handleClientNameInput === 'function') {
               handleClientNameInput(nameInput);
             }
           }
         }
 
-        // Display hint
+        // Display success hint with isolated LTR unit code
         if (hintBox) {
           hintBox.classList.remove('hidden');
+          hintBox.className = 'mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all';
+          if (hintMsgBox) hintMsgBox.className = 'flex items-center gap-1.5 text-emerald-700 font-black';
+          if (hintIcon) hintIcon.textContent = '✓';
           if (hintText) {
-            hintText.innerText = (currentLang === 'en')
-              ? `Unit (${matches[0].unit}) retrieved automatically for customer: ${matches[0].name}`
-              : `تم جلب كود الوحدة (${matches[0].unit}) تلقائياً للعميل: ${matches[0].name}`;
+            hintText.innerHTML = (currentLang === 'en')
+              ? `Unit (<bdi dir="ltr">${unitVal}</bdi>) retrieved automatically for customer: <strong>${data.name}</strong>`
+              : `✓ تم جلب كود الوحدة (<bdi dir="ltr">${unitVal}</bdi>) تلقائياً للعميل: <strong>${data.name}</strong>`;
           }
         }
 
-        // If customer has multiple units
-        if (matches.length > 1 && multiBox && pillsContainer) {
+        // Handle multiple units if client has more than one
+        const allUnits = data.units && data.units.length > 0 ? data.units : [unitVal];
+        if (allUnits.length > 1 && multiBox && pillsContainer) {
           multiBox.classList.remove('hidden');
           pillsContainer.innerHTML = '';
-          matches.forEach((m) => {
+          allUnits.forEach((u) => {
             const pill = document.createElement('button');
             pill.type = 'button';
-            const isCur = (unitInput && unitInput.value === m.unit);
-            pill.className = `px-3 py-1 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
+            const isCur = (unitInput && unitInput.value.trim() === u);
+            pill.className = `px-3 py-1.5 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
               isCur 
-                ? 'bg-sky-500 text-white border-sky-600 shadow-sm' 
+                ? 'bg-sky-600 text-white border-sky-700 shadow-sm' 
                 : 'bg-white text-slate-950 border-sky-300 hover:bg-sky-100 shadow-2xs'
             }`;
-            pill.innerText = m.unit;
+            pill.innerHTML = `<bdi dir="ltr">${u}</bdi>`;
             pill.onclick = () => {
               if (unitInput) {
-                unitInput.value = m.unit;
+                unitInput.value = u;
                 unitInput.classList.add('valid');
                 unitInput.classList.remove('invalid');
+                unitInput.dispatchEvent(new Event('input', { bubbles: true }));
+                unitInput.dispatchEvent(new Event('change', { bubbles: true }));
+                if (errUnit) errUnit.classList.add('hidden');
               }
-              lookupUnitByNationalId(rawId, clientId);
+              pillsContainer.querySelectorAll('button').forEach(btn => {
+                const active = btn.textContent.trim() === u;
+                btn.className = `px-3 py-1.5 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
+                  active 
+                    ? 'bg-sky-600 text-white border-sky-700 shadow-sm' 
+                    : 'bg-white text-slate-950 border-sky-300 hover:bg-sky-100 shadow-2xs'
+                }`;
+              });
             };
             pillsContainer.appendChild(pill);
           });
         } else if (multiBox) {
           multiBox.classList.add('hidden');
         }
+      } else {
+        // Not found message
+        if (hintBox) {
+          hintBox.classList.remove('hidden');
+          hintBox.className = 'mt-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-950 transition-all';
+          if (hintMsgBox) hintMsgBox.className = 'flex items-center gap-1.5 text-amber-700 font-black';
+          if (hintIcon) hintIcon.textContent = 'ℹ';
+          if (hintText) {
+            hintText.textContent = (currentLang === 'en') ? 'This National ID / Passport was not found' : 'الرقم ده مش موجود';
+          }
+        }
+        if (multiBox) multiBox.classList.add('hidden');
       }
     }
 
@@ -6192,7 +6263,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
 
       // التحقق من بيانات الوحدة ونظام السداد (Section 02)
-      const unitCodeInput = document.getElementById('unitCode');
+      const unitCodeInput = getUnitCodeInput();
       const unitCode = unitCodeInput ? unitCodeInput.value.trim() : '';
       if (!unitCode) {
         document.getElementById('errUnitCode')?.classList.remove('hidden');
