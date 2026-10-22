@@ -6404,6 +6404,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         const isPrimary = (i === 0);
         const nameInput = card.querySelector('.client-name-input');
+        const nameVal = nameInput ? nameInput.value.trim() : '';
         const isNameValid = nameInput ? handleClientNameInput(nameInput) : false;
         if (!isNameValid) {
           nameInput?.classList.add('invalid');
@@ -6422,6 +6423,16 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           const isPhoneValid = handlePhoneInput(pInput);
           if (!isPhoneValid) {
             hasError = true;
+            if (pInput) {
+              pInput.classList.add('invalid');
+              const err = pRow.querySelector('.error-msg') || pRow.parentElement?.querySelector('.error-msg');
+              if (err) {
+                if (!err.innerText || err.classList.contains('hidden')) {
+                  err.innerText = (currentLang === 'en') ? 'Valid phone number is required' : 'رقم الهاتف مطلوب وبصيغة صحيحة';
+                }
+                err.classList.remove('hidden');
+              }
+            }
           } else {
             cardHasValidPhone = true;
             const formatted = sanitizeAndFormatPhoneNumber(pCode, pInput.value.trim());
@@ -6435,6 +6446,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         if (phoneRows.length === 0 || !cardHasValidPhone) {
           hasError = true;
+          const firstP = card.querySelector('.phone-input');
+          if (firstP) firstP.classList.add('invalid');
+          const err = card.querySelector('.phone-row .error-msg') || card.querySelector('.phone-row')?.parentElement?.querySelector('.error-msg');
+          if (err) {
+            if (!err.innerText || err.classList.contains('hidden')) {
+              err.innerText = (currentLang === 'en') ? 'Valid phone number is required' : 'رقم الهاتف مطلوب وبصيغة صحيحة';
+            }
+            err.classList.remove('hidden');
+          }
         }
 
         // التحقق من البريد الإلكتروني
@@ -6466,6 +6486,33 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         const isIdValid = validateClientIdNumber(idInput, cId);
         if (!isIdValid) {
           hasError = true;
+          if (idInput) {
+            idInput.classList.add('invalid');
+            const errEl = card.querySelector('.client-id-error');
+            if (errEl) {
+              if (!errEl.innerText || errEl.classList.contains('hidden')) {
+                errEl.innerText = (currentLang === 'en') ? 'National ID or Passport number is required' : 'رقم إثبات الهوية مطلوب';
+              }
+              errEl.classList.remove('hidden');
+            }
+          }
+        }
+
+        if (idType === 'both') {
+          const bothPassInput = card.querySelector('.client-passport-both-input');
+          if (!bothPassInput || !validateClientBothPassport(bothPassInput, cId)) {
+            hasError = true;
+            if (bothPassInput) {
+              bothPassInput.classList.add('invalid');
+              const errBoth = card.querySelector('.client-passport-both-error');
+              if (errBoth) {
+                if (!errBoth.innerText || errBoth.classList.contains('hidden')) {
+                  errBoth.innerText = (currentLang === 'en') ? 'Passport number is required' : 'رقم جواز السفر مطلوب';
+                }
+                errBoth.classList.remove('hidden');
+              }
+            }
+          }
         }
 
         // التحقق من العناوين (المحافظة والمدينة وباقي تفاصيل العنوان)
@@ -6565,8 +6612,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         // التحقق من المرفقات لهذا العميل
         const files = clientFilesState[cId] || [];
         if (files.length === 0) {
-          card.querySelector('.client-files-error')?.classList.remove('hidden');
+          const fileErr = card.querySelector('.client-files-error');
+          if (fileErr) fileErr.classList.remove('hidden');
+          const dropZone = card.querySelector('.client-drop-zone');
+          if (dropZone) dropZone.classList.add('invalid');
           hasError = true;
+        } else {
+          const fileErr = card.querySelector('.client-files-error');
+          if (fileErr) fileErr.classList.add('hidden');
+          const dropZone = card.querySelector('.client-drop-zone');
+          if (dropZone) dropZone.classList.remove('invalid');
+        }
+
+        let finalIdNumber = idInput ? idInput.value.trim() : '';
+        if (idType === 'both') {
+          const bothPassInput = card.querySelector('.client-passport-both-input');
+          const passVal = bothPassInput ? bothPassInput.value.trim() : '';
+          if (passVal) {
+            finalIdNumber = `${finalIdNumber} / جواز: ${passVal}`;
+          }
         }
 
         // بناء كائن العميل داخل المصفوفة
@@ -6578,7 +6642,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           emails: clientEmails,
           idType: idType,
           nationalId: idInput ? idInput.value.trim() : '',
-          idNumber: idInput ? idInput.value.trim() : '',
+          idNumber: finalIdNumber,
           residenceCountry: clientResidenceMap[cId] || 'داخل جمهورية مصر العربية',
           idAddress: idAddrInput ? idAddrInput.value.trim() : '',
           correspondenceAddress: corrAddrInput ? corrAddrInput.value.trim() : ''
@@ -6724,7 +6788,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       if (hasError) {
         const firstErr = document.querySelector('.error-msg:not(.hidden), .invalid');
-        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (firstErr) {
+          firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof firstErr.focus === 'function') firstErr.focus();
+        }
+        alert(currentLang === 'en' 
+          ? 'Please complete all required fields indicated in red before submitting.' 
+          : 'يرجى استيفاء وتصحيح جميع البيانات المطلوبة والمحددة باللون الأحمر (بما فيها صور الهوية والمقدم).');
         return;
       }
 
@@ -6778,7 +6848,17 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           body: formData
         });
 
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error('Non-JSON response from submit.php:', text);
+          document.getElementById('loadingOverlay').classList.add('hidden');
+          alert((currentLang === 'en' ? 'Server error: ' : 'حدث خطأ في استجابة السيرفر: ') + text.substring(0, 300));
+          return;
+        }
+
         document.getElementById('loadingOverlay').classList.add('hidden');
 
         if (data.status === 'success') {
@@ -6793,21 +6873,24 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             });
           }
         } else {
+          const errMsg = data.message || (Array.isArray(data.errors) ? data.errors.join(' | ') : 'Error occurred while saving contract.');
           if (data.field === 'phone') {
-            alert((currentLang === 'en' ? 'Phone error: ' : 'خطأ في رقم الهاتف: ') + data.message);
+            alert((currentLang === 'en' ? 'Phone error: ' : 'خطأ في رقم الهاتف: ') + errMsg);
           } else if (data.field === 'unitCode' || data.field === 'eoiNumber') {
-            document.getElementById('errUnitCode').innerText = data.message;
+            document.getElementById('errUnitCode').innerText = errMsg;
             document.getElementById('errUnitCode').classList.remove('hidden');
             const trig = document.getElementById('unitPickerTrigger');
             if (trig) {
               trig.classList.add('invalid');
               trig.focus();
             }
+            alert(errMsg);
           } else {
-            alert('Error: ' + (data.message || 'Error occurred while saving contract.'));
+            alert((currentLang === 'en' ? 'Submission error: ' : 'تنبيه: ') + errMsg);
           }
         }
       } catch (err) {
+        console.error('Network or JS error during submission:', err);
         document.getElementById('loadingOverlay').classList.add('hidden');
         alert('Server connection error. Please ensure Apache & MySQL are running.');
       }

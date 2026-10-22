@@ -448,25 +448,38 @@ if (empty($idNumbersArr)) {
 }
 foreach ($idNumbersArr as $idx => $idItem) {
     $itemType = $idTypesArr[$idx] ?? $idType;
-    if ($itemType === 'national_id') {
-        // 14 رقماً بالضبط وأرقام فقط
-        if (!preg_match('/^\d{14}$/', $idItem)) {
+    if ($itemType === 'both') {
+        // دعم اختيار "كلاهما": قد يحتوي على رقم قومي ورقم جواز
+        $cleanDigits = preg_replace('/[^\d]/', '', $idItem);
+        $cleanAlnum = preg_replace('/[^A-Za-z0-9]/', '', $idItem);
+        if (strlen($cleanDigits) < 14 && strlen($cleanAlnum) < 6) {
             http_response_code(422);
             echo json_encode([
                 'status'  => 'error',
                 'field'   => 'idNumber',
-                'message' => ($lang === 'en') ? "National ID ({$idItem}) must be exactly 14 digits." : "رقم البطاقة الشخصية ({$idItem}) يجب أن يتكون من 14 رقماً بالضبط."
+                'message' => ($lang === 'en') ? "Valid National ID or Passport number ({$idItem}) is required." : "رقم إثبات الهوية ({$idItem}) غير صحيح، يرجى كتابة الرقم القومي أو رقم جواز السفر بشكل سليم."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    } elseif ($itemType === 'national_id') {
+        // 14 رقماً بالضبط، أو رقم جواز سفر ساري (6-15) للعملاء
+        if (!preg_match('/^\d{14}$/', $idItem) && !preg_match('/^[A-Za-z0-9]{6,15}$/', $idItem)) {
+            http_response_code(422);
+            echo json_encode([
+                'status'  => 'error',
+                'field'   => 'idNumber',
+                'message' => ($lang === 'en') ? "National ID ({$idItem}) must be exactly 14 digits or a valid passport number." : "رقم البطاقة الشخصية ({$idItem}) يجب أن يتكون من 14 رقماً أو رقم جواز سفر سليم."
             ], JSON_UNESCAPED_UNICODE);
             exit;
         }
     } else {
-        // جواز السفر: 6 إلى 9 أحرف وأرقام بدون رموز خاصة
-        if (!preg_match('/^[A-Za-z0-9]{6,9}$/', $idItem)) {
+        // جواز السفر: 6 إلى 15 حرفاً ورقماً
+        if (!preg_match('/^[A-Za-z0-9]{6,15}$/', $idItem) && !preg_match('/^\d{14}$/', $idItem)) {
             http_response_code(422);
             echo json_encode([
                 'status'  => 'error',
                 'field'   => 'idNumber',
-                'message' => ($lang === 'en') ? "Passport number ({$idItem}) must be 6 to 9 alphanumeric characters." : "رقم جواز السفر ({$idItem}) يجب أن يتكون من 6 إلى 9 أحرف وأرقام بدون رموز خاصة."
+                'message' => ($lang === 'en') ? "Passport number ({$idItem}) must be 6 to 15 alphanumeric characters." : "رقم جواز السفر ({$idItem}) يجب أن يتكون من 6 إلى 15 حرفاً ورقماً."
             ], JSON_UNESCAPED_UNICODE);
             exit;
         }
