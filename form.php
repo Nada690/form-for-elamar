@@ -69,6 +69,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="overflow-x-hidden">
 <head>
+  <script src="customer_units_lookup.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>استبيان واستيفاء بيانات التعاقد | مشاريع شورز الساحلية</title>
@@ -463,58 +464,37 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
                   <!-- حقول تفاصيل الوحدة الأساسية (تختفي إذا تم اختيار "لا") -->
                   <div id="primaryUnitDetailsContainer" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
-                    <!-- كود الوحدة (إلزامي) -->
+                    <!-- كود الوحدة (إدخال مباشر بدون قائمة منسدلة + جلب تلقائي بالرقم القومي) -->
                     <div class="sm:col-span-12 form-group">
                       <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitCode">
                         <span class="text-slate-950 font-black" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
                         <span class="text-red-500 font-bold">*</span>
                       </label>
                       
-                      <!-- Searchable Unit Picker Component -->
-                      <div class="relative unit-picker" id="primaryUnitPicker">
-                        <input type="hidden" id="unitCode" name="unit_code" value="" />
-                        
-                        <!-- Trigger Box -->
-                        <button
-                          type="button"
-                          id="unitPickerTrigger"
-                          class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black tracking-wider flex items-center justify-between border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 transition-all cursor-pointer select-none bg-white shadow-sm"
-                          onclick="toggleUnitDropdown('primaryUnitPicker')"
-                        >
-                          <span id="unitPickerSelectedText" class="truncate font-black text-slate-950 tracking-widest uppercase">
-                            <span class="text-slate-500 font-sans font-bold tracking-normal text-xs" data-i18n="phSelectUnit">اختر كود الوحدة من القائمة...</span>
-                          </span>
-                          <span class="text-sky-600 text-xs transition-transform duration-200 chevron-icon mr-2">▼</span>
-                        </button>
+                      <div class="relative">
+                        <input
+                          type="text"
+                          id="unitCode"
+                          name="unit_code"
+                          dir="ltr"
+                          autocomplete="off"
+                          placeholder="أدخل كود الوحدة (مثال: J49-26)..."
+                          data-i18n-placeholder="phInputUnit"
+                          class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-sky-300 focus:border-sky-500 bg-white shadow-sm transition-all"
+                          oninput="this.value = this.value.toUpperCase(); validateField(this, val => val.length >= 2);"
+                        />
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
+                      </div>
 
-                        <!-- Dropdown Panel -->
-                        <div
-                          id="unitDropdownPanel"
-                          class="unit-dropdown hidden absolute top-full mt-1.5 inset-x-0 z-50 bg-white border-2 border-sky-300 rounded-2xl shadow-2xl p-2.5 backdrop-blur-xl"
-                        >
-                          <!-- Search Bar Inside Dropdown -->
-                          <div class="relative mb-2">
-                            <input
-                              type="text"
-                              id="unitSearchInput"
-                              placeholder="ابحث عن كود الوحدة (مثال: N1-001)..."
-                              data-i18n-placeholder="phSearchUnit"
-                              dir="ltr"
-                              autocomplete="off"
-                              class="w-full pl-8 pr-3 py-2 rounded-xl bg-sky-50 border-2 border-sky-200 text-slate-950 placeholder-slate-500 text-xs font-mono font-black uppercase focus:outline-none focus:border-sky-500 transition-all"
-                              oninput="filterUnitsList('primaryUnitPicker', this.value)"
-                            />
-                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none">🔍</span>
-                          </div>
-
-                          <!-- Units Scrollable List -->
-                          <div
-                            id="unitListItems"
-                            class="unit-scroll max-h-56 overflow-y-auto space-y-1 pr-1"
-                          >
-                            <!-- Generated Dynamically -->
-                          </div>
-                          
+                      <!-- تنبيه الجلب التلقائي وقائمة الوحدات المتعددة إن وجدت -->
+                      <div id="unitAutoHint" class="hidden mt-2 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 transition-all">
+                        <div class="flex items-center gap-1.5 text-emerald-700 font-black">
+                          <span>✓</span>
+                          <span id="unitAutoHintText">تم جلب كود الوحدة تلقائياً بناءً على الرقم القومي</span>
+                        </div>
+                        <div id="unitMultiChoices" class="hidden mt-2 flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-sky-200">
+                          <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">الوحدات المسجلة لهذا العميل:</span>
+                          <div id="unitPillsContainer" class="flex flex-wrap gap-1.5"></div>
                         </div>
                       </div>
 
@@ -836,6 +816,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         advanceNoticeExtraTitle: "استكمال سداد المقدم مطلوب لحجز هذه الوحدة",
         advanceNoticeExtraDesc: "لا يمكن تسجيل هذه الوحدة وحجزها بدون استكمال سداد المقدم.",
         labelUnitCode: "كود الوحدة (الرقم الكودي الخاص بالوحدة)",
+        phInputUnit: "أدخل كود الوحدة (مثال: J49-26)...",
+        lblCustomerUnits: "الوحدات المسجلة لهذا العميل:",
         phSelectUnit: "اختر كود الوحدة من القائمة...",
         phSearchUnit: "ابحث عن كود الوحدة (مثال: N1-001)...",
         errUnitCode: "كود الوحدة مطلوب",
@@ -949,6 +931,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         advanceNoticeExtraTitle: "Down payment is required to register this unit",
         advanceNoticeExtraDesc: "Cannot proceed with registering this unit without completing down payment.",
         labelUnitCode: "Unit Code (Unit Identification Code)",
+        phInputUnit: "Enter Unit Code (e.g. J49-26)...",
+        lblCustomerUnits: "Units registered for this client:",
         phSelectUnit: "Select unit code from list...",
         phSearchUnit: "Search unit code (e.g. N1-001)...",
         errUnitCode: "Unit code is required",
@@ -1049,10 +1033,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
 
       // Update static primary unit picker placeholder if empty
-      const primarySelected = document.getElementById('unitPickerSelectedText');
-      const primaryHidden = document.getElementById('unitCode');
-      if (primarySelected && (!primaryHidden || !primaryHidden.value)) {
-        primarySelected.innerHTML = `<span class="text-slate-500 font-sans font-normal tracking-normal text-xs" data-i18n="phSelectUnit">${translations[lang].phSelectUnit}</span>`;
+      const unitCodeInput = document.getElementById('unitCode');
+      if (unitCodeInput) {
+        unitCodeInput.placeholder = translations[lang]?.phInputUnit || (lang === 'en' ? 'Enter Unit Code (e.g. J49-26)...' : 'أدخل كود الوحدة (مثال: J49-26)...');
       }
     }
 
@@ -1852,40 +1835,23 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         </div>
 
         <div id="extraUnitDetailsContainer_${cNum}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
-          <!-- كود الوحدة الإضافية (مطابق تماماً للوحدة 1) -->
+          <!-- كود الوحدة الإضافية (إدخال مباشر بدون دروب ليست) -->
           <div class="sm:col-span-12 form-group">
             <label class="block text-xs font-black text-slate-950 mb-1.5">
               <span class="text-slate-950 font-black" data-i18n="labelUnitCode">${labelUnitCode}</span>
               <span class="text-red-500 font-bold">*</span>
             </label>
-            <div class="relative unit-picker" id="${pickerId}">
-              <input type="hidden" name="extra_unit_codes[]" value="" />
-              <button
-                type="button"
-                class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black tracking-wider flex items-center justify-between border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 transition-all cursor-pointer select-none bg-white shadow-sm"
-                onclick="toggleUnitDropdown('${pickerId}')"
-              >
-                <span class="truncate font-black text-slate-950 tracking-widest uppercase selected-text">
-                  <span class="text-slate-500 font-sans font-bold tracking-normal text-xs" data-i18n="phSelectUnit">${phSelectUnit}</span>
-                </span>
-                <span class="text-sky-600 text-xs transition-transform duration-200 chevron-icon mr-2">▼</span>
-              </button>
-
-              <div class="unit-dropdown hidden absolute top-full mt-1.5 inset-x-0 z-50 bg-white border-2 border-sky-300 rounded-2xl shadow-2xl p-2.5 backdrop-blur-xl">
-                <div class="relative mb-2">
-                  <input
-                    type="text"
-                    placeholder="${phSearchUnit}"
-                    data-i18n-placeholder="phSearchUnit"
-                    dir="ltr"
-                    autocomplete="off"
-                    class="w-full pl-8 pr-3 py-2 rounded-xl bg-sky-50 border-2 border-sky-200 text-slate-950 placeholder-slate-500 text-xs font-mono font-black uppercase focus:outline-none focus:border-sky-500 transition-all"
-                    oninput="filterUnitsList('${pickerId}', this.value)"
-                  />
-                  <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none">🔍</span>
-                </div>
-                <div class="unit-scroll max-h-56 overflow-y-auto space-y-1 pr-1 unit-items-list"></div>
-              </div>
+            <div class="relative">
+              <input
+                type="text"
+                name="extra_unit_codes[]"
+                dir="ltr"
+                autocomplete="off"
+                placeholder="${currentLang === 'en' ? 'Enter Unit Code (e.g. J49-26)...' : 'أدخل كود الوحدة (مثال: J49-26)...'}"
+                class="extra-unit-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-sky-300 focus:border-sky-500 bg-white shadow-sm transition-all"
+                oninput="this.value = this.value.toUpperCase(); validateField(this, val => val.length >= 2);"
+              />
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
             </div>
             <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-unit-error" data-i18n="errUnitCode">${currentLang === 'en' ? 'Unit code is required' : 'كود الوحدة مطلوب'}</p>
           </div>
@@ -5240,6 +5206,93 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       validateClientIdNumber(input, clientId);
     }
 
+    
+    // ── Auto-lookup unit and customer name from National ID / Passport ──
+    function normalizeIdForLookup(str) {
+      if (!str) return '';
+      const arabicNumerals = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+      let s = String(str);
+      for (let i = 0; i < 10; i++) {
+        s = s.replaceAll(arabicNumerals[i], String(i));
+      }
+      return s.replace(/[\s\-_–—]/g, '').toUpperCase().trim();
+    }
+
+    function lookupUnitByNationalId(rawId, clientId) {
+      const normId = normalizeIdForLookup(rawId);
+      const hintBox = document.getElementById('unitAutoHint');
+      const hintText = document.getElementById('unitAutoHintText');
+      const multiBox = document.getElementById('unitMultiChoices');
+      const pillsContainer = document.getElementById('unitPillsContainer');
+      const unitInput = document.getElementById('unitCode');
+      const errUnit = document.getElementById('errUnitCode');
+
+      if (!normId || normId.length < 5 || !window.customerUnitsLookup) {
+        return;
+      }
+
+      const matches = window.customerUnitsLookup[normId];
+      if (matches && matches.length > 0) {
+        // Auto-fill primary unit code
+        if (unitInput) {
+          unitInput.value = matches[0].unit;
+          unitInput.classList.add('valid');
+          unitInput.classList.remove('invalid');
+          if (errUnit) errUnit.classList.add('hidden');
+        }
+
+        // Auto-fill customer name if empty or short
+        const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById(`clientCard_1`);
+        if (card) {
+          const nameInput = card.querySelector('.client-name-input');
+          if (nameInput && (!nameInput.value.trim() || nameInput.value.trim().length < 2)) {
+            nameInput.value = matches[0].name;
+            if (typeof handleClientNameInput === 'function') {
+              handleClientNameInput(nameInput);
+            }
+          }
+        }
+
+        // Display hint
+        if (hintBox) {
+          hintBox.classList.remove('hidden');
+          if (hintText) {
+            hintText.innerText = (currentLang === 'en')
+              ? `Unit (${matches[0].unit}) retrieved automatically for customer: ${matches[0].name}`
+              : `تم جلب كود الوحدة (${matches[0].unit}) تلقائياً للعميل: ${matches[0].name}`;
+          }
+        }
+
+        // If customer has multiple units
+        if (matches.length > 1 && multiBox && pillsContainer) {
+          multiBox.classList.remove('hidden');
+          pillsContainer.innerHTML = '';
+          matches.forEach((m) => {
+            const pill = document.createElement('button');
+            pill.type = 'button';
+            const isCur = (unitInput && unitInput.value === m.unit);
+            pill.className = `px-3 py-1 rounded-xl text-xs font-mono font-black border-2 transition-all cursor-pointer ${
+              isCur 
+                ? 'bg-sky-500 text-white border-sky-600 shadow-sm' 
+                : 'bg-white text-slate-950 border-sky-300 hover:bg-sky-100 shadow-2xs'
+            }`;
+            pill.innerText = m.unit;
+            pill.onclick = () => {
+              if (unitInput) {
+                unitInput.value = m.unit;
+                unitInput.classList.add('valid');
+                unitInput.classList.remove('invalid');
+              }
+              lookupUnitByNationalId(rawId, clientId);
+            };
+            pillsContainer.appendChild(pill);
+          });
+        } else if (multiBox) {
+          multiBox.classList.add('hidden');
+        }
+      }
+    }
+
     function validateClientIdNumber(input, clientId) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return false;
@@ -5270,6 +5323,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       input.classList.toggle('valid', isValid);
       input.classList.toggle('invalid', !isValid);
+      if (typeof lookupUnitByNationalId === 'function') lookupUnitByNationalId(val, clientId);
       return isValid;
     }
 
@@ -6138,19 +6192,20 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
 
       // التحقق من بيانات الوحدة ونظام السداد (Section 02)
-      const unitCode = document.getElementById('unitCode').value.trim();
-      const unitPickerTrigger = document.getElementById('unitPickerTrigger');
+      const unitCodeInput = document.getElementById('unitCode');
+      const unitCode = unitCodeInput ? unitCodeInput.value.trim() : '';
       if (!unitCode) {
         document.getElementById('errUnitCode')?.classList.remove('hidden');
-        if (unitPickerTrigger) {
-          unitPickerTrigger.classList.add('invalid');
-          unitPickerTrigger.classList.remove('valid');
+        if (unitCodeInput) {
+          unitCodeInput.classList.add('invalid');
+          unitCodeInput.classList.remove('valid');
         }
         hasError = true;
       } else {
-        if (unitPickerTrigger) {
-          unitPickerTrigger.classList.add('valid');
-          unitPickerTrigger.classList.remove('invalid');
+        document.getElementById('errUnitCode')?.classList.add('hidden');
+        if (unitCodeInput) {
+          unitCodeInput.classList.add('valid');
+          unitCodeInput.classList.remove('invalid');
         }
       }
 
@@ -6179,16 +6234,21 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       // التحقق من الوحدات الإضافية إن وجدت
       const extraBlocks = document.querySelectorAll('#unitsContainer .unit-block:not(:first-child)');
       extraBlocks.forEach(blk => {
-        const uHidden = blk.querySelector('input[name="extra_unit_codes[]"]');
-        const trigger = blk.querySelector('.unit-picker button');
+        const uInput = blk.querySelector('input[name="extra_unit_codes[]"]');
         const errUnit = blk.querySelector('.extra-unit-error');
-        if (!uHidden || !uHidden.value.trim()) {
+        if (!uInput || !uInput.value.trim()) {
           if (errUnit) errUnit.classList.remove('hidden');
-          if (trigger) trigger.classList.add('invalid');
+          if (uInput) {
+            uInput.classList.add('invalid');
+            uInput.classList.remove('valid');
+          }
           hasError = true;
         } else {
           if (errUnit) errUnit.classList.add('hidden');
-          if (trigger) trigger.classList.remove('invalid');
+          if (uInput) {
+            uInput.classList.add('valid');
+            uInput.classList.remove('invalid');
+          }
         }
 
         const pSel = blk.querySelector('select[name="extra_payment_periods[]"]');
