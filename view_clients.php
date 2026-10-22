@@ -700,10 +700,16 @@ try {
     html[dir="ltr"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     .font-mono { font-family: 'Plus Jakarta Sans', monospace; }
     
-    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div {
+    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div, td, th {
       font-weight: 700;
     }
     label {
+      color: #000000 !important;
+      font-weight: 800 !important;
+    }
+
+    #clientsTable, #clientsTable th, #clientsTable td, #clientsTable tr,
+    #clientsTable span, #clientsTable div, #clientsTable a, #clientsTable button, #clientsTable p {
       color: #000000 !important;
       font-weight: 800 !important;
     }
@@ -746,7 +752,7 @@ try {
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black <?= $currentUserRole === 'Admin' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : ($currentUserRole === 'Manager' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30') ?>">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black <?= $currentUserRole === 'Admin' ? 'bg-amber-100 text-slate-950 border-2 border-amber-400' : ($currentUserRole === 'Manager' ? 'bg-sky-100 text-slate-950 border-2 border-sky-400' : 'bg-purple-100 text-slate-950 border-2 border-purple-400') ?>">
               <?= strtoupper($currentUserRole) ?> PANEL
             </span>
             <span class="text-xs text-slate-950 font-black bg-white px-2.5 py-1 rounded-xl border-2 border-sky-300 shadow-xs">
@@ -844,7 +850,7 @@ try {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       
       <!-- إجمالي العقود -->
-      <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
+      <div class="glass-card rounded-3xl p-5 border-2 border-sky-300 shadow-xl flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-sky-100 border-2 border-sky-300 flex items-center justify-center text-2xl text-sky-800 shadow-xs">
           📑
         </div>
@@ -858,15 +864,15 @@ try {
       </div>
 
       <!-- حالة سداد مقدم أكتوبر -->
-      <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
+      <div class="glass-card rounded-3xl p-5 border-2 border-sky-300 shadow-xl flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center text-2xl text-emerald-800 shadow-xs">
           💳
         </div>
         <div>
           <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpi5Percent">سداد مقدم أكتوبر</p>
-          <div class="flex items-center gap-2 mt-1.5">
+          <div class="flex items-center gap-2 mt-1.5 flex-wrap">
             <?php foreach ($paidStats as $ps): ?>
-              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black <?= ($ps['paid_5_percent'] === 'نعم') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30' ?>">
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black text-slate-950 border-2 <?= ($ps['paid_5_percent'] === 'نعم') ? 'bg-emerald-100 border-emerald-400' : 'bg-red-100 border-red-300' ?>">
                 <?= htmlspecialchars($ps['paid_5_percent'] ?: 'غير محدد') ?>: <?= $ps['count'] ?>
               </span>
             <?php endforeach; ?>
@@ -875,7 +881,7 @@ try {
       </div>
 
       <!-- توزيع الفروع -->
-      <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
+      <div class="glass-card rounded-3xl p-5 border-2 border-sky-300 shadow-xl flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-blue-100 border-2 border-blue-300 flex items-center justify-center text-2xl text-blue-800 shadow-xs">
           🏛️
         </div>
@@ -883,7 +889,7 @@ try {
           <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpiBranches">فروع ومكان التوثيق</p>
           <div class="flex items-center gap-2 mt-1.5 flex-wrap">
             <?php foreach ($locStats as $ls): ?>
-              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-sky-100 text-sky-950 border border-sky-300 shadow-xs">
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-sky-100 text-slate-950 border-2 border-sky-300 shadow-xs">
                 <?= htmlspecialchars($ls['contract_location'] ?: 'غير محدد') ?>: <?= $ls['count'] ?>
               </span>
             <?php endforeach; ?>
@@ -892,15 +898,15 @@ try {
       </div>
 
       <!-- مسؤولو المبيعات -->
-      <div class="glass-card rounded-3xl p-5 border border-slate-800 shadow-xl flex items-center gap-4">
+      <div class="glass-card rounded-3xl p-5 border-2 border-sky-300 shadow-xl flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-purple-100 border-2 border-purple-300 flex items-center justify-center text-2xl text-purple-800 shadow-xs">
           👥
         </div>
         <div>
           <p class="text-xs text-slate-700 font-black uppercase tracking-wider" data-i18n="kpiSalesTeam">فريق المبيعات</p>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-3xl font-black text-purple-400 count-up" data-target="<?= count($salesList) ?>"><?= count($salesList) ?></span>
-            <span class="text-xs text-slate-400 font-semibold" data-i18n="kpiSalesTeamSub">موظف نشط</span>
+            <span class="text-3xl font-black text-slate-950 count-up" data-target="<?= count($salesList) ?>"><?= count($salesList) ?></span>
+            <span class="text-xs text-slate-700 font-bold" data-i18n="kpiSalesTeamSub">موظف نشط</span>
           </div>
         </div>
       </div>
@@ -908,7 +914,7 @@ try {
     </div>
 
     <!-- ═══════════════ FILTERS & LIVE SEARCH TOOLBAR ═══════════════ -->
-    <div class="glass-card rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="glass-card rounded-3xl p-4 sm:p-5 border-2 border-sky-300 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
       
       <!-- Live Search Box -->
       <div class="w-full md:w-96 relative">
@@ -918,7 +924,7 @@ try {
           placeholder="بحث سريع: اسم العميل، الهاتف، كود الوحدة، السيلز..." 
           data-i18n-placeholder="phSearchClients"
           oninput="liveFilterClients(this.value)"
-          class="w-full pl-4 pr-10 py-3 rounded-2xl bg-sky-50/80 border-2 border-sky-300 text-slate-950 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold shadow-xs"
+          class="w-full pl-4 pr-10 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-sky-500 transition-all font-bold shadow-xs"
         >
         <span class="absolute right-3.5 top-3.5 text-slate-400 text-sm">🔍</span>
       </div>
@@ -929,7 +935,7 @@ try {
         <?php if ($currentUserRole !== 'Sales'): ?>
         <!-- Sales Filter (Manager / Admin View) -->
         <div class="flex items-center gap-1.5">
-          <span class="text-xs text-slate-400 font-bold" data-i18n="filterSalesLbl">
+          <span class="text-xs text-slate-950 font-black" data-i18n="filterSalesLbl">
             <?= $currentUserRole === 'Manager' ? 'موظف السيلز (فريقك):' : 'السيلز:' ?>
           </span>
           <select 
@@ -951,7 +957,7 @@ try {
 
         <!-- Branch Filter -->
         <div class="flex items-center gap-1.5">
-          <span class="text-xs text-slate-400 font-bold" data-i18n="filterBranchLbl">مكان التوثيق:</span>
+          <span class="text-xs text-slate-950 font-black" data-i18n="filterBranchLbl">مكان التوثيق:</span>
           <select 
             name="location" 
             onchange="this.form.submit()" 
@@ -975,7 +981,7 @@ try {
     </div>
 
     <!-- ═══════════════ MAIN CLIENTS TABLE ═══════════════ -->
-    <div class="glass-card rounded-3xl border border-slate-800 shadow-2xl overflow-hidden">
+    <div class="glass-card rounded-3xl border-2 border-sky-300 shadow-2xl overflow-hidden">
       
       <div class="p-5 border-b-2 border-sky-200 flex justify-between items-center bg-sky-100/90">
         <div class="flex items-center gap-3">
@@ -1013,7 +1019,7 @@ try {
           <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="clientsTableBody">
             <?php if (empty($clients)): ?>
               <tr>
-                <td colspan="17" class="p-14 text-center text-slate-400 font-semibold" data-i18n="noClientsFound">
+                <td colspan="17" class="p-14 text-center text-slate-950 font-black text-sm" data-i18n="noClientsFound">
                   <div class="text-4xl mb-2">🏖️</div>
                   لا توجد أي بيانات أو عقود مسجلة تطابق معايير البحث الحالية.
                 </td>
@@ -1050,15 +1056,15 @@ try {
                 >
                   
                   <!-- م (تسلسلي مرئي) -->
-                  <td class="p-4 text-center font-black text-sky-950 font-mono bg-sky-50/80">
+                  <td class="p-4 text-center font-black text-slate-950 font-mono bg-sky-50/80">
                     <?= $seq++ ?>
                   </td>
 
                   <!-- ID -->
-                  <td class="p-4 text-slate-800 font-mono text-xs font-black whitespace-nowrap">
+                  <td class="p-4 text-slate-950 font-mono text-xs font-black whitespace-nowrap">
                     #<?= htmlspecialchars($client['id']) ?>
                     <?php if ($partnerCount > 1): ?>
-                      <div class="text-[10px] text-sky-800 font-black mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
+                      <div class="text-[10px] text-slate-950 font-black mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
                     <?php endif; ?>
                   </td>
 
@@ -1067,14 +1073,14 @@ try {
                     <?php if (!empty($client['sales_name'])): ?>
                       <a 
                         href="view_clients.php?sales_id=<?= $client['sales_id'] ?>" 
-                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-purple-500/15 text-purple-300 border border-purple-500/30 hover:bg-purple-500/25 transition-colors"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-purple-100 text-slate-950 border-2 border-purple-300 hover:bg-purple-200 transition-colors shadow-xs"
                         title="فلترة وعرض عملاء هذا الموظف فقط"
                       >
                         <span>👤</span>
-                        <span><?= htmlspecialchars($client['sales_name']) ?></span>
+                        <span class="text-slate-950 font-black"><?= htmlspecialchars($client['sales_name']) ?></span>
                       </a>
                     <?php else: ?>
-                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-black bg-sky-100 text-sky-950 border border-sky-300 shadow-xs" data-i18n="badgeDirect">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black bg-sky-100 text-slate-950 border-2 border-sky-300 shadow-xs" data-i18n="badgeDirect">
                         🌐 مباشر
                       </span>
                     <?php endif; ?>
@@ -1085,33 +1091,33 @@ try {
                     <button 
                       type="button"
                       onclick="copyText('<?= htmlspecialchars($client['eoi_number']) ?>')" 
-                      class="bg-sky-100 hover:bg-sky-200 px-2.5 py-1 rounded-xl border-2 border-sky-300 text-slate-950 text-xs cursor-pointer block font-black shadow-xs"
+                      class="bg-sky-100 hover:bg-sky-200 px-3 py-1.5 rounded-xl border-2 border-sky-300 text-slate-950 text-xs cursor-pointer block font-black shadow-xs"
                       title="Click to copy unit code"
                     >
                       <?= htmlspecialchars($client['eoi_number']) ?>
                     </button>
                     <?php if (!empty($client['unit_price'])): ?>
-                      <div class="text-[10px] text-emerald-400 font-normal mt-0.5 font-mono">
+                      <div class="text-[11px] text-slate-950 font-black mt-1 font-mono">
                         <?= number_format($client['unit_price']) ?> EGP
                       </div>
                     <?php endif; ?>
                   </td>
 
                   <!-- مكان الإقامة الحالي -->
-                  <td class="p-4 text-xs font-bold">
-                    <span class="px-2.5 py-1 rounded-xl <?= $isOutside ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' ?>">
+                  <td class="p-4 text-xs font-black text-slate-950">
+                    <span class="px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300' : 'bg-emerald-100 border-emerald-300' ?> shadow-xs">
                       <?= $isOutside ? '🌍 خارج مصر' : '🇪🇬 داخل مصر' ?>
                     </span>
                   </td>
 
                   <!-- مكان توثيق العقد -->
-                  <td class="p-4 text-xs font-bold">
+                  <td class="p-4 text-xs font-black text-slate-950">
                     <?php if ($isOutside): ?>
-                      <span class="px-2.5 py-1 rounded-xl bg-sky-50 text-slate-800 border border-sky-200 font-bold">
+                      <span class="px-2.5 py-1 rounded-xl bg-sky-50 text-slate-950 border-2 border-sky-200 font-black shadow-xs">
                         مستثنى (خارج مصر)
                       </span>
                     <?php else: ?>
-                      <span class="px-2.5 py-1 rounded-xl <?= ($loc === 'الإسكندرية') ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30' ?>">
+                      <span class="px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= ($loc === 'الإسكندرية') ? 'bg-sky-100 border-sky-300' : 'bg-amber-100 border-amber-300' ?> shadow-xs">
                         <?= ($loc === 'الإسكندرية') ? '🌊 ' : '🏛️ ' ?>
                         <?= htmlspecialchars($loc) ?>
                       </span>
@@ -1120,99 +1126,99 @@ try {
 
                   <!-- اسم العميل والشركاء -->
                   <td class="p-4 font-black text-slate-950 max-w-[200px] break-words">
-                    <?= htmlspecialchars($pName) ?>
+                    <span class="text-slate-950 font-black"><?= htmlspecialchars($pName) ?></span>
                     <?php if ($partnerCount > 1): ?>
-                      <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 mr-1 font-bold whitespace-nowrap">شريك <?= ($pIdx + 1) ?></span>
+                      <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-slate-950 border-2 border-amber-300 mr-1 font-black whitespace-nowrap shadow-xs">شريك <?= ($pIdx + 1) ?></span>
                     <?php endif; ?>
                   </td>
 
                   <!-- أرقام الهاتف مع واتساب السريع -->
-                  <td class="p-4 font-mono text-xs text-emerald-400 dir-ltr text-right max-w-[170px]">
+                  <td class="p-4 font-mono text-xs text-slate-950 font-black dir-ltr text-right max-w-[170px]">
                     <div class="flex items-center justify-end gap-1.5">
                       <?php if (!empty($rawPhone)): ?>
                         <a 
                           href="https://wa.me/<?= $rawPhone ?>" 
                           target="_blank" 
-                          class="p-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300"
+                          class="p-1 px-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-slate-950 border-2 border-emerald-300 shadow-xs text-xs font-black"
                           title="WhatsApp Chat / محادثة واتساب"
                         >
                           💬
                         </a>
                       <?php endif; ?>
-                      <span class="font-semibold"><?= htmlspecialchars($pPhone) ?></span>
+                      <span class="font-black text-slate-950"><?= htmlspecialchars($pPhone) ?></span>
                     </div>
                   </td>
 
                   <!-- البريد الإلكتروني للمراسلات -->
-                  <td class="p-4 font-mono text-xs text-cyan-300 dir-ltr text-right">
-                    <?= htmlspecialchars($pEmail ?: '-') ?>
+                  <td class="p-4 font-mono text-xs text-slate-950 font-black dir-ltr text-right">
+                    <span class="text-slate-950 font-black"><?= htmlspecialchars($pEmail ?: '-') ?></span>
                   </td>
 
                   <!-- إثبات الهوية -->
-                  <td class="p-4 text-xs font-mono">
-                    <div class="text-slate-300"><?= htmlspecialchars($pIdNum ?: ($client['id_number'] ?: '-')) ?></div>
-                    <div class="text-[10px] text-slate-500 font-bold"><?= ($client['id_type'] === 'passport') ? 'جواز سفر' : 'رقم قومي' ?></div>
+                  <td class="p-4 text-xs font-mono font-black text-slate-950">
+                    <div class="text-slate-950 font-black"><?= htmlspecialchars($pIdNum ?: ($client['id_number'] ?: '-')) ?></div>
+                    <div class="text-[10px] text-slate-950 font-black"><?= ($client['id_type'] === 'passport') ? 'جواز سفر' : 'رقم قومي' ?></div>
                   </td>
 
                   <!-- فترة السداد والنسبة -->
-                  <td class="p-4 text-xs font-bold text-amber-200">
-                    <div><?= htmlspecialchars($client['period'] ?: $client['payment_period'] ?: '-') ?></div>
+                  <td class="p-4 text-xs font-black text-slate-950">
+                    <div class="text-slate-950 font-black"><?= htmlspecialchars($client['period'] ?: $client['payment_period'] ?: '-') ?></div>
                     <?php if (!empty($client['final_rate'])): ?>
-                      <div class="text-[11px] text-amber-400 font-mono font-normal mt-0.5"><?= htmlspecialchars($client['final_rate']) ?></div>
+                      <div class="text-[11px] text-slate-950 font-mono font-black mt-0.5"><?= htmlspecialchars($client['final_rate']) ?></div>
                     <?php endif; ?>
                   </td>
 
                   <!-- سداد مقدم أكتوبر + تاريخ الدفع -->
-                  <td class="p-4 text-center">
+                  <td class="p-4 text-center font-black text-slate-950">
                     <?php if ($client['paid_5_percent'] === 'نعم'): ?>
-                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 block mb-1">
+                      <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-slate-950 border-2 border-emerald-400 block mb-1 shadow-xs">
                         ✓ تم الاستكمال
                       </span>
                       <?php if (!empty($client['payment_date'])): ?>
-                        <div class="text-[10px] text-slate-400 font-mono font-bold">
+                        <div class="text-[11px] text-slate-950 font-mono font-black">
                           📅 <?= htmlspecialchars($client['payment_date']) ?>
                         </div>
                       <?php endif; ?>
                     <?php else: ?>
-                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-red-500/20 text-red-400 border border-red-500/30">
+                      <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-red-100 text-slate-950 border-2 border-red-300 shadow-xs">
                         ✕ لم يستكمل
                       </span>
                     <?php endif; ?>
                   </td>
 
                   <!-- العنوان (الهوية / المراسلات) -->
-                  <td class="p-4 text-xs text-slate-300 max-w-[200px]">
+                  <td class="p-4 text-xs text-slate-950 font-black max-w-[200px]">
                     <?php if (!empty($client['id_address'])): ?>
-                      <div class="truncate text-amber-300/90 text-[11px]" title="<?= htmlspecialchars($client['id_address']) ?>">
-                        <span class="font-bold">الهوية:</span> <?= htmlspecialchars($client['id_address']) ?>
+                      <div class="truncate text-slate-950 font-black text-[11px]" title="<?= htmlspecialchars($client['id_address']) ?>">
+                        <span class="font-black">الهوية:</span> <?= htmlspecialchars($client['id_address']) ?>
                       </div>
                     <?php endif; ?>
                     <?php if (!empty($client['correspondence_address'])): ?>
-                      <div class="truncate text-slate-300 text-[11px]" title="<?= htmlspecialchars($client['correspondence_address']) ?>">
-                        <span class="font-bold">المراسلات:</span> <?= htmlspecialchars($client['correspondence_address']) ?>
+                      <div class="truncate text-slate-950 font-black text-[11px]" title="<?= htmlspecialchars($client['correspondence_address']) ?>">
+                        <span class="font-black">المراسلات:</span> <?= htmlspecialchars($client['correspondence_address']) ?>
                       </div>
                     <?php endif; ?>
                     <?php if (empty($client['id_address']) && empty($client['correspondence_address'])): ?>
-                      <div class="truncate" title="<?= htmlspecialchars($client['addresses']) ?>">
+                      <div class="truncate text-slate-950 font-black" title="<?= htmlspecialchars($client['addresses']) ?>">
                         <?= htmlspecialchars($client['addresses'] ?: '-') ?>
                       </div>
                     <?php endif; ?>
                   </td>
 
                   <!-- الملاحظات والاستثناءات -->
-                  <td class="p-4 text-xs max-w-[200px]">
+                  <td class="p-4 text-xs font-black text-slate-950 max-w-[200px]">
                     <?php if (!empty($client['general_notes'])): ?>
-                      <div class="truncate text-slate-300 text-[11px] mb-1" title="<?= htmlspecialchars($client['general_notes']) ?>">
-                        <span class="font-bold text-amber-400">عامة:</span> <?= htmlspecialchars($client['general_notes']) ?>
+                      <div class="truncate text-slate-950 font-black text-[11px] mb-1" title="<?= htmlspecialchars($client['general_notes']) ?>">
+                        <span class="font-black">عامة:</span> <?= htmlspecialchars($client['general_notes']) ?>
                       </div>
                     <?php endif; ?>
                     <?php if (!empty($client['notes'])): ?>
-                      <div class="truncate text-amber-200 text-[11px]" title="<?= htmlspecialchars($client['notes']) ?>">
-                        <span class="font-bold text-amber-400">خطة/بديلة:</span> <?= htmlspecialchars($client['notes']) ?>
+                      <div class="truncate text-slate-950 font-black text-[11px]" title="<?= htmlspecialchars($client['notes']) ?>">
+                        <span class="font-black">خطة/بديلة:</span> <?= htmlspecialchars($client['notes']) ?>
                       </div>
                     <?php endif; ?>
                     <?php if (empty($client['general_notes']) && empty($client['notes'])): ?>
-                      <span class="text-slate-500">-</span>
+                      <span class="text-slate-950 font-black">-</span>
                     <?php endif; ?>
                   </td>
 
@@ -1226,20 +1232,20 @@ try {
                           <button 
                             type="button" 
                             onclick="previewAttachment('<?= htmlspecialchars($f) ?>', '<?= $ext ?>')"
-                            class="px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 border border-sky-300 text-[10px] font-mono text-sky-950 font-black flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                            class="px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 border-2 border-sky-300 text-[11px] font-mono text-slate-950 font-black flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                           >
                             <span><?= ($ext === 'pdf') ? '📄' : '🖼️' ?></span>
-                            <span>#<?= $fIdx+1 ?></span>
+                            <span class="text-slate-950 font-black">#<?= $fIdx+1 ?></span>
                           </button>
                         <?php endforeach; ?>
                       </div>
                     <?php else: ?>
-                      <span class="text-slate-500 text-xs" data-i18n="lblNoFiles">لا يوجد</span>
+                      <span class="text-slate-950 font-black text-xs" data-i18n="lblNoFiles">لا يوجد</span>
                     <?php endif; ?>
                   </td>
 
                   <!-- التاريخ -->
-                  <td class="p-4 font-mono text-[11px] text-slate-400">
+                  <td class="p-4 font-mono text-[11px] text-slate-950 font-black">
                     <?= date('Y-m-d H:i', strtotime($client['created_at'])) ?>
                   </td>
 
@@ -1284,7 +1290,7 @@ try {
   <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md hidden overflow-y-auto">
     <div class="glass-card max-w-2xl w-full p-6 sm:p-8 rounded-3xl border-2 border-sky-400 shadow-2xl relative my-8 bg-white text-slate-950">
       
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-sky-200 mb-4">
         <h3 class="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2">
           <span>✏️</span>
           <span data-i18n="editModalTitle">تعديل بيانات العقد والعميل</span>
@@ -1298,7 +1304,7 @@ try {
 
         <!-- اختيار مسؤول المبيعات -->
         <div>
-          <label class="block text-xs font-bold text-amber-300 mb-1" data-i18n="editModalSalesLbl">
+          <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="editModalSalesLbl">
             👤 مسؤول المبيعات (Sales Rep):
           </label>
           <?php if ($currentUserRole === 'Sales'): ?>
@@ -1319,11 +1325,11 @@ try {
         <!-- كود الوحدة واسم العميل -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thUnit">كود الوحدة:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="thUnit">كود الوحدة:</label>
             <input type="text" name="edit_unit_code" id="edit_unit_code" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none uppercase font-black shadow-xs">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">اسم العميل في البطاقة / الشركاء:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">اسم العميل في البطاقة / الشركاء:</label>
             <input type="text" name="edit_name" id="edit_name" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
@@ -1331,14 +1337,14 @@ try {
         <!-- مكان الإقامة ومكان توثيق العقد -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">مكان الإقامة الحالي:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">مكان الإقامة الحالي:</label>
             <select name="edit_residence_country" id="edit_residence_country" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="داخل جمهورية مصر العربية">🇪🇬 داخل جمهورية مصر العربية</option>
               <option value="خارج جمهورية مصر العربية">🌍 خارج جمهورية مصر العربية</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">مكان التوثيق (إن كان داخل مصر):</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">مكان التوثيق (إن كان داخل مصر):</label>
             <select name="edit_contract_location" id="edit_contract_location" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="القاهرة">القاهرة</option>
               <option value="الإسكندرية">الإسكندرية</option>
@@ -1350,11 +1356,11 @@ try {
         <!-- الهاتف والبريد -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPhone">رقم الهاتف والتواصل:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="thPhone">رقم الهاتف والتواصل:</label>
             <input type="text" name="edit_phone" id="edit_phone" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none dir-ltr text-right font-bold shadow-xs">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">البريد الإلكتروني للمراسلات:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">البريد الإلكتروني للمراسلات:</label>
             <input type="email" name="edit_email" id="edit_email" required class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none dir-ltr text-right font-bold shadow-xs">
           </div>
         </div>
@@ -1362,18 +1368,18 @@ try {
         <!-- الهوية وسعر الوحدة -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblDocType">نوع الوثيقة:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="lblDocType">نوع الوثيقة:</label>
             <select name="edit_id_type" id="edit_id_type" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="national_id">بطاقة الرقم القومي</option>
               <option value="passport">جواز السفر (Passport)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblDocNum">رقم الوثيقة:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="lblDocNum">رقم الوثيقة:</label>
             <input type="text" name="edit_id_number" id="edit_id_number" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">سعر الوحدة (EGP):</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">سعر الوحدة (EGP):</label>
             <input type="number" step="any" name="edit_unit_price" id="edit_unit_price" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
@@ -1381,7 +1387,7 @@ try {
         <!-- فترة السداد واستكمال مقدم أكتوبر وتاريخ الدفع -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="thPlan">فترة السداد:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="thPlan">فترة السداد:</label>
             <select name="edit_payment_period" id="edit_payment_period" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="3 سنوات">3 سنوات</option>
               <option value="4 سنوات">4 سنوات</option>
@@ -1394,14 +1400,14 @@ try {
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">استكمال مقدم أكتوبر:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">استكمال مقدم أكتوبر:</label>
             <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
               <option value="نعم">نعم (تم الاستكمال)</option>
               <option value="لا">لا (لم يستكمل)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">تاريخ الدفع:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">تاريخ الدفع:</label>
             <input type="date" name="edit_payment_date" id="edit_payment_date" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
@@ -1409,11 +1415,11 @@ try {
         <!-- العناوين -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">العنوان في البطاقة / الهوية:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">العنوان في البطاقة / الهوية:</label>
             <textarea name="edit_id_address" id="edit_id_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">العنوان المعتمد للمراسلات:</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">العنوان المعتمد للمراسلات:</label>
             <textarea name="edit_correspondence_address" id="edit_correspondence_address" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
         </div>
@@ -1421,33 +1427,33 @@ try {
         <!-- الملاحظات والاستثناءات -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1" data-i18n="lblNotes">ملاحظات عامة / خطة بديلة واستثناءات (اختياري):</label>
+            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="lblNotes">ملاحظات عامة / خطة بديلة واستثناءات (اختياري):</label>
             <textarea name="edit_notes" id="edit_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">ملاحظات عامة (اختياري):</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">ملاحظات عامة (اختياري):</label>
             <textarea name="edit_general_notes" id="edit_general_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs"></textarea>
           </div>
         </div>
 
         <!-- المرفقات الحالية وإضافة جديدة -->
-        <div class="border border-slate-800 rounded-2xl p-4 bg-slate-950/50 space-y-3">
-          <label class="block text-xs font-black text-amber-300" data-i18n="editModalDocs">📎 إدارة المستندات والمرفقات:</label>
+        <div class="border-2 border-sky-300 rounded-2xl p-4 bg-sky-50 space-y-3">
+          <label class="block text-xs font-black text-slate-950" data-i18n="editModalDocs">📎 إدارة المستندات والمرفقات:</label>
           <div id="modal_existing_files" class="space-y-2"></div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-400 mb-1" data-i18n="editModalUploadMore">+ رفع ملفات إضافية:</label>
+            <label class="block text-[11px] font-black text-slate-950 mb-1" data-i18n="editModalUploadMore">+ رفع ملفات إضافية:</label>
             <input 
               type="file" 
               name="new_attachments[]" 
               multiple 
               accept=".pdf,image/*" 
-              class="w-full text-xs text-slate-300 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500/20 file:text-amber-300 hover:file:bg-amber-500/30 cursor-pointer"
+              class="w-full text-xs text-slate-950 font-black file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border file:border-sky-300 file:text-xs file:font-black file:bg-sky-200 file:text-slate-950 hover:file:bg-sky-300 cursor-pointer"
             >
           </div>
         </div>
 
         <!-- أزرار الإجراءات -->
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <div class="flex items-center justify-end gap-3 pt-3 border-t-2 border-sky-200">
           <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 bg-white hover:bg-sky-50 rounded-xl text-xs font-black text-slate-950 border-2 border-sky-300 cursor-pointer shadow-xs" data-i18n="btnCancel">
             إلغاء
           </button>
@@ -1498,7 +1504,7 @@ try {
   <!-- ═══════════════ ATTACHMENT LIGHTBOX PREVIEW MODAL ═══════════════ -->
   <div id="attachmentLightbox" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden" onclick="closeLightbox()">
     <div class="max-w-4xl w-full max-h-[90vh] bg-white border-2 border-sky-400 rounded-3xl p-4 shadow-2xl relative flex flex-col items-center text-slate-950" onclick="event.stopPropagation()">
-      <div class="w-full flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
+      <div class="w-full flex justify-between items-center mb-3 pb-2 border-b-2 border-sky-200">
         <span class="text-xs font-black text-slate-950 font-mono" id="lightboxTitle">معاينة المستند</span>
         <div class="flex items-center gap-2">
           <a id="lightboxDownloadBtn" href="#" target="_blank" download class="text-xs px-3 py-1 bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 font-black rounded-xl border border-sky-400 shadow-xs" data-i18n="btnDownloadDoc">تحميل</a>
@@ -1775,8 +1781,8 @@ try {
           const div = document.createElement('div');
           div.className = "flex items-center justify-between p-2.5 rounded-xl bg-white border-2 border-sky-200 text-xs font-bold shadow-xs";
           div.innerHTML = `
-            <a href="${f}" target="_blank" class="text-amber-300 hover:underline font-mono truncate max-w-xs">📎 ${f}</a>
-            <label class="flex items-center gap-1.5 text-red-400 font-bold text-[11px] cursor-pointer">
+            <a href="${f}" target="_blank" class="text-slate-950 font-black hover:underline font-mono truncate max-w-xs">📎 ${f}</a>
+            <label class="flex items-center gap-1.5 text-red-600 font-black text-[11px] cursor-pointer">
               <input type="checkbox" name="delete_attachments[]" value="${f}" class="rounded text-red-500">
               ${currentLang === 'ar' ? 'حذف الملف' : 'Delete File'}
             </label>
@@ -1784,7 +1790,7 @@ try {
           filesContainer.appendChild(div);
         });
       } else {
-        filesContainer.innerHTML = `<span class="text-xs text-slate-500">${currentLang === 'ar' ? 'لا توجد ملفات مرفقة حالياً' : 'No attachments currently'}</span>`;
+        filesContainer.innerHTML = `<span class="text-xs text-slate-950 font-black">${currentLang === 'ar' ? 'لا توجد ملفات مرفقة حالياً' : 'No attachments currently'}</span>`;
       }
 
       document.getElementById('editModal').classList.remove('hidden');
