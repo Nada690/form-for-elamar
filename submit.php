@@ -580,10 +580,6 @@ if (empty($unit_code)) {
     $errors[] = ($lang === 'en') ? 'Unit code is required (e.g. nn-13).' : 'كود الوحدة مطلوب (مثال: nn-13).';
 }
 
-if (empty($preferred_signing_location)) {
-    $errors[] = ($lang === 'en') ? 'Contract signing location is required.' : 'يرجى كتابة المكان الأقرب لتوقيع العقد.';
-}
-
 // ── التحقق من خطة السداد والنسبة (Payment Plan & Final Rate Validation) ──
 $paymentPlans = [
     '7 Years'  => ['5% - 5%'],

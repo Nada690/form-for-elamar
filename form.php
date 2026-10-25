@@ -69,6 +69,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="overflow-x-hidden">
 <head>
+  <script src="config.js"></script>
   <script src="customer_units_lookup.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -607,23 +608,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <span>➕</span>
                 <span data-i18n="btnAddUnit">إضافة وحدة أخرى (اختياري)</span>
               </button>
-
-              <!-- 4. المكان الأقرب لتوقيع العقد -->
-              <div class="form-group pt-2 border-t-2 border-sky-200 w-full">
-                <label class="block text-xs font-black text-slate-950 mb-1.5" for="preferredSigningLocation">
-                  <span class="text-slate-950 font-black">المكان الأقرب لتوقيع العقد؟</span>
-                  <span class="text-red-500 font-bold">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  name="preferred_signing_location" 
-                  id="preferredSigningLocation" 
-                  placeholder="اكتب المكان أو الفرع الأقرب لتوقيع العقد..."
-                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white" 
-                  required
-                />
-                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errSigningLocation">المكان الأقرب لتوقيع العقد مطلوب</p>
-              </div>
 
               <!-- المكان الأقرب لتوثيق العقد (فرع القاهرة / الإسكندرية) -->
               <div id="contractLocationContainer" class="form-group pt-2 border-t-2 border-sky-200 w-full">
@@ -5781,7 +5765,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       // 1. Try fetching from lookup_unit.php backend first
       try {
-        const res = await fetch('lookup_unit.php?national_id=' + encodeURIComponent(normId));
+        const baseUrl = (typeof window.BACKEND_URL !== 'undefined') ? window.BACKEND_URL.replace(/\/+$/, '') : '';
+        const lookupUrl = baseUrl ? `${baseUrl}/lookup_unit.php?national_id=` : 'lookup_unit.php?national_id=';
+        const res = await fetch(lookupUrl + encodeURIComponent(normId));
         if (res.ok) {
           data = await res.json();
         }
@@ -5794,13 +5780,27 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (window.customerUnitsLookup && window.customerUnitsLookup[normId]) {
           const matches = window.customerUnitsLookup[normId];
           const units = [...new Set(matches.map(m => m.unit))];
+          
+          // دالة استخراج الدور والمساحة في الـ Fallback
+          let floor = 'الدور الأرضي';
+          let area = '125 م²';
+          const uCode = units[0] || '';
+          const m = uCode.match(/-(\d)(\d{2})$/);
+          if (m) {
+            const fNames = {0:'الدور الأرضي', 1:'الدور الأول', 2:'الدور الثاني', 3:'الدور الثالث', 4:'الدور الرابع', 5:'الدور الخامس', 6:'الدور السادس'};
+            floor = fNames[parseInt(m[1], 10)] || ('الدور ' + m[1]);
+          }
+
           data = {
             found: true,
             unit_code: units[0],
             unit: units[0],
+            unit_area: area,
+            unit_floor: floor,
             name: matches[0].name,
             units: units,
-            total_units: units.length
+            total_units: units.length,
+            partners: []
           };
         } else {
           data = { found: false, message: 'الرقم ده مش موجود' };
@@ -7026,17 +7026,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
       }
 
-      // التحقق من المكان الأقرب لتوقيع العقد
-      const preferredLocInput = document.getElementById('preferredSigningLocation');
-      if (preferredLocInput && !preferredLocInput.value.trim()) {
-        document.getElementById('errSigningLocation')?.classList.remove('hidden');
-        preferredLocInput.classList.add('invalid');
-        hasError = true;
-      } else if (preferredLocInput) {
-        document.getElementById('errSigningLocation')?.classList.add('hidden');
-        preferredLocInput.classList.remove('invalid');
-      }
-
       // فرع توثيق العقد (يطلب فقط لو كان هناك عميل داخل مصر)
       const anyInside = Object.values(clientResidenceMap).some(v => v.includes('داخل'));
       if (anyInside) {
@@ -7110,7 +7099,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       });
 
       try {
-        const res = await fetch('submit.php', {
+        const baseUrl = (typeof window.BACKEND_URL !== 'undefined') ? window.BACKEND_URL.replace(/\/+$/, '') : '';
+        const submitUrl = baseUrl ? `${baseUrl}/submit.php` : 'submit.php';
+        const res = await fetch(submitUrl, {
           method: 'POST',
           body: formData
         });
