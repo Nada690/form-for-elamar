@@ -2,7 +2,6 @@
 <html lang="ar" dir="rtl" class="overflow-x-hidden">
 <head>
   <script src="customer_units_lookup.js"></script>
-  <script src="config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>استبيان واستيفاء بيانات التعاقد | مشاريع شورز الساحلية</title>
@@ -266,10 +265,10 @@
 
       <!-- Header Banner & Sales Consultant VIP Tag -->
       <div class="text-center mb-6 sm:mb-8 space-y-2 sm:space-y-3">
-        <div id="surveyTagContainer" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-sky-300 text-slate-950 text-[11px] sm:text-xs font-black shadow-sm max-w-full" data-i18n="officialSurveyTag">
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-sky-300 text-slate-950 text-[11px] sm:text-xs font-black shadow-sm max-w-full" data-i18n="officialSurveyTag">
             🏖️ استبيان واستيفاء بيانات عقود الشاليهات الساحلية (Shores Only)
           </div>
-
+        
         <h1 id="pageTitle" class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight" data-i18n="pageTitle">
           استمارة بيانات العقد والوحدة
         </h1>
@@ -288,8 +287,8 @@
 
           <form id="contractForm" novalidate class="space-y-6 sm:space-y-7" enctype="multipart/form-data">
             
-            <input type="hidden" name="sales_ref" id="salesRefInput" value="">
-            <input type="hidden" name="sales_id" id="salesIdInput" value="">
+            <input type="hidden" name="sales_ref" value="">
+            <input type="hidden" name="sales_id" value="">
 
             <!-- ── SECTION 01: بيانات أطراف العقد والشركاء (Client & Partner Cards) ── -->
             <div class="section-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl space-y-5 bg-[#f0f9ff] border-2 border-sky-200">
@@ -304,18 +303,6 @@
               <!-- حاوية بطاقات العملاء والشركاء المجمعة -->
               <div id="clientsContainer" class="space-y-6 w-full">
                 <!-- سيتم بناء البطاقات هنا عبر Repeater Component JS -->
-              </div>
-
-              <!-- زر إضافة شريك / عميل جديد بالعقد -->
-              <div class="pt-2">
-                <button 
-                  type="button" 
-                  onclick="addNewClientCard()" 
-                  class="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-sky-50 border-2 border-dashed border-sky-400 hover:border-sky-500 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all shadow-md cursor-pointer group"
-                >
-                  <span class="text-base group-hover:scale-110 transition-transform">➕</span>
-                  <span data-i18n="btnAddClientCard">+ إضافة شريك / عميل جديد بالعقد</span>
-                </button>
               </div>
             </div>
 
@@ -371,7 +358,7 @@
                           id="paymentDate"
                           name="payment_date"
                           class="glass-input w-full px-3.5 py-2 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500"
-                          value="2026-10-19"
+                          value="2026-10-26"
                         />
                         <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errPaymentDate" data-i18n="errPaymentDate">تاريخ الدفع مطلوب</p>
                       </div>
@@ -389,30 +376,59 @@
 
                   <!-- حقول تفاصيل الوحدة الأساسية (تختفي إذا تم اختيار "لا") -->
                   <div id="primaryUnitDetailsContainer" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
-                    <!-- كود الوحدة (إدخال مباشر بدون قائمة منسدلة + جلب تلقائي بالرقم القومي) -->
+                    <!-- كود الوحدة (تلقائي وغير قابل للتعديل) + مساحة الوحدة + رقم الدور -->
                     <div class="sm:col-span-12 form-group">
                       <label class="block text-xs font-black text-slate-950 mb-1.5" for="unit_code">
                         <span class="text-slate-950 font-black" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
                         <span class="text-red-500 font-bold">*</span>
                       </label>
                       
-<datalist id="all_units_list"><option value="A16"><option value="A17"><option value="A18"><option value="A19"><option value="A20"><option value="A3"><option value="A31"><option value="A4"><option value="AA13"><option value="AA14"><option value="AA21"><option value="AA30"><option value="AA5"><option value="AA7"><option value="B142"><option value="B143"><option value="B163"><option value="B167"><option value="B168"><option value="B170"><option value="B171"><option value="B172"><option value="B173"><option value="B198"><option value="B199"><option value="B222"><option value="B223"><option value="B226"><option value="B246"><option value="B327"><option value="B328"><option value="B366"><option value="B48"><option value="B66"><option value="B83"><option value="B84"><option value="C104"><option value="C105"><option value="C109"><option value="C110"><option value="C31"><option value="C48"><option value="C49"><option value="C53"><option value="C57"><option value="C8"><option value="C9"><option value="C99"><option value="CC100"><option value="CC21"><option value="CC26"><option value="CC34"><option value="CC35"><option value="CC46"><option value="CC6"><option value="CC84"><option value="F29-13"><option value="F29-14"><option value="F29-15"><option value="F29-20"><option value="F29-24"><option value="F29-27"><option value="F29-31"><option value="F29-32"><option value="F29-33"><option value="F29-34"><option value="F29-35"><option value="F29-38"><option value="F29-41"><option value="F29-52"><option value="F36-12"><option value="F36-14"><option value="F36-15"><option value="F36-16"><option value="F36-17"><option value="F36-26"><option value="F36-28"><option value="F36-29"><option value="F36-34"><option value="F36-36"><option value="F36-37"><option value="F36-38"><option value="F36-39"><option value="F36-41"><option value="F36-48"><option value="F43-24"><option value="F43-27"><option value="F43-29"><option value="F43-43"><option value="F43-5"><option value="F50-12"><option value="F50-16"><option value="F50-18"><option value="F50-38"><option value="F50-39"><option value="F50-40"><option value="F50-46"><option value="F50-50"><option value="G30-1"><option value="G30-13"><option value="G30-14"><option value="G30-15"><option value="G30-16"><option value="G30-2"><option value="G30-23"><option value="G30-25"><option value="G30-32"><option value="G30-33"><option value="G30-34"><option value="G30-35"><option value="G30-4"><option value="G37-16"><option value="G37-25"><option value="G37-28"><option value="G37-32"><option value="G37-34"><option value="G37-35"><option value="G37-38"><option value="G37-44"><option value="G44-12"><option value="G44-13"><option value="G44-23"><option value="G44-25"><option value="G44-3"><option value="G44-31"><option value="G44-35"><option value="G44-5"><option value="G51-12"><option value="G51-13"><option value="G51-15"><option value="G51-17"><option value="G51-25"><option value="G51-31"><option value="G51-33"><option value="G51-34"><option value="G51-35"><option value="I31-13"><option value="I31-15"><option value="I31-16"><option value="I31-2"><option value="I31-23"><option value="I31-33"><option value="I31-34"><option value="I31-36"><option value="I31-37"><option value="I31-44"><option value="I38-13"><option value="I38-16"><option value="I38-18"><option value="I38-25"><option value="I38-26"><option value="I38-31"><option value="I38-32"><option value="I38-38"><option value="I38-4"><option value="I38-46"><option value="I38-6"><option value="I45-16"><option value="I45-26"><option value="I45-3"><option value="I45-34"><option value="I45-35"><option value="I45-43"><option value="I45-45"><option value="I52-15"><option value="I52-33"><option value="I52-34"><option value="I52-36"><option value="J35-1"><option value="J35-13"><option value="J35-15"><option value="J35-19"><option value="J35-21"><option value="J35-24"><option value="J35-26"><option value="J35-27"><option value="J35-29"><option value="J35-3"><option value="J35-35"><option value="J35-40"><option value="J35-41"><option value="J35-43"><option value="J35-51"><option value="J35-52"><option value="J42-15"><option value="J42-29"><option value="J42-30"><option value="J42-34"><option value="J42-36"><option value="J42-39"><option value="J42-4"><option value="J42-41"><option value="J42-52"><option value="J49-1"><option value="J49-16"><option value="J49-18"><option value="J49-2"><option value="J49-26"><option value="J49-27"><option value="J49-29"><option value="J49-37"><option value="J49-43"><option value="J49-49"><option value="J49-5"><option value="J49-50"><option value="J56-13"><option value="J56-15"><option value="J56-29"><option value="J56-35"><option value="J56-38"><option value="J56-40"><option value="J56-5"><option value="K34-14"><option value="K34-15"><option value="K34-2"><option value="K34-21"><option value="K34-23"><option value="K34-3"><option value="K34-4"><option value="K41-1"><option value="K41-11"><option value="K41-14"><option value="K41-16"><option value="K41-24"><option value="K41-33"><option value="K41-34"><option value="K41-35"><option value="K41-36"><option value="K48-1"><option value="K48-14"><option value="K48-16"><option value="K48-18"><option value="K48-3"><option value="K48-31"><option value="K48-32"><option value="K48-35"><option value="K55-11"><option value="K55-20"><option value="K55-21"><option value="K55-23"><option value="K55-31"><option value="K55-34"><option value="K55-35"><option value="K55-44"><option value="L33-12"><option value="L33-14"><option value="L33-24"><option value="L33-3"><option value="L33-38"><option value="L33-5"><option value="L40-11"><option value="L40-2"><option value="L40-24"><option value="L40-3"><option value="L40-32"><option value="L40-33"><option value="L40-35"><option value="L47-11"><option value="L47-12"><option value="L47-21"><option value="L47-22"><option value="L47-23"><option value="L47-32"><option value="L47-33"><option value="L54-1"><option value="L54-12"><option value="L54-13"><option value="L54-14"><option value="L54-18"><option value="L54-23"><option value="L54-33"><option value="M32-1"><option value="M32-19"><option value="M32-2"><option value="M32-22"><option value="M32-24"><option value="M32-3"><option value="M32-32"><option value="M32-34"><option value="M32-35"><option value="M32-5"><option value="M39-1"><option value="M39-12"><option value="M39-14"><option value="M39-19"><option value="M39-2"><option value="M39-22"><option value="M39-24"><option value="M39-32"><option value="M39-4"><option value="M39-44"><option value="M39-5"><option value="M46-12"><option value="M46-15"><option value="M46-19"><option value="M46-22"><option value="M46-32"><option value="M46-33"><option value="M46-44"><option value="M46-9"><option value="M53-1"><option value="M53-17"><option value="M53-19"><option value="M53-2"><option value="M53-22"><option value="M53-24"><option value="M53-32"><option value="M53-33"><option value="M53-34"><option value="M53-4"><option value="M53-42"><option value="M53-44"><option value="M53-47"><option value="N1-10"><option value="N1-11"><option value="N1-13"><option value="N1-14"><option value="N1-15"><option value="N1-17"><option value="N1-19"><option value="N1-2"><option value="N1-20"><option value="N1-21"><option value="N1-22"><option value="N1-23"><option value="N1-3"><option value="N1-36"><option value="N1-39"><option value="N1-40"><option value="N1-5"><option value="N1-7"><option value="N1-9"><option value="N12-10"><option value="N12-11"><option value="N12-12"><option value="N12-13"><option value="N12-14"><option value="N12-18"><option value="N12-2"><option value="N12-21"><option value="N12-22"><option value="N12-23"><option value="N12-24"><option value="N12-28"><option value="N12-29"><option value="N12-3"><option value="N12-34"><option value="N12-35"><option value="N12-36"><option value="N12-37"><option value="N12-38"><option value="N12-7"><option value="N13-11"><option value="N13-12"><option value="N13-15"><option value="N13-18"><option value="N13-21"><option value="N13-22"><option value="N13-23"><option value="N13-27"><option value="N13-28"><option value="N13-29"><option value="N13-30"><option value="N13-33"><option value="N13-35"><option value="N13-36"><option value="N13-37"><option value="N13-38"><option value="N13-39"><option value="N13-7"><option value="N14-10"><option value="N14-14"><option value="N14-18"><option value="N14-19"><option value="N14-2"><option value="N14-20"><option value="N14-21"><option value="N14-22"><option value="N14-24"><option value="N14-28"><option value="N14-29"><option value="N14-3"><option value="N14-30"><option value="N14-36"><option value="N14-39"><option value="N14-6"><option value="N19-11"><option value="N19-12"><option value="N19-14"><option value="N19-15"><option value="N19-18"><option value="N19-19"><option value="N19-2"><option value="N19-20"><option value="N19-22"><option value="N19-23"><option value="N19-27"><option value="N19-28"><option value="N19-29"><option value="N19-3"><option value="N19-30"><option value="N19-35"><option value="N19-36"><option value="N19-37"><option value="N19-38"><option value="N19-39"><option value="N19-7"><option value="N20-10"><option value="N20-12"><option value="N20-14"><option value="N20-15"><option value="N20-18"><option value="N20-20"><option value="N20-21"><option value="N20-22"><option value="N20-23"><option value="N20-27"><option value="N20-29"><option value="N20-3"><option value="N20-30"><option value="N20-35"><option value="N20-36"><option value="N20-37"><option value="N20-38"><option value="N20-39"><option value="N20-6"><option value="N21-11"><option value="N21-12"><option value="N21-13"><option value="N21-15"><option value="N21-18"><option value="N21-21"><option value="N21-22"><option value="N21-23"><option value="N21-27"><option value="N21-29"><option value="N21-30"><option value="N21-34"><option value="N21-35"><option value="N21-36"><option value="N21-37"><option value="N21-39"><option value="N22-14"><option value="N22-18"><option value="N22-19"><option value="N22-2"><option value="N22-22"><option value="N22-23"><option value="N22-27"><option value="N22-29"><option value="N22-3"><option value="N22-30"><option value="N22-34"><option value="N22-35"><option value="N22-37"><option value="N27-10"><option value="N27-11"><option value="N27-12"><option value="N27-14"><option value="N27-19"><option value="N27-2"><option value="N27-20"><option value="N27-22"><option value="N27-23"><option value="N27-27"><option value="N27-28"><option value="N27-3"><option value="N27-34"><option value="N27-35"><option value="N27-36"><option value="N27-39"><option value="N27-4"><option value="N27-6"><option value="N27-7"><option value="N28-10"><option value="N28-11"><option value="N28-12"><option value="N28-15"><option value="N28-18"><option value="N28-19"><option value="N28-20"><option value="N28-23"><option value="N28-28"><option value="N28-33"><option value="N28-34"><option value="N28-35"><option value="N28-36"><option value="N28-38"><option value="N28-39"><option value="N6-11"><option value="N6-12"><option value="N6-13"><option value="N6-14"><option value="N6-17"><option value="N6-19"><option value="N6-28"><option value="N6-3"><option value="N6-30"><option value="N6-35"><option value="N6-36"><option value="N6-39"><option value="N6-40"><option value="N6-6"><option value="N7-10"><option value="N7-11"><option value="N7-12"><option value="N7-13"><option value="N7-14"><option value="N7-18"><option value="N7-19"><option value="N7-27"><option value="N7-28"><option value="N7-29"><option value="N7-3"><option value="N7-30"><option value="N7-35"><option value="N7-36"><option value="N7-37"><option value="N7-7"><option value="NN11-12"><option value="NN11-14"><option value="NN11-18"><option value="NN11-19"><option value="NN11-23"><option value="NN11-29"><option value="NN11-3"><option value="NN11-30"><option value="NN11-36"><option value="NN11-38"><option value="NN11-43"><option value="NN11-46"><option value="NN15-10"><option value="NN15-11"><option value="NN15-12"><option value="NN15-14"><option value="NN15-18"><option value="NN15-21"><option value="NN15-22"><option value="NN15-23"><option value="NN15-26"><option value="NN15-27"><option value="NN15-3"><option value="NN15-30"><option value="NN15-31"><option value="NN15-35"><option value="NN15-36"><option value="NN15-38"><option value="NN15-42"><option value="NN15-43"><option value="NN15-44"><option value="NN15-45"><option value="NN15-46"><option value="NN15-5"><option value="NN15-6"><option value="NN15-7"><option value="NN18-11"><option value="NN18-12"><option value="NN18-13"><option value="NN18-15"><option value="NN18-18"><option value="NN18-20"><option value="NN18-23"><option value="NN18-26"><option value="NN18-27"><option value="NN18-29"><option value="NN18-3"><option value="NN18-30"><option value="NN18-35"><option value="NN18-36"><option value="NN18-37"><option value="NN18-4"><option value="NN18-42"><option value="NN18-45"><option value="NN18-47"><option value="NN18-5"><option value="NN18-6"><option value="NN2-10"><option value="NN2-18"><option value="NN2-19"><option value="NN2-2"><option value="NN2-20"><option value="NN2-22"><option value="NN2-23"><option value="NN2-25"><option value="NN2-27"><option value="NN2-28"><option value="NN2-30"><option value="NN2-31"><option value="NN2-37"><option value="NN2-38"><option value="NN2-42"><option value="NN2-43"><option value="NN2-44"><option value="NN2-45"><option value="NN2-46"><option value="NN2-47"><option value="NN2-5"><option value="NN23-13"><option value="NN23-15"><option value="NN23-2"><option value="NN23-20"><option value="NN23-23"><option value="NN23-26"><option value="NN23-29"><option value="NN23-3"><option value="NN23-30"><option value="NN23-36"><option value="NN23-37"><option value="NN23-38"><option value="NN23-43"><option value="NN23-44"><option value="NN23-45"><option value="NN23-46"><option value="NN26-10"><option value="NN26-11"><option value="NN26-14"><option value="NN26-20"><option value="NN26-21"><option value="NN26-28"><option value="NN26-29"><option value="NN26-3"><option value="NN26-31"><option value="NN26-35"><option value="NN26-36"><option value="NN26-37"><option value="NN26-38"><option value="NN26-42"><option value="NN26-45"><option value="NN26-6"><option value="NN5-11"><option value="NN5-15"><option value="NN5-18"><option value="NN5-19"><option value="NN5-2"><option value="NN5-21"><option value="NN5-23"><option value="NN5-24"><option value="NN5-27"><option value="NN5-29"><option value="NN5-31"><option value="NN5-32"><option value="NN5-35"><option value="NN5-4"><option value="NN5-41"><option value="NN5-45"><option value="NN5-47"><option value="NN8-11"><option value="NN8-19"><option value="NN8-2"><option value="NN8-20"><option value="NN8-22"><option value="NN8-27"><option value="NN8-29"><option value="NN8-35"><option value="NN8-36"><option value="NN8-37"><option value="NN8-38"><option value="NN8-43"><option value="NN8-44"><option value="NN8-48"><option value="P&quot;17-16"><option value="P&quot;17-19"><option value="P&quot;17-20"><option value="P&quot;17-26"><option value="P&quot;17-32"><option value="P&quot;17-33"><option value="P&quot;17-34"><option value="P&quot;17-37"><option value="P&quot;17-39"><option value="P&quot;17-43"><option value="P&quot;17-47"><option value="P&quot;17-5"><option value="P&quot;25-13"><option value="P&quot;25-19"><option value="P&quot;25-25"><option value="P&quot;25-26"><option value="P&quot;25-27"><option value="P&quot;25-30"><option value="P&quot;25-32"><option value="P&quot;25-33"><option value="P&quot;25-40"><option value="P&quot;25-46"><option value="P&quot;25-5"><option value="P&quot;25-6"><option value="P&quot;25-9"><option value="P'16-10"><option value="P'16-11"><option value="P'16-13"><option value="P'16-17"><option value="P'16-18"><option value="P'16-20"><option value="P'16-23"><option value="P'16-24"><option value="P'16-26"><option value="P'16-27"><option value="P'16-28"><option value="P'16-3"><option value="P'16-30"><option value="P'16-31"><option value="P'16-34"><option value="P'16-38"><option value="P'16-40"><option value="P'16-41"><option value="P'16-44"><option value="P'16-46"><option value="P'16-47"><option value="P'16-6"><option value="P'24-12"><option value="P'24-17"><option value="P'24-19"><option value="P'24-20"><option value="P'24-25"><option value="P'24-27"><option value="P'24-28"><option value="P'24-31"><option value="P'24-32"><option value="P'24-33"><option value="P'24-34"><option value="P'24-39"><option value="P'24-44"><option value="P'24-45"><option value="P'24-46"><option value="P'24-47"><option value="P'24-9"><option value="PP&quot;10-12"><option value="PP&quot;10-13"><option value="PP&quot;10-17"><option value="PP&quot;10-18"><option value="PP&quot;10-19"><option value="PP&quot;10-2"><option value="PP&quot;10-20"><option value="PP&quot;10-25"><option value="PP&quot;10-29"><option value="PP&quot;10-30"><option value="PP&quot;10-31"><option value="PP&quot;10-32"><option value="PP&quot;10-33"><option value="PP&quot;10-36"><option value="PP&quot;10-38"><option value="PP&quot;10-45"><option value="PP&quot;10-47"><option value="PP&quot;10-8"><option value="PP&quot;10-9"><option value="PP&quot;4-1"><option value="PP&quot;4-15"><option value="PP&quot;4-16"><option value="PP&quot;4-17"><option value="PP&quot;4-18"><option value="PP&quot;4-20"><option value="PP&quot;4-22"><option value="PP&quot;4-23"><option value="PP&quot;4-26"><option value="PP&quot;4-27"><option value="PP&quot;4-30"><option value="PP&quot;4-32"><option value="PP&quot;4-33"><option value="PP&quot;4-34"><option value="PP&quot;4-36"><option value="PP&quot;4-37"><option value="PP&quot;4-38"><option value="PP&quot;4-4"><option value="PP&quot;4-40"><option value="PP&quot;4-43"><option value="PP&quot;4-46"><option value="PP&quot;4-47"><option value="PP&quot;4-48"><option value="PP&quot;4-5"><option value="PP&quot;4-8"><option value="PP&quot;4-9"><option value="PP'3-10"><option value="PP'3-13"><option value="PP'3-17"><option value="PP'3-19"><option value="PP'3-20"><option value="PP'3-21"><option value="PP'3-24"><option value="PP'3-25"><option value="PP'3-28"><option value="PP'3-3"><option value="PP'3-30"><option value="PP'3-31"><option value="PP'3-32"><option value="PP'3-33"><option value="PP'3-34"><option value="PP'3-35"><option value="PP'3-38"><option value="PP'3-40"><option value="PP'3-46"><option value="PP'3-47"><option value="PP'3-48"><option value="PP'3-49"><option value="PP'9-10"><option value="PP'9-13"><option value="PP'9-16"><option value="PP'9-19"><option value="PP'9-20"><option value="PP'9-21"><option value="PP'9-24"><option value="PP'9-25"><option value="PP'9-26"><option value="PP'9-27"><option value="PP'9-28"><option value="PP'9-3"><option value="PP'9-31"><option value="PP'9-32"><option value="PP'9-33"><option value="PP'9-34"><option value="PP'9-35"><option value="PP'9-38"><option value="PP'9-39"><option value="PP'9-4"><option value="PP'9-41"><option value="PP'9-44"><option value="PP'9-46"><option value="m46-34"></datalist>
                       <div class="relative">
                         <input
                           type="text"
                           id="unit_code"
                           name="unit_code"
                           data-alias="unitCode"
-                          list="all_units_list"
                           dir="ltr"
-                          autocomplete="off"
-                          placeholder="أدخل كود الوحدة كاملاً (مثال: J49-26)..."
-                          data-i18n-placeholder="phInputUnit"
-                          class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-sky-300 focus:border-sky-500 bg-white shadow-sm transition-all"
-                          oninput="this.value = this.value.toUpperCase(); validateCompleteUnitCode(this); if (typeof refreshAllUnitsPills === 'function') refreshAllUnitsPills();"
+                          readonly
+                          placeholder="سيتم تحديد كود الوحدة تلقائياً بمجرد إدخال الرقم القومي..."
+                          class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-sm transition-all"
                         />
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
                       </div>
+
+                      <!-- حقول مساحة الوحدة ورقم الدور (تُجلب تلقائياً) -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">
+                        <div>
+                          <label class="block text-[11px] font-black text-slate-700 mb-1">
+                            <span>مساحة الوحدة:</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="unit_area"
+                            name="unit_area"
+                            readonly
+                            placeholder="المساحة بالمتر المربع..."
+                            class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-[11px] font-black text-slate-700 mb-1">
+                            <span>رقم الدور:</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="unit_floor"
+                            name="unit_floor"
+                            readonly
+                            placeholder="رقم الدور..."
+                            class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- صندوق عرض الشركاء المسجلين على الوحدة كـ Read-only -->
+                      <div id="unitPartnersBox" class="hidden mt-2.5"></div>
 
                       <!-- تنبيه الجلب التلقائي وقائمة الوحدات المتعددة إن وجدت -->
                       <div id="unitAutoHint" class="hidden mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all">
@@ -474,6 +490,17 @@
                     <!-- حقل النسبة النهائي المخفي للباك إند وقاعدة البيانات -->
                     <input type="hidden" name="final_rate" id="final_rate" value="">
 
+                    <!-- تنبيه عدد الشيكات اللحظي -->
+                    <div id="chequesNoticeBox" class="hidden sm:col-span-12 p-3.5 rounded-xl bg-amber-50 border-2 border-amber-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-sm transition-all">
+                      <span class="text-xl">📝</span>
+                      <div>
+                        <span>يوم التوقيع يتم إحضار عدد (</span>
+                        <span id="chequesCountSpan" class="text-amber-800 text-base font-mono font-black underline">0</span>
+                        <span>) من الشيكات</span>
+                      </div>
+                      <input type="hidden" name="cheques_count" id="cheques_count" value="">
+                    </div>
+
                     <!-- مقترح نظام السداد (موجود مباشرة تحت الخطة المختارة) -->
                     <div class="sm:col-span-12 form-group pt-2">
                       <label class="block text-xs font-black text-slate-950 mb-1.5" for="clientPlanExceptions">
@@ -497,6 +524,7 @@
               <!-- زر إضافة وحدة أخرى -->
               <button 
                 type="button" 
+                id="btnAddExtraUnit"
                 onclick="addExtraUnitField()" 
                 class="text-xs font-black text-slate-950 hover:bg-sky-100 bg-white border-2 border-sky-300 px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm w-full justify-center"
               >
@@ -504,8 +532,24 @@
                 <span data-i18n="btnAddUnit">إضافة وحدة أخرى (اختياري)</span>
               </button>
 
+              <!-- 4. المكان الأقرب لتوقيع العقد -->
+              <div class="form-group pt-2 border-t-2 border-sky-200 w-full">
+                <label class="block text-xs font-black text-slate-950 mb-1.5" for="preferredSigningLocation">
+                  <span class="text-slate-950 font-black">المكان الأقرب لتوقيع العقد؟</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  name="preferred_signing_location" 
+                  id="preferredSigningLocation" 
+                  placeholder="اكتب المكان أو الفرع الأقرب لتوقيع العقد..."
+                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white" 
+                  required
+                />
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errSigningLocation">المكان الأقرب لتوقيع العقد مطلوب</p>
+              </div>
 
-              <!-- 4. المكان الأقرب لتوثيق العقد (يظهر للعميل داخل مصر بعد سؤال المقدم مباشرة، ويخفى خارج مصر تماماً) -->
+              <!-- المكان الأقرب لتوثيق العقد (فرع القاهرة / الإسكندرية) -->
               <div id="contractLocationContainer" class="form-group pt-2 border-t-2 border-sky-200 w-full">
                 <label class="block text-xs font-black text-slate-950 mb-1.5" for="contractLocation">
                   <span class="text-slate-950 font-black" data-i18n="labelLocation">المكان الأقرب لتوثيق العقد</span>
@@ -592,11 +636,7 @@
           <span class="text-slate-700 font-bold" data-i18n="lblUnitRef">كود الوحدة:</span>
           <span class="font-mono text-slate-950 font-black uppercase" id="modalUnitCode">-</span>
         </div>
-        <div id="modalAdvisorRow" class="hidden flex justify-between border-t border-sky-200 pt-1.5">
-            <span class="text-slate-700 font-bold" data-i18n="lblAdvisor">المستشار العقاري:</span>
-            <span class="text-slate-950 font-black" id="modalAdvisorName"></span>
-          </div>
-        <div class="flex justify-between border-t border-sky-200 pt-1.5">
+                <div class="flex justify-between border-t border-sky-200 pt-1.5">
           <span class="text-slate-700 font-bold" data-i18n="lblStatus">حالة الطلب:</span>
           <span class="text-emerald-700 font-black" data-i18n="valApproved">معتمد وموثق</span>
         </div>
@@ -615,9 +655,6 @@
 
   <!-- ═══════════════ SCRIPT LOGIC ═══════════════ -->
   <script>
-    window.baseUrl = (window.BACKEND_API_URL || window.BACKEND_URL || "").replace(/\/$/, "");
-    var baseUrl = window.baseUrl;
-
     window.onerror = function(msg, url, line, col, err) {
       document.body.innerHTML = '<div id="DEBUG_ERROR" style="color:red;font-size:24px;font-weight:bold;padding:20px;background:white;position:fixed;top:0;left:0;right:0;bottom:0;z-index:999999;">ERROR: ' + msg + ' at line ' + line + ':' + col + '<br><pre>' + (err ? (err.stack || err.message) : '') + '</pre></div>';
     };
@@ -907,45 +944,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       addNewClientCard(true);
-    // التحقق من صلاحيات الأدمن والربط التلقائي بالسيلز في النسخة الثابتة
-    const urlParams = new URLSearchParams(window.location.search);
-    const salesSlug = urlParams.get('slug') || urlParams.get('ref') || '';
-    if (salesSlug) {
-      const refInput = document.getElementById('salesRefInput');
-      if (refInput) refInput.value = salesSlug;
-      fetch(`${baseUrl ? baseUrl + '/' : ''}api/sales_lookup.php?slug=${encodeURIComponent(salesSlug)}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d && d.id) {
-            const idInput = document.getElementById('salesIdInput');
-            if (idInput) idInput.value = d.id;
-            const banner = document.getElementById('surveyTagContainer');
-            if (banner && d.name) {
-              banner.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white border-2 border-sky-400 text-slate-950 text-xs sm:text-sm font-black shadow-md max-w-full truncate";
-              banner.innerHTML = `<span>💎</span><span data-i18n="vipSalesIntro">${currentLang === 'en' ? 'Verified contract under advisor:' : 'استمارة معتمدة بإشراف:'}</span><span class="text-sky-900 bg-sky-100 px-2 py-0.5 rounded-lg border border-sky-300 font-black">${d.name}</span>`;
-            }
-            const modalAdv = document.getElementById('modalAdvisorName');
-            const modalRow = document.getElementById('modalAdvisorRow');
-            if (modalAdv && modalRow) {
-              modalAdv.textContent = d.name;
-              modalRow.classList.remove('hidden');
-            }
-          }
-        }).catch(() => {});
-    }
-
-    fetch(`${baseUrl ? baseUrl + '/' : ''}check_auth.php`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.is_admin === true) {
-          const btn = document.getElementById('adminDashboardBtn');
-          if (btn) {
-            btn.classList.remove('hidden');
-            btn.classList.add('flex');
-          }
-        }
-      }).catch(() => {});
-
       setLanguage(currentLang);
       
       document.addEventListener('click', (e) => {
@@ -1081,18 +1079,21 @@
             : `<span class="region-flag text-base flex-shrink-0">🇪🇬</span><span class="region-name font-black truncate text-slate-950">${isEn ? 'Select Governorate...' : 'اختر المحافظة...'}</span>`;
         }
 
-        // Correspondence address: ALWAYS Egyptian governorates & cities
-        const corrGovSelect = card.querySelector('.client-corr-gov-select');
-        const curCorrGovVal = corrGovSelect ? corrGovSelect.value : '';
-        populateGovernorateOptions(corrGovSelect);
+        // Correspondence address: Country and City options
+        const corrCountrySelect = card.querySelector('.client-corr-country-select');
+        const curCorrCountryVal = corrCountrySelect ? corrCountrySelect.value : '';
+        if (typeof populateWorldCountryOptions === 'function' && corrCountrySelect) {
+          populateWorldCountryOptions(corrCountrySelect);
+          if (curCorrCountryVal) corrCountrySelect.value = curCorrCountryVal;
+        }
 
         const corrCitySelect = card.querySelector('.client-corr-city-select');
-        if (curCorrGovVal) {
+        if (curCorrCountryVal && typeof handleClientCorrCountryChange === 'function') {
           const curCorrCity = corrCitySelect ? corrCitySelect.value : '';
-          handleClientCorrGovChange(cId, curCorrGovVal);
+          handleClientCorrCountryChange(cId, curCorrCountryVal);
           if (corrCitySelect && curCorrCity) corrCitySelect.value = curCorrCity;
         } else if (corrCitySelect && corrCitySelect.options && corrCitySelect.options.length > 0) {
-          corrCitySelect.options[0].textContent = t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...');
+          corrCitySelect.options[0].textContent = (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...');
         }
 
         // 5. Phone rows: placeholders and delete button titles and country list
@@ -1795,7 +1796,7 @@
                 id="extraPaymentDate_${cNum}"
                 name="extra_payment_dates[]"
                 class="glass-input w-full px-3.5 py-2 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500"
-                value="2026-10-19"
+                value="2026-10-26"
               />
               <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-payment-date-error" data-i18n="errPaymentDate">${currentLang === 'en' ? 'Payment date is required' : 'تاريخ الدفع مطلوب'}</p>
             </div>
@@ -1810,7 +1811,7 @@
         </div>
 
         <div id="extraUnitDetailsContainer_${cNum}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
-          <!-- كود الوحدة الإضافية (إدخال مباشر بدون دروب ليست) -->
+          <!-- كود الوحدة الإضافية (تلقائي بالزر بدون تعديل يدوي) -->
           <div class="sm:col-span-12 form-group">
             <label class="block text-xs font-black text-slate-950 mb-1.5">
               <span class="text-slate-950 font-black" data-i18n="labelUnitCode">${labelUnitCode}</span>
@@ -1820,20 +1821,29 @@
               <input
                 type="text"
                 name="extra_unit_codes[]"
-                list="all_units_list"
                 dir="ltr"
-                autocomplete="off"
-                placeholder="${currentLang === 'en' ? 'Enter Unit Code (e.g. J49-26)...' : 'أدخل كود الوحدة كاملاً (مثال: J49-26)...'}"
-                class="extra-unit-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-sky-300 focus:border-sky-500 bg-white shadow-sm transition-all"
-                oninput="this.value = this.value.toUpperCase(); validateCompleteUnitCode(this); if (typeof refreshAllUnitsPills === 'function') refreshAllUnitsPills();"
+                readonly
+                placeholder="${currentLang === 'en' ? 'Click below to choose from your units...' : 'اختر كود الوحدة من وحداتك بالأسفل...'}"
+                class="extra-unit-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-sm transition-all"
               />
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">
+              <div>
+                <label class="block text-[11px] font-black text-slate-700 mb-1">مساحة الوحدة:</label>
+                <input type="text" name="extra_unit_areas[]" readonly placeholder="المساحة..." class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-black text-slate-700 mb-1">رقم الدور:</label>
+                <input type="text" name="extra_unit_floors[]" readonly placeholder="رقم الدور..." class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed" />
+              </div>
+            </div>
+
             <!-- أزرار الوحدات المتبقية لنفس الرقم القومي -->
-            <div class="extra-unit-pills-box hidden mt-2 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 transition-all">
+            <div class="extra-unit-pills-box mt-2 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 transition-all">
               <div class="flex items-center justify-between gap-1 mb-1.5">
-                <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">${currentLang === 'en' ? 'Remaining units for this client (Click to select):' : 'الوحدات المتبقية لهذا العميل (انقر للاختيار):'}</span>
+                <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">${currentLang === 'en' ? 'Select unit from your registered units:' : 'اختر كود الوحدة من وحداتك المسجلة:'}</span>
               </div>
               <div class="extra-unit-pills flex flex-wrap gap-1.5"></div>
               <p class="extra-unit-all-selected text-[11px] text-emerald-700 font-black hidden">${currentLang === 'en' ? '✓ All client units have been selected' : '✓ تم اختيار كل وحدات العميل'}</p>
@@ -1921,6 +1931,39 @@
       }
     }
 
+    // ── دالة حساب عدد الشيكات N وتحديث التنبيه اللحظي ──
+    function calculateChequesCount(period, rate) {
+      if (!period) return 0;
+      const yearsMatch = period.match(/\d+/);
+      if (!yearsMatch) return 0;
+      const years = parseInt(yearsMatch[0], 10);
+      return years * 4; // ربع سنوي = 4 شيكات لكل سنة
+    }
+
+    function updateChequesNotice() {
+      const periodVal = document.getElementById('period')?.value || '';
+      const rateVal = document.getElementById('rateSelect')?.value || document.getElementById('final_rate')?.value || '';
+      const noticeBox = document.getElementById('chequesNoticeBox');
+      const countSpan = document.getElementById('chequesCountSpan');
+      const hiddenCount = document.getElementById('cheques_count');
+
+      if (!periodVal) {
+        if (noticeBox) noticeBox.classList.add('hidden');
+        if (hiddenCount) hiddenCount.value = '';
+        return;
+      }
+
+      const count = calculateChequesCount(periodVal, rateVal);
+      if (count > 0) {
+        if (countSpan) countSpan.textContent = count;
+        if (hiddenCount) hiddenCount.value = count;
+        if (noticeBox) noticeBox.classList.remove('hidden');
+      } else {
+        if (noticeBox) noticeBox.classList.add('hidden');
+        if (hiddenCount) hiddenCount.value = '';
+      }
+    }
+
     // ── 1. بيانات خطة السداد والنسب لكل فترة في كائن واحد يسهل تعديله ──
     const paymentRatesConfig = {
       "7 Years": ["5% - 5%"],
@@ -1952,6 +1995,7 @@
       // لو الفترة فاضية، كل حاجة تفضل فاضية وتختفي خانة النسبة
       if (!selectedPeriod) {
         if (rateSelectContainer) rateSelectContainer.classList.add('hidden');
+        updateChequesNotice();
         return;
       }
 
@@ -1980,6 +2024,8 @@
         }
         if (rateSelectContainer) rateSelectContainer.classList.remove('hidden');
       }
+
+      updateChequesNotice();
     }
 
     function handleRateChange(selectEl) {
@@ -1996,6 +2042,8 @@
         if (errRateSelect) errRateSelect.classList.remove('hidden');
         selectEl.classList.add('invalid');
       }
+
+      updateChequesNotice();
     }
 
     function handleExtraPeriodChange(counter, selectEl) {
@@ -4765,6 +4813,7 @@
           <div id="phonesList_${clientId}" class="space-y-2.5"></div>
           <button 
             type="button" 
+            id="btnAddPhone_${clientId}"
             onclick="addPhoneRow(${clientId})" 
             class="text-xs font-black text-slate-950 hover:bg-sky-100 bg-white border-2 border-sky-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
           >
@@ -4784,6 +4833,7 @@
           <div id="emailsList_${clientId}" class="space-y-2.5"></div>
           <button 
             type="button" 
+            id="btnAddEmail_${clientId}"
             onclick="addEmailRow(${clientId})" 
             class="text-xs font-black text-slate-950 hover:bg-sky-100 bg-white border-2 border-sky-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
           >
@@ -4957,34 +5007,37 @@
               </label>
             </div>
 
-            <!-- حاوية حقول المراسلات المخصصة (ظاهرة أوتوماتيكياً) -->
+            <!-- حاوية حقول المراسلات المخصصة (الدولة + المحافظة/المدينة + تفاصيل العنوان) -->
             <div class="client-custom-corr-container space-y-2.5 p-3 rounded-2xl bg-sky-50/60 border-2 border-sky-200">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
-                    <span class="client-corr-lbl-gov-text" data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
+                    <span>الدولة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
                   <select
-                    class="client-corr-gov-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
-                    onchange="handleClientCorrGovChange(${clientId}, this.value)"
+                    class="client-corr-country-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
+                    onchange="handleClientCorrCountryChange(${clientId}, this.value)"
                   >
-                    <option value="" data-i18n="optSelectGov">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</option>
+                    <option value="">اختر الدولة...</option>
                   </select>
                 </div>
 
                 <div>
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
-                    <span class="client-corr-lbl-city-text" data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
+                    <span class="client-corr-lbl-city-text">المحافظة / المدينة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
                   <select
                     class="client-corr-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled
                     onchange="handleClientCityChange(${clientId}, this.value, 'corr')"
                   >
-                    <option value="" data-i18n="optSelectGovFirst">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</option>
+                    <option value="">اختر الدولة أولاً...</option>
                   </select>
                 </div>
               </div>
+
+              <!-- حقل مخفي للتوافقية -->
+              <input type="hidden" class="client-corr-gov-select" value="مصر" />
 
               <div>
                 <label class="block text-[11px] font-black text-slate-700 mb-1">
@@ -5132,6 +5185,9 @@
 
       listContainer.appendChild(row);
 
+      // التحقق من الحد الأقصى للهواتف (حد أقصى 2) وإخفاء الزر
+      checkPhoneRowsLimit(clientId);
+
       // Initialize country picker
       const pickerEl = row.querySelector('.country-picker');
       if (pickerEl) buildCountryList(pickerEl);
@@ -5150,8 +5206,50 @@
     function removePhoneRow(pId) {
       const row = document.getElementById(`phoneRow_${pId}`);
       if (row) {
+        const container = row.closest('[id^="phonesList_"]');
         row.remove();
+        if (container) {
+          const clientId = container.id.replace('phonesList_', '');
+          checkPhoneRowsLimit(clientId);
+        }
       }
+    }
+
+    function checkPhoneRowsLimit(clientId) {
+      const container = document.getElementById(`phonesList_${clientId}`);
+      const addBtn = document.getElementById(`btnAddPhone_${clientId}`);
+      if (!container) return;
+      const count = container.querySelectorAll('.phone-row').length;
+      if (addBtn) {
+        addBtn.style.display = (count >= 2) ? 'none' : 'flex';
+      }
+    }
+
+    function validatePhonesNoDuplicate(clientId) {
+      const container = document.getElementById(`phonesList_${clientId}`);
+      if (!container) return true;
+      const inputs = container.querySelectorAll('.phone-input');
+      const values = [];
+      let hasDuplicate = false;
+
+      inputs.forEach(input => {
+        const val = input.value.trim();
+        const err = input.parentElement.querySelector('.error-msg');
+        if (val) {
+          if (values.includes(val)) {
+            hasDuplicate = true;
+            input.classList.add('border-red-500');
+            if (err) {
+              err.textContent = (currentLang === 'en') ? 'Duplicate phone number, please enter a different number' : 'رقم الهاتف مكرر، يرجى إدخال رقم مختلف';
+              err.classList.remove('hidden');
+            }
+          } else {
+            values.push(val);
+            input.classList.remove('border-red-500');
+          }
+        }
+      });
+      return !hasDuplicate;
     }
 
     // ── Email Rows Repeater per Client ──
@@ -5195,13 +5293,56 @@
       `;
 
       listContainer.appendChild(row);
+      checkEmailRowsLimit(clientId);
     }
 
     function removeEmailRow(eId) {
       const row = document.getElementById(`emailRow_${eId}`);
       if (row) {
+        const container = row.closest('[id^="emailsList_"]');
         row.remove();
+        if (container) {
+          const clientId = container.id.replace('emailsList_', '');
+          checkEmailRowsLimit(clientId);
+        }
       }
+    }
+
+    function checkEmailRowsLimit(clientId) {
+      const container = document.getElementById(`emailsList_${clientId}`);
+      const addBtn = document.getElementById(`btnAddEmail_${clientId}`);
+      if (!container) return;
+      const count = container.querySelectorAll('.email-row').length;
+      if (addBtn) {
+        addBtn.style.display = (count >= 2) ? 'none' : 'flex';
+      }
+    }
+
+    function validateEmailsNoDuplicate(clientId) {
+      const container = document.getElementById(`emailsList_${clientId}`);
+      if (!container) return true;
+      const inputs = container.querySelectorAll('.email-input');
+      const values = [];
+      let hasDuplicate = false;
+
+      inputs.forEach(input => {
+        const val = input.value.trim().toLowerCase();
+        const err = input.parentElement.querySelector('.error-msg');
+        if (val) {
+          if (values.includes(val)) {
+            hasDuplicate = true;
+            input.classList.add('border-red-500');
+            if (err) {
+              err.textContent = (currentLang === 'en') ? 'Duplicate email, please enter a different email' : 'البريد الإلكتروني مكرر، يرجى إدخال بريد مختلف';
+              err.classList.remove('hidden');
+            }
+          } else {
+            values.push(val);
+            input.classList.remove('border-red-500');
+          }
+        }
+      });
+      return !hasDuplicate;
     }
 
     // ── Client ID and Residence Handlers ──
@@ -5415,6 +5556,46 @@
       return hasDuplicates;
     }
 
+    function updateAddExtraUnitButtonVisibility() {
+      const addBtn = document.getElementById('btnAddExtraUnit');
+      if (!addBtn) return;
+      const currentCount = 1 + document.querySelectorAll('.unit-block').length;
+      const maxAllowed = window.maxAllowedUnits || 1;
+      if (currentCount >= maxAllowed || maxAllowed <= 1) {
+        addBtn.style.display = 'none';
+      } else {
+        addBtn.style.display = 'flex';
+      }
+    }
+
+    function renderUnitPartners(partners) {
+      let box = document.getElementById('unitPartnersBox');
+      if (!box) return;
+      if (!partners || partners.length === 0) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <div class="p-3 rounded-xl bg-sky-50 border-2 border-sky-300">
+          <div class="flex items-center gap-2 mb-1.5 text-xs font-black text-slate-900">
+            <span>👥</span>
+            <span>الشركاء المسجلون على هذه الوحدة (مسجل رسمياً بالنظام):</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            ${partners.map(p => `
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-sky-300 text-xs font-black text-slate-950 shadow-xs">
+                <span>👤</span>
+                <span>${p}</span>
+                <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">معتمد</span>
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     function refreshAllUnitsPills() {
       const items = getAllUnitItems();
 
@@ -5552,18 +5733,28 @@
         window.currentClientUnits = currentClientUnits;
         currentLookupNationalId = normId;
 
-        // Auto-fill primary unit code into input if empty or previously auto-filled
+        // Auto-fill primary unit code, area, and floor
         if (unitInput) {
-          if (!unitInput.value.trim() || unitInput.dataset.autoFilled === 'true') {
-            unitInput.value = unitVal;
-            unitInput.dataset.autoFilled = 'true';
-            unitInput.classList.add('valid');
-            unitInput.classList.remove('invalid');
-            unitInput.dispatchEvent(new Event('input', { bubbles: true }));
-            unitInput.dispatchEvent(new Event('change', { bubbles: true }));
-            if (errUnit) errUnit.classList.add('hidden');
-          }
+          unitInput.value = unitVal;
+          unitInput.dataset.autoFilled = 'true';
+          unitInput.classList.add('valid');
+          unitInput.classList.remove('invalid');
+          if (errUnit) errUnit.classList.add('hidden');
         }
+
+        const areaInput = document.getElementById('unit_area');
+        const floorInput = document.getElementById('unit_floor');
+        if (areaInput && data.unit_area) areaInput.value = data.unit_area;
+        if (floorInput && data.unit_floor) floorInput.value = data.unit_floor;
+
+        // عرض الشركاء المسجلين على الوحدة كـ Read-only
+        if (typeof renderUnitPartners === 'function') {
+          renderUnitPartners(data.partners || []);
+        }
+
+        // تحديث الحد الأقصى للوحدات المسموح بإضافتها وإخفاء زر الإضافة إذا وصل للحد
+        window.maxAllowedUnits = data.total_units || 1;
+        updateAddExtraUnitButtonVisibility();
 
         // Auto-fill customer name if empty or very short
         const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById(`clientCard_1`);
@@ -5968,70 +6159,87 @@
       updateClientAddressLabels(clientId);
       renderRegionPickerItems(clientId);
 
-      // Correspondence address ALWAYS has Egyptian Governorates!
-      const corrGovSelect = card.querySelector('.client-corr-gov-select');
-      populateGovernorateOptions(corrGovSelect);
+      // Populate Correspondence Country Dropdown with all world countries
+      const corrCountrySelect = card.querySelector('.client-corr-country-select');
+      populateWorldCountryOptions(corrCountrySelect);
     }
 
-    function populateGovernorateOptions(selectEl) {
+    function populateWorldCountryOptions(selectEl) {
       if (!selectEl) return;
-      const currentVal = selectEl.value;
-      const isEn = (currentLang === 'en');
-      const t = translations[currentLang] || {};
-
-      selectEl.innerHTML = `<option value="">${t.optSelectGov || (isEn ? 'Select Governorate...' : 'اختر المحافظة...')}</option>`;
-      Object.keys(egyptGovernoratesAndCities).forEach(gov => {
-        if (gov.includes('خارج')) return;
+      selectEl.innerHTML = '<option value="">اختر الدولة...</option>';
+      
+      worldCountriesData.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = gov;
-        const display = (isEn && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov;
-        opt.textContent = display;
+        opt.value = c.nameAr;
+        opt.textContent = `${c.flag} ${c.nameAr}`;
         opt.className = "bg-white text-slate-950 font-bold";
         selectEl.appendChild(opt);
       });
-      if (currentVal && egyptGovernoratesAndCities[currentVal] && !currentVal.includes('خارج')) {
-        selectEl.value = currentVal;
+
+      // Default to Egypt
+      selectEl.value = 'مصر';
+      const card = selectEl.closest('.client-card');
+      if (card) {
+        const cId = card.dataset.clientId;
+        handleClientCorrCountryChange(cId, 'مصر');
       }
     }
 
-    function handleClientCorrGovChange(clientId, govVal) {
+    function handleClientCorrCountryChange(clientId, countryVal) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
 
       const citySelect = card.querySelector('.client-corr-city-select');
+      const govInput = card.querySelector('.client-corr-gov-select');
+      if (govInput) govInput.value = countryVal;
+
       if (!citySelect) return;
       citySelect.innerHTML = '';
 
-      if (!govVal) {
+      if (!countryVal) {
         citySelect.disabled = true;
         const opt = document.createElement('option');
         opt.value = '';
-        opt.textContent = (currentLang === 'en') ? 'Select Governorate first...' : 'اختر المحافظة أولاً...';
-        opt.className = "bg-white text-slate-950 font-bold";
+        opt.textContent = 'اختر الدولة أولاً...';
         citySelect.appendChild(opt);
-      } else {
-        citySelect.disabled = false;
-        const defaultOpt = document.createElement('option');
-        defaultOpt.value = '';
-        defaultOpt.textContent = (currentLang === 'en') ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...';
-        defaultOpt.className = "bg-white text-slate-950 font-bold";
-        citySelect.appendChild(defaultOpt);
+        return;
+      }
 
-        const cities = egyptGovernoratesAndCities[govVal] || [];
-        cities.forEach(city => {
+      citySelect.disabled = false;
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.textContent = 'اختر المحافظة / المدينة...';
+      citySelect.appendChild(defaultOpt);
+
+      if (countryVal === 'مصر') {
+        // إذا كانت مصر، نعرض كل محافظات مصر
+        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+          if (gov.includes('خارج')) return;
           const opt = document.createElement('option');
-          opt.value = city;
-          opt.textContent = city;
+          opt.value = gov;
+          opt.textContent = gov;
           opt.className = "bg-white text-slate-950 font-bold";
           citySelect.appendChild(opt);
         });
-
-        const otherOpt = document.createElement('option');
-        otherOpt.value = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
-        otherOpt.textContent = (currentLang === 'en') ? 'Other district / area' : 'أخرى / منطقة أخرى';
-        otherOpt.className = "bg-white text-slate-950 font-bold";
-        citySelect.appendChild(otherOpt);
+      } else {
+        // إذا كانت دولة أخرى، نبحث عن مدنها في worldCountriesData
+        const countryObj = worldCountriesData.find(c => c.nameAr === countryVal);
+        if (countryObj && countryObj.cities && countryObj.cities.length > 0) {
+          countryObj.cities.forEach(city => {
+            const opt = document.createElement('option');
+            opt.value = city;
+            opt.textContent = city;
+            opt.className = "bg-white text-slate-950 font-bold";
+            citySelect.appendChild(opt);
+          });
+        }
       }
+
+      const otherOpt = document.createElement('option');
+      otherOpt.value = 'أخرى / مدينة أخرى';
+      otherOpt.textContent = 'أخرى / مدينة أخرى';
+      otherOpt.className = "bg-white text-slate-950 font-bold";
+      citySelect.appendChild(otherOpt);
 
       updateCombinedAddress(clientId, 'corr');
     }
@@ -6132,15 +6340,15 @@
       }
 
       if (type === 'corr') {
-        const gov = card.querySelector('.client-corr-gov-select')?.value.trim() || '';
+        const country = card.querySelector('.client-corr-country-select')?.value.trim() || '';
         const city = card.querySelector('.client-corr-city-select')?.value.trim() || '';
         const street = card.querySelector('.client-corr-street-input')?.value.trim() || '';
 
         let combined = '';
-        if (gov && city && street) {
-          combined = `${gov} - ${city} - ${street}`;
-        } else if (gov || city || street) {
-          combined = [gov, city, street].filter(Boolean).join(' - ');
+        if (country && city && street) {
+          combined = `${country} - ${city} - ${street}`;
+        } else if (country || city || street) {
+          combined = [country, city, street].filter(Boolean).join(' - ');
         }
 
         const corrAddrHidden = card.querySelector('.client-corr-address');
@@ -6369,6 +6577,7 @@
 
         const isPrimary = (i === 0);
         const nameInput = card.querySelector('.client-name-input');
+        const nameVal = nameInput ? nameInput.value.trim() : '';
         const isNameValid = nameInput ? handleClientNameInput(nameInput) : false;
         if (!isNameValid) {
           nameInput?.classList.add('invalid');
@@ -6387,6 +6596,16 @@
           const isPhoneValid = handlePhoneInput(pInput);
           if (!isPhoneValid) {
             hasError = true;
+            if (pInput) {
+              pInput.classList.add('invalid');
+              const err = pRow.querySelector('.error-msg') || pRow.parentElement?.querySelector('.error-msg');
+              if (err) {
+                if (!err.innerText || err.classList.contains('hidden')) {
+                  err.innerText = (currentLang === 'en') ? 'Valid phone number is required' : 'رقم الهاتف مطلوب وبصيغة صحيحة';
+                }
+                err.classList.remove('hidden');
+              }
+            }
           } else {
             cardHasValidPhone = true;
             const formatted = sanitizeAndFormatPhoneNumber(pCode, pInput.value.trim());
@@ -6400,6 +6619,15 @@
 
         if (phoneRows.length === 0 || !cardHasValidPhone) {
           hasError = true;
+          const firstP = card.querySelector('.phone-input');
+          if (firstP) firstP.classList.add('invalid');
+          const err = card.querySelector('.phone-row .error-msg') || card.querySelector('.phone-row')?.parentElement?.querySelector('.error-msg');
+          if (err) {
+            if (!err.innerText || err.classList.contains('hidden')) {
+              err.innerText = (currentLang === 'en') ? 'Valid phone number is required' : 'رقم الهاتف مطلوب وبصيغة صحيحة';
+            }
+            err.classList.remove('hidden');
+          }
         }
 
         // التحقق من البريد الإلكتروني
@@ -6431,6 +6659,33 @@
         const isIdValid = validateClientIdNumber(idInput, cId);
         if (!isIdValid) {
           hasError = true;
+          if (idInput) {
+            idInput.classList.add('invalid');
+            const errEl = card.querySelector('.client-id-error');
+            if (errEl) {
+              if (!errEl.innerText || errEl.classList.contains('hidden')) {
+                errEl.innerText = (currentLang === 'en') ? 'National ID or Passport number is required' : 'رقم إثبات الهوية مطلوب';
+              }
+              errEl.classList.remove('hidden');
+            }
+          }
+        }
+
+        if (idType === 'both') {
+          const bothPassInput = card.querySelector('.client-passport-both-input');
+          if (!bothPassInput || !validateClientBothPassport(bothPassInput, cId)) {
+            hasError = true;
+            if (bothPassInput) {
+              bothPassInput.classList.add('invalid');
+              const errBoth = card.querySelector('.client-passport-both-error');
+              if (errBoth) {
+                if (!errBoth.innerText || errBoth.classList.contains('hidden')) {
+                  errBoth.innerText = (currentLang === 'en') ? 'Passport number is required' : 'رقم جواز السفر مطلوب';
+                }
+                errBoth.classList.remove('hidden');
+              }
+            }
+          }
         }
 
         // التحقق من العناوين (المحافظة والمدينة وباقي تفاصيل العنوان)
@@ -6479,20 +6734,20 @@
           idAddrErr?.classList.add('hidden');
         }
 
-        // التحقق من عنوان المراسلات (ظاهر دائماً)
+        // التحقق من عنوان المراسلات (الدولة + المحافظة/المدينة + تفاصيل العنوان)
         updateCombinedAddress(cId, 'corr');
         const corrAddrHidden = card.querySelector('.client-corr-address');
         const corrAddrErr = card.querySelector('.client-corr-address-error');
-        const corrGovSelect = card.querySelector('.client-corr-gov-select');
+        const corrCountrySelect = card.querySelector('.client-corr-country-select');
         const corrCitySelect = card.querySelector('.client-corr-city-select');
         const corrStreetInput = card.querySelector('.client-corr-street-input');
 
         let cardCorrValid = true;
-        if (!corrGovSelect || !corrGovSelect.value) {
-          corrGovSelect?.classList.add('invalid');
+        if (!corrCountrySelect || !corrCountrySelect.value) {
+          corrCountrySelect?.classList.add('invalid');
           cardCorrValid = false;
         } else {
-          corrGovSelect?.classList.remove('invalid');
+          corrCountrySelect?.classList.remove('invalid');
         }
 
         if (!corrCitySelect || !corrCitySelect.value) {
@@ -6510,13 +6765,8 @@
         }
 
         if (!cardCorrValid) {
-          const isOutside = (clientResidenceMap[cId] || '').includes('خارج');
-          const isEn = (currentLang === 'en');
-          const t = translations[currentLang] || {};
           if (corrAddrErr) {
-            corrAddrErr.innerText = isOutside
-              ? (t.errCorrespondenceAddressAbroad || (isEn ? 'Approved correspondence address abroad is required' : 'يرجى اختيار الدولة والمدينة وكتابة باقي تفاصيل عنوان المراسلات'))
-              : (t.errCorrespondenceAddress || (isEn ? 'Approved correspondence address is required' : 'العنوان المعتمد للمراسلات مطلوب'));
+            corrAddrErr.innerText = 'يرجى اختيار الدولة والمحافظة/المدينة وكتابة تفاصيل عنوان المراسلات';
             corrAddrErr.classList.remove('hidden');
           }
           hasError = true;
@@ -6530,8 +6780,25 @@
         // التحقق من المرفقات لهذا العميل
         const files = clientFilesState[cId] || [];
         if (files.length === 0) {
-          card.querySelector('.client-files-error')?.classList.remove('hidden');
+          const fileErr = card.querySelector('.client-files-error');
+          if (fileErr) fileErr.classList.remove('hidden');
+          const dropZone = card.querySelector('.client-drop-zone');
+          if (dropZone) dropZone.classList.add('invalid');
           hasError = true;
+        } else {
+          const fileErr = card.querySelector('.client-files-error');
+          if (fileErr) fileErr.classList.add('hidden');
+          const dropZone = card.querySelector('.client-drop-zone');
+          if (dropZone) dropZone.classList.remove('invalid');
+        }
+
+        let finalIdNumber = idInput ? idInput.value.trim() : '';
+        if (idType === 'both') {
+          const bothPassInput = card.querySelector('.client-passport-both-input');
+          const passVal = bothPassInput ? bothPassInput.value.trim() : '';
+          if (passVal) {
+            finalIdNumber = `${finalIdNumber} / جواز: ${passVal}`;
+          }
         }
 
         // بناء كائن العميل داخل المصفوفة
@@ -6543,7 +6810,7 @@
           emails: clientEmails,
           idType: idType,
           nationalId: idInput ? idInput.value.trim() : '',
-          idNumber: idInput ? idInput.value.trim() : '',
+          idNumber: finalIdNumber,
           residenceCountry: clientResidenceMap[cId] || 'داخل جمهورية مصر العربية',
           idAddress: idAddrInput ? idAddrInput.value.trim() : '',
           correspondenceAddress: corrAddrInput ? corrAddrInput.value.trim() : ''
@@ -6677,6 +6944,17 @@
         }
       }
 
+      // التحقق من المكان الأقرب لتوقيع العقد
+      const preferredLocInput = document.getElementById('preferredSigningLocation');
+      if (preferredLocInput && !preferredLocInput.value.trim()) {
+        document.getElementById('errSigningLocation')?.classList.remove('hidden');
+        preferredLocInput.classList.add('invalid');
+        hasError = true;
+      } else if (preferredLocInput) {
+        document.getElementById('errSigningLocation')?.classList.add('hidden');
+        preferredLocInput.classList.remove('invalid');
+      }
+
       // فرع توثيق العقد (يطلب فقط لو كان هناك عميل داخل مصر)
       const anyInside = Object.values(clientResidenceMap).some(v => v.includes('داخل'));
       if (anyInside) {
@@ -6689,7 +6967,13 @@
 
       if (hasError) {
         const firstErr = document.querySelector('.error-msg:not(.hidden), .invalid');
-        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (firstErr) {
+          firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof firstErr.focus === 'function') firstErr.focus();
+        }
+        alert(currentLang === 'en' 
+          ? 'Please complete all required fields indicated in red before submitting.' 
+          : 'يرجى استيفاء وتصحيح جميع البيانات المطلوبة والمحددة باللون الأحمر (بما فيها صور الهوية والمقدم).');
         return;
       }
 
@@ -6700,12 +6984,18 @@
       formData.append('lang', currentLang);
       formData.append('clients_json', JSON.stringify(clientsData));
 
-      // تمرير محافظة العميل الأساسي لحفظها في عمود governorate بجدول clients
+      // تمرير محافظة ودولة المراسلات للعميل الأساسي
       const primaryCard = document.getElementById(`clientCard_${activeClientIds[0]}`);
       const primaryGov = primaryCard?.querySelector('.client-gov-select')?.value.trim() || '';
+      const primaryCorrGov = primaryCard?.querySelector('.client-corr-gov-select')?.value.trim() || '';
+      const primaryCorrCountry = primaryCard?.querySelector('.client-gov-select')?.value.trim() || 'مصر';
+      const primaryCorrCity = primaryCard?.querySelector('.client-corr-city-select')?.value.trim() || '';
+
       if (primaryGov) {
         formData.append('governorate', primaryGov);
       }
+      formData.append('correspondence_country', primaryCorrCountry);
+      formData.append('correspondence_city', primaryCorrCity || primaryCorrGov);
 
       // تمرير حالة سداد المقدم لكل وحدة إضافية
       extraBlocks.forEach(blk => {
@@ -6738,13 +7028,22 @@
       });
 
       try {
-        const submitUrl = `${baseUrl ? baseUrl + '/' : ''}submit.php`;
-      const res = await fetch(submitUrl, {
+        const res = await fetch('submit.php', {
           method: 'POST',
           body: formData
         });
 
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (jsonErr) {
+          console.error('Non-JSON response from submit.php:', text);
+          document.getElementById('loadingOverlay').classList.add('hidden');
+          alert((currentLang === 'en' ? 'Server error: ' : 'حدث خطأ في استجابة السيرفر: ') + text.substring(0, 300));
+          return;
+        }
+
         document.getElementById('loadingOverlay').classList.add('hidden');
 
         if (data.status === 'success') {
@@ -6759,21 +7058,24 @@
             });
           }
         } else {
+          const errMsg = data.message || (Array.isArray(data.errors) ? data.errors.join(' | ') : 'Error occurred while saving contract.');
           if (data.field === 'phone') {
-            alert((currentLang === 'en' ? 'Phone error: ' : 'خطأ في رقم الهاتف: ') + data.message);
+            alert((currentLang === 'en' ? 'Phone error: ' : 'خطأ في رقم الهاتف: ') + errMsg);
           } else if (data.field === 'unitCode' || data.field === 'eoiNumber') {
-            document.getElementById('errUnitCode').innerText = data.message;
+            document.getElementById('errUnitCode').innerText = errMsg;
             document.getElementById('errUnitCode').classList.remove('hidden');
             const trig = document.getElementById('unitPickerTrigger');
             if (trig) {
               trig.classList.add('invalid');
               trig.focus();
             }
+            alert(errMsg);
           } else {
-            alert('Error: ' + (data.message || 'Error occurred while saving contract.'));
+            alert((currentLang === 'en' ? 'Submission error: ' : 'تنبيه: ') + errMsg);
           }
         }
       } catch (err) {
+        console.error('Network or JS error during submission:', err);
         document.getElementById('loadingOverlay').classList.add('hidden');
         alert('Server connection error. Please ensure Apache & MySQL are running.');
       }

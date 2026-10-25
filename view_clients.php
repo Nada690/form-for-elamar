@@ -733,18 +733,211 @@ try {
       border-color: #0284c7 !important;
       box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35) !important;
     }
+
+    /* =====================================================================
+       PRINT STYLES: FULL TABLE EXCLUSIVE SHEET (LANDSCAPE MODE)
+       ===================================================================== */
+    @page {
+      size: landscape;
+      margin: 6mm 6mm 8mm 6mm;
+    }
+
+    @media print {
+      /* Force pure clean white background and black text */
+      *, *::before, *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      html, body {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        font-size: 7.5pt !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Hide all non-printable UI elements */
+      .ambient-light,
+      header,
+      #kpiStatsGrid,
+      #searchFilterCard,
+      #editModal,
+      #deleteClientModal,
+      #attachmentLightbox,
+      .no-print,
+      .col-actions,
+      th.col-actions,
+      td.col-actions,
+      #tableScreenHeader {
+        display: none !important;
+      }
+
+      /* Reset card / wrapper layouts so table is 100% full width and completely visible */
+      .max-w-\[1700px\],
+      .glass-card,
+      .overflow-hidden,
+      .overflow-x-auto,
+      div.space-y-6,
+      div.space-y-6 > * {
+        all: unset !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+      }
+
+      /* Dedicated Print Header Sheet */
+      .print-header-sheet {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 2px solid #0f172a !important;
+      }
+
+      /* Table layout */
+      #clientsTable {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+        font-size: 7pt !important;
+        line-height: 1.2 !important;
+        color: #000000 !important;
+        margin: 0 !important;
+      }
+
+      #clientsTable thead {
+        display: table-header-group !important;
+      }
+
+      #clientsTable tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      #clientsTable th,
+      #clientsTable td {
+        border: 1px solid #475569 !important;
+        padding: 3px 2px !important;
+        vertical-align: middle !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        background-color: #ffffff !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+      }
+
+      #clientsTable thead th {
+        background-color: #e2e8f0 !important;
+        color: #000000 !important;
+        font-weight: 900 !important;
+        font-size: 7.5pt !important;
+        text-align: center !important;
+        padding: 4px 2px !important;
+        border: 1.5px solid #0f172a !important;
+      }
+
+      /* Precise column widths in landscape printing */
+      #clientsTable th.col-seq      { width: 2.5% !important; text-align: center !important; }
+      #clientsTable th.col-id       { width: 3.5% !important; text-align: center !important; }
+      #clientsTable th.col-sales    { width: 6.5% !important; text-align: center !important; }
+      #clientsTable th.col-unit     { width: 5.5% !important; text-align: center !important; }
+      #clientsTable th.col-residence{ width: 5.0% !important; text-align: center !important; }
+      #clientsTable th.col-branch   { width: 5.0% !important; text-align: center !important; }
+      #clientsTable th.col-name     { width: 11.0% !important; }
+      #clientsTable th.col-phone    { width: 8.5% !important; text-align: center !important; }
+      #clientsTable th.col-email    { width: 9.0% !important; text-align: center !important; word-break: break-all !important; }
+      #clientsTable th.col-doc      { width: 8.0% !important; text-align: center !important; }
+      #clientsTable th.col-plan     { width: 5.5% !important; text-align: center !important; }
+      #clientsTable th.col-october  { width: 6.5% !important; text-align: center !important; }
+      #clientsTable th.col-address  { width: 11.0% !important; }
+      #clientsTable th.col-notes    { width: 8.0% !important; }
+      #clientsTable th.col-files    { width: 4.5% !important; text-align: center !important; }
+      #clientsTable th.col-date     { width: 6.0% !important; text-align: center !important; }
+
+      /* Remove badge backgrounds, borders, and shadows in print for crisp clean output */
+      #clientsTable span,
+      #clientsTable div,
+      #clientsTable a,
+      #clientsTable button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: inherit !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        display: inline !important;
+        text-decoration: none !important;
+      }
+
+      /* Specific text alignments */
+      #clientsTable td.col-seq,
+      #clientsTable td.col-id,
+      #clientsTable td.col-sales,
+      #clientsTable td.col-unit,
+      #clientsTable td.col-residence,
+      #clientsTable td.col-branch,
+      #clientsTable td.col-phone,
+      #clientsTable td.col-email,
+      #clientsTable td.col-doc,
+      #clientsTable td.col-plan,
+      #clientsTable td.col-october,
+      #clientsTable td.col-files,
+      #clientsTable td.col-date {
+        text-align: center !important;
+      }
+
+      /* Block elements that need to break to next line inside cells */
+      #clientsTable .print-block {
+        display: block !important;
+      }
+
+      /* Remove ellipsis on truncated elements so full text is printed */
+      #clientsTable .truncate {
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+        max-width: none !important;
+      }
+
+      /* Hide interactive buttons in print */
+      .wa-icon,
+      .copy-btn,
+      .file-preview-btn {
+        display: none !important;
+      }
+
+      .file-print-text {
+        display: inline !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen p-3 sm:p-6 lg:p-8 text-slate-950 selection:bg-sky-200 selection:text-slate-950">
 
   <!-- Ambient light -->
-  <div class="fixed top-0 right-10 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-0 left-10 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="ambient-light fixed top-0 right-10 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none no-print"></div>
+  <div class="ambient-light fixed bottom-0 left-10 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none no-print"></div>
 
   <div class="max-w-[1700px] mx-auto space-y-6 relative z-10">
 
     <!-- ═══════════════ TOP HEADER ═══════════════ -->
-    <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border-2 border-sky-300">
+    <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border-2 border-sky-300 no-print">
       
       <div class="flex items-center gap-4">
         <div class="p-2 rounded-2xl bg-gradient-to-tr from-sky-400/20 via-blue-400/10 to-transparent border-2 border-sky-300 shadow-md">
@@ -837,7 +1030,7 @@ try {
 
     <!-- ═══════════════ NOTIFICATION ═══════════════ -->
     <?php if ($notification): ?>
-      <div class="p-4 rounded-2xl flex items-center justify-between gap-3 shadow-lg border <?= $notificationType === 'error' ? 'bg-red-500/15 border-red-500/40 text-red-200' : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' ?>">
+      <div class="p-4 rounded-2xl flex items-center justify-between gap-3 shadow-lg border no-print <?= $notificationType === 'error' ? 'bg-red-500/15 border-red-500/40 text-red-200' : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' ?>">
         <div class="flex items-center gap-2 text-sm font-bold">
           <span><?= $notificationType === 'error' ? '⚠️' : '✅' ?></span>
           <span><?= htmlspecialchars($notification, ENT_QUOTES, 'UTF-8') ?></span>
@@ -847,7 +1040,7 @@ try {
     <?php endif; ?>
 
     <!-- ═══════════════ KPI STATS ═══════════════ -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div id="kpiStatsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
       
       <!-- إجمالي العقود -->
       <div class="glass-card rounded-3xl p-5 border-2 border-sky-300 shadow-xl flex items-center gap-4">
@@ -914,7 +1107,7 @@ try {
     </div>
 
     <!-- ═══════════════ FILTERS & LIVE SEARCH TOOLBAR ═══════════════ -->
-    <div class="glass-card rounded-3xl p-4 sm:p-5 border-2 border-sky-300 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+    <div id="searchFilterCard" class="glass-card rounded-3xl p-4 sm:p-5 border-2 border-sky-300 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 no-print">
       
       <!-- Live Search Box -->
       <div class="w-full md:w-96 relative">
@@ -983,37 +1176,61 @@ try {
     <!-- ═══════════════ MAIN CLIENTS TABLE ═══════════════ -->
     <div class="glass-card rounded-3xl border-2 border-sky-300 shadow-2xl overflow-hidden">
       
-      <div class="p-5 border-b-2 border-sky-200 flex justify-between items-center bg-sky-100/90">
+      <!-- Screen Header Bar -->
+      <div id="tableScreenHeader" class="p-5 border-b-2 border-sky-200 flex justify-between items-center bg-sky-100/90 no-print">
         <div class="flex items-center gap-3">
           <h2 class="font-black text-base sm:text-lg text-slate-950" data-i18n="tblTitle">جدول عقود واستبيانات العملاء</h2>
           <span class="text-xs bg-white text-slate-950 border-2 border-sky-300 px-3 py-0.5 rounded-full font-mono font-black shadow-xs" id="visibleRowsCount">
             <?= count($clients) ?> عقد
           </span>
+          <button type="button" onclick="window.print()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <span>🖨️</span>
+            <span data-i18n="btnPrint">طباعة الشيت</span>
+          </button>
         </div>
         <span class="text-xs text-slate-700 font-mono font-bold">آخر تحديث: <?= date('Y-m-d H:i') ?></span>
+      </div>
+
+      <!-- Dedicated Print Sheet Header (Only appears on printed paper / PDF) -->
+      <div class="print-header-sheet hidden">
+        <div class="flex items-center justify-between pb-2 border-b-2 border-slate-900 mb-2">
+          <div class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain">
+            <div>
+              <h1 class="text-sm font-black text-slate-950 m-0 leading-tight">مجموعة العمار للتطوير العقاري</h1>
+              <p class="text-[10px] font-bold text-slate-700 m-0">كشف عقود واستبيانات مشروع الساحل الشمالي (شورز)</p>
+            </div>
+          </div>
+          <div class="text-left text-[9px] font-bold text-slate-900 leading-tight">
+            <div>تاريخ الطباعة: <span class="font-mono font-black"><?= date('Y-m-d H:i') ?></span></div>
+            <div>عدد العقود: <span class="font-mono font-black" id="printRowsCount"><?= count($clients) ?> عقد</span></div>
+            <div>المسؤول الحالي: <span class="font-black"><?= htmlspecialchars($currentUserName) ?> (<?= htmlspecialchars($currentUserRole) ?>)</span></div>
+          </div>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-xs sm:text-sm text-right" id="clientsTable">
           <thead class="bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-300 text-[11px] sm:text-xs uppercase tracking-wider">
             <tr>
-              <th class="p-4 w-12 text-center">#</th>
-              <th class="p-4 w-16">ID</th>
-              <th class="p-4" data-i18n="thSales">مسؤول المبيعات</th>
-              <th class="p-4" data-i18n="thUnit">كود الوحدة</th>
-              <th class="p-4" data-i18n="thResidence">مكان الإقامة</th>
-              <th class="p-4" data-i18n="thBranch">مكان التوثيق</th>
-              <th class="p-4" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
-              <th class="p-4" data-i18n="thPhone">أرقام التواصل</th>
-              <th class="p-4">البريد الإلكتروني</th>
-              <th class="p-4" data-i18n="thIdDoc">إثبات الشخصية</th>
-              <th class="p-4" data-i18n="thPlan">فترة السداد</th>
-              <th class="p-4 text-center" data-i18n="th5Percent">مقدم أكتوبر</th>
-              <th class="p-4" data-i18n="thAddress">العنوان (الهوية / المراسلات)</th>
-              <th class="p-4" data-i18n="thNotes">الملاحظات والاستثناءات</th>
-              <th class="p-4" data-i18n="thDocs">المستندات</th>
-              <th class="p-4" data-i18n="thDate">التاريخ</th>
-              <th class="p-4 text-center" data-i18n="thActions">إجراءات</th>
+              <th class="p-4 w-12 text-center col-seq">#</th>
+              <th class="p-4 w-16 text-center col-id">ID</th>
+              <th class="p-4 text-center col-sales" data-i18n="thSales">مسؤول المبيعات</th>
+              <th class="p-4 text-center col-unit" data-i18n="thUnit">كود الوحدة</th>
+              <th class="p-4 text-center col-residence" data-i18n="thResidence">مكان الإقامة</th>
+              <th class="p-4 text-center col-branch" data-i18n="thBranch">مكان التوثيق</th>
+              <th class="p-4 text-center col-signing-loc">المكان الأقرب للتوقيع</th>
+              <th class="p-4 col-name" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
+              <th class="p-4 text-center col-phone" data-i18n="thPhone">أرقام التواصل</th>
+              <th class="p-4 text-center col-email">البريد الإلكتروني</th>
+              <th class="p-4 text-center col-doc" data-i18n="thIdDoc">إثبات الشخصية</th>
+              <th class="p-4 text-center col-plan" data-i18n="thPlan">فترة السداد</th>
+              <th class="p-4 text-center col-october" data-i18n="th5Percent">مقدم أكتوبر</th>
+              <th class="p-4 col-address" data-i18n="thAddress">العنوان (الهوية / المراسلات)</th>
+              <th class="p-4 col-notes" data-i18n="thNotes">الملاحظات والاستثناءات</th>
+              <th class="p-4 text-center col-files" data-i18n="thDocs">المستندات</th>
+              <th class="p-4 text-center col-date" data-i18n="thDate">التاريخ</th>
+              <th class="p-4 text-center no-print col-actions" data-i18n="thActions">إجراءات</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="clientsTableBody">
@@ -1122,6 +1339,13 @@ try {
                         <?= htmlspecialchars($loc) ?>
                       </span>
                     <?php endif; ?>
+                  </td>
+
+                  <!-- المكان الأقرب لتوقيع العقد -->
+                  <td class="p-4 text-xs font-bold text-slate-950 text-center">
+                    <span class="px-2.5 py-1 rounded-xl bg-sky-50 border border-sky-300 text-slate-950 font-black">
+                      <?= htmlspecialchars($client['preferred_signing_location'] ?? '-') ?>
+                    </span>
                   </td>
 
                   <!-- اسم العميل والشركاء -->

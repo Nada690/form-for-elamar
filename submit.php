@@ -279,6 +279,18 @@ if ($residence_country === 'خارج جمهورية مصر العربية') {
     $contract_location = 'خارج جمهورية مصر العربية';
 }
 
+// المكان الأقرب لتوقيع العقد (حقل جديد)
+$preferred_signing_location = cleanInput($data['preferred_signing_location'] ?? '');
+
+// الدولة والمحافظة للمراسلات
+$correspondence_country = cleanInput($data['correspondence_country'] ?? 'مصر');
+$correspondence_city = cleanInput($data['correspondence_city'] ?? '');
+
+// تفاصيل الوحدة والشيكات
+$unit_area = cleanInput($data['unit_area'] ?? '');
+$unit_floor = cleanInput($data['unit_floor'] ?? '');
+$cheques_count = !empty($data['cheques_count']) ? intval($data['cheques_count']) : null;
+
 // 8. حقلي الملاحظات (كلاهما اختياري)
 $general_notes = cleanInput($data['general_notes'] ?? '');
 $notes = cleanInput($data['notes'] ?? '');
@@ -367,13 +379,33 @@ if (empty($nameCombined) || mb_strlen($nameCombined) < 2) {
     }
 }
 
-// رقم الهاتف - التحقق الصارم بحسب الشروط
+// رقم الهاتف - التحقق الصارم بحسب الشروط (حد أقصى رقمين + منع التكرار)
 if (empty($phoneCombined) || empty($phonesArr)) {
     http_response_code(422);
     echo json_encode([
         'status'  => 'error',
         'field'   => 'phone',
         'message' => ($lang === 'en') ? 'A valid contact phone number is required.' : 'رقم الهاتف والتواصل مطلوب وبصيغة صحيحة.'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (count($phonesArr) > 2) {
+    http_response_code(422);
+    echo json_encode([
+        'status'  => 'error',
+        'field'   => 'phone',
+        'message' => ($lang === 'en') ? 'Maximum 2 phone numbers allowed.' : 'يُسمح بإدخال رقمين هاتف فقط كحد أقصى.'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (count($phonesArr) === 2 && $phonesArr[0] === $phonesArr[1]) {
+    http_response_code(422);
+    echo json_encode([
+        'status'  => 'error',
+        'field'   => 'phone',
+        'message' => ($lang === 'en') ? 'Duplicate phone numbers detected.' : 'رقم الهاتف مكرر، يجب أن يكون الرقم الإضافي مختلفاً عن الرقم الأساسي.'
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -414,13 +446,33 @@ foreach ($phonesArr as $phItem) {
     }
 }
 
-// البريد الإلكتروني
+// البريد الإلكتروني (حد أقصى 2 إيميل + منع التكرار)
 if (empty($emailsArr)) {
     http_response_code(422);
     echo json_encode([
         'status'  => 'error',
         'field'   => 'email',
         'message' => ($lang === 'en') ? 'A valid email address for correspondence is required.' : 'يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com).'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (count($emailsArr) > 2) {
+    http_response_code(422);
+    echo json_encode([
+        'status'  => 'error',
+        'field'   => 'email',
+        'message' => ($lang === 'en') ? 'Maximum 2 email addresses allowed.' : 'يُسمح بإدخال إيميلين فقط كحد أقصى.'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (count($emailsArr) === 2 && strtolower(trim($emailsArr[0])) === strtolower(trim($emailsArr[1]))) {
+    http_response_code(422);
+    echo json_encode([
+        'status'  => 'error',
+        'field'   => 'email',
+        'message' => ($lang === 'en') ? 'Duplicate email addresses detected.' : 'البريد الإلكتروني مكرر، يرجى كتابة بريد إضافي مختلف.'
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -494,9 +546,42 @@ if (empty($correspondence_address)) {
     $errors[] = ($lang === 'en') ? 'Approved correspondence address is required.' : 'العنوان المعتمد بالتفصيل للمراسلات مطلوب.';
 }
 
-// كود الوحدة
+// كود الوحدة والتحقق منه من قاعدة البيانات
+$lookupFile = __DIR__ . '/customer_units_lookup.json';
+if (file_exists($lookupFile)) {
+    $dbLookup = json_decode(file_get_contents($lookupFile), true);
+    $primaryIdNum = $idNumbersArr[0] ?? '';
+    $cleanCheckId = strtoupper(preg_replace('/[\s\-_–—]/u', '', $primaryIdNum));
+
+    if (isset($dbLookup[$cleanCheckId])) {
+        $allowedUnitCodes = array_column($dbLookup[$cleanCheckId], 'unit');
+        
+        // التحقق من كود الوحدة الأساسية
+        if (!in_array($unit_code, $allowedUnitCodes)) {
+            // اعتماد الكود الأصلي المسجل للعميل في الداتابيز حمايةً من أي تلاعب
+            $unit_code = $allowedUnitCodes[0];
+        }
+
+        // التحقق من أن عدد الوحدات الإجمالي لا يتجاوز المسجل للرقم القومي
+        $totalSubmittedUnits = 1 + count($data['extra_unit_codes'] ?? []);
+        if ($totalSubmittedUnits > count($allowedUnitCodes)) {
+            http_response_code(422);
+            echo json_encode([
+                'status'  => 'error',
+                'field'   => 'extra_unit_codes',
+                'message' => 'عدد الوحدات المدخلة يتجاوز عدد الوحدات المسجلة لهذا الرقم القومي في قاعدة البيانات.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+}
+
 if (empty($unit_code)) {
     $errors[] = ($lang === 'en') ? 'Unit code is required (e.g. nn-13).' : 'كود الوحدة مطلوب (مثال: nn-13).';
+}
+
+if (empty($preferred_signing_location)) {
+    $errors[] = ($lang === 'en') ? 'Contract signing location is required.' : 'يرجى كتابة المكان الأقرب لتوقيع العقد.';
 }
 
 // ── التحقق من خطة السداد والنسبة (Payment Plan & Final Rate Validation) ──
@@ -753,9 +838,9 @@ try {
     $pdo->beginTransaction();
 
     $sql = "INSERT INTO clients 
-            (name, phone, email, id_type, id_number, residence_country, governorate, source, project, contract_location, unit_type, eoi_number, unit_price, payment_period, period, final_rate, paid_5_percent, payment_date, id_address, correspondence_address, addresses, general_notes, notes, attachments, lang, sales_id) 
+            (name, phone, email, id_type, id_number, residence_country, governorate, source, project, contract_location, preferred_signing_location, unit_type, eoi_number, unit_area, unit_floor, unit_price, payment_period, period, final_rate, cheques_count, paid_5_percent, payment_date, id_address, correspondence_address, correspondence_country, correspondence_city, addresses, general_notes, notes, attachments, lang, sales_id) 
             VALUES 
-            (:name, :phone, :email, :id_type, :id_number, :residence_country, :governorate, :source, :project, :contract_location, :unit_type, :eoi_number, :unit_price, :payment_period, :period, :final_rate, :paid_5_percent, :payment_date, :id_address, :correspondence_address, :addresses, :general_notes, :notes, :attachments, :lang, :sales_id)";
+            (:name, :phone, :email, :id_type, :id_number, :residence_country, :governorate, :source, :project, :contract_location, :preferred_signing_location, :unit_type, :eoi_number, :unit_area, :unit_floor, :unit_price, :payment_period, :period, :final_rate, :cheques_count, :paid_5_percent, :payment_date, :id_address, :correspondence_address, :correspondence_country, :correspondence_city, :addresses, :general_notes, :notes, :attachments, :lang, :sales_id)";
             
     $stmt = $pdo->prepare($sql);
     $insertedIds = [];
@@ -769,32 +854,38 @@ try {
         $uPaymentDate = $u['payment_date'] ?? $payment_date;
 
         $stmt->execute([
-            ':name'                   => $nameCombined,
-            ':phone'                  => $phoneCombined,
-            ':email'                  => $email,
-            ':id_type'                => $id_type,
-            ':id_number'              => $id_number,
-            ':residence_country'      => $residence_country,
-            ':governorate'            => $governorate,
-            ':source'                 => $source,
-            ':project'                => $project,
-            ':contract_location'      => $contract_location,
-            ':unit_type'              => '',
-            ':eoi_number'             => $u['code'],
-            ':unit_price'             => $u['price'],
-            ':payment_period'         => $uPeriod,
-            ':period'                 => $uPeriod,
-            ':final_rate'             => $uRate,
-            ':paid_5_percent'         => $uPaid,
-            ':payment_date'           => $uPaymentDate,
-            ':id_address'             => $id_address,
-            ':correspondence_address' => $correspondence_address,
-            ':addresses'              => $addressCombined,
-            ':general_notes'          => $general_notes,
-            ':notes'                  => $uNotes,
-            ':attachments'            => $attachmentsJson,
-            ':lang'                   => $lang,
-            ':sales_id'               => $sales_id
+            ':name'                       => $nameCombined,
+            ':phone'                      => $phoneCombined,
+            ':email'                      => $email,
+            ':id_type'                    => $id_type,
+            ':id_number'                  => $id_number,
+            ':residence_country'          => $residence_country,
+            ':governorate'                => $governorate,
+            ':source'                     => $source,
+            ':project'                    => $project,
+            ':contract_location'          => $contract_location,
+            ':preferred_signing_location' => $preferred_signing_location,
+            ':unit_type'                  => '',
+            ':eoi_number'                 => $u['code'],
+            ':unit_area'                  => $unit_area,
+            ':unit_floor'                 => $unit_floor,
+            ':unit_price'                 => $u['price'],
+            ':payment_period'             => $uPeriod,
+            ':period'                     => $uPeriod,
+            ':final_rate'                 => $uRate,
+            ':cheques_count'              => $cheques_count,
+            ':paid_5_percent'             => $uPaid,
+            ':payment_date'               => $uPaymentDate,
+            ':id_address'                 => $id_address,
+            ':correspondence_address'     => $correspondence_address,
+            ':correspondence_country'     => $correspondence_country,
+            ':correspondence_city'        => $correspondence_city,
+            ':addresses'                  => $addressCombined,
+            ':general_notes'              => $general_notes,
+            ':notes'                      => $uNotes,
+            ':attachments'                => $attachmentsJson,
+            ':lang'                       => $lang,
+            ':sales_id'                   => $sales_id
         ]);
         $insertedIds[] = (int)$pdo->lastInsertId();
         $allSavedCodes[] = $u['code'];
