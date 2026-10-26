@@ -1957,6 +1957,17 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-rate-error" data-i18n="errRateSelect">${currentLang === 'en' ? 'Please select a rate' : 'يرجى اختيار النسبة'}</p>
           </div>
 
+          <!-- تنبيه عدد الشيكات اللحظي للوحدة الإضافية (مطابق تماماً للوحدة 1) -->
+          <div id="extraChequesNoticeBox_${cNum}" class="hidden sm:col-span-12 p-3.5 rounded-xl bg-amber-50 border-2 border-amber-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-sm transition-all">
+            <span class="text-xl">📝</span>
+            <div>
+              <span>${currentLang === 'en' ? 'On signing day, bring (' : 'يوم التوقيع يتم إحضار عدد ('}</span>
+              <span id="extraChequesCountSpan_${cNum}" class="text-amber-800 text-base font-mono font-black underline">0</span>
+              <span>${currentLang === 'en' ? ') cheques' : ') من الشيكات'}</span>
+            </div>
+            <input type="hidden" name="extra_cheques_counts[]" id="extraChequesCount_${cNum}" value="">
+          </div>
+
           <!-- مقترح نظام السداد للوحدة الإضافية (مطابق تماماً للوحدة 1) -->
           <div class="sm:col-span-12 form-group pt-2">
             <label class="block text-xs font-black text-slate-950 mb-1.5" for="extraNotes_${cNum}">
@@ -2112,6 +2123,29 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       updateChequesNotice();
     }
 
+    function updateExtraChequesNotice(counter) {
+      const periodVal = document.getElementById(`extraPeriod_${counter}`)?.value || '';
+      const noticeBox = document.getElementById(`extraChequesNoticeBox_${counter}`);
+      const countSpan = document.getElementById(`extraChequesCountSpan_${counter}`);
+      const hiddenCount = document.getElementById(`extraChequesCount_${counter}`);
+
+      if (!periodVal) {
+        if (noticeBox) noticeBox.classList.add('hidden');
+        if (hiddenCount) hiddenCount.value = '';
+        return;
+      }
+
+      const count = calculateChequesCount(periodVal);
+      if (count > 0) {
+        if (countSpan) countSpan.textContent = count;
+        if (hiddenCount) hiddenCount.value = count;
+        if (noticeBox) noticeBox.classList.remove('hidden');
+      } else {
+        if (noticeBox) noticeBox.classList.add('hidden');
+        if (hiddenCount) hiddenCount.value = '';
+      }
+    }
+
     function handleExtraPeriodChange(counter, selectEl) {
       const selectedPeriod = selectEl.value;
       const rateContainer = document.getElementById(`extraRateContainer_${counter}`);
@@ -2130,6 +2164,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       if (!selectedPeriod) {
         if (rateContainer) rateContainer.classList.add('hidden');
+        updateExtraChequesNotice(counter);
         return;
       }
 
@@ -2157,6 +2192,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
         if (rateContainer) rateContainer.classList.remove('hidden');
       }
+
+      updateExtraChequesNotice(counter);
     }
 
     function handleExtraRateChange(counter, selectEl) {
@@ -2169,6 +2206,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (errRate) errRate.classList.remove('hidden');
         selectEl.classList.add('invalid');
       }
+      updateExtraChequesNotice(counter);
     }
 
     // ── Egyptian Governorates & Cities Dataset for Dynamic Address Picker ──
@@ -5662,6 +5700,23 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       `;
     }
 
+    // ── استخراج تفاصيل الوحدة (الدور والمساحة) تلقائياً ──
+    function getUnitFloorAndArea(unitCode) {
+      if (window.customerUnitsLookupInfo && window.customerUnitsLookupInfo[unitCode]) {
+        return window.customerUnitsLookupInfo[unitCode];
+      }
+      let floor = 'الدور الأرضي';
+      let area = '125 م²';
+      if (unitCode) {
+        const m = unitCode.match(/-(\d)(\d{2})$/);
+        if (m) {
+          const fNames = {0:'الدور الأرضي', 1:'الدور الأول', 2:'الدور الثاني', 3:'الدور الثالث', 4:'الدور الرابع', 5:'الدور الخامس', 6:'الدور السادس'};
+          floor = fNames[parseInt(m[1], 10)] || ('الدور ' + m[1]);
+        }
+      }
+      return { floor, area };
+    }
+
     function refreshAllUnitsPills() {
       const items = getAllUnitItems();
 
@@ -5724,6 +5779,23 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               item.input.value = u;
               item.input.classList.add('valid');
               item.input.classList.remove('invalid');
+
+              const uDetails = getUnitFloorAndArea(u);
+              if (item.isPrimary) {
+                const areaInput = document.getElementById('unit_area');
+                const floorInput = document.getElementById('unit_floor');
+                if (areaInput && uDetails.area) areaInput.value = uDetails.area;
+                if (floorInput && uDetails.floor) floorInput.value = uDetails.floor;
+              } else {
+                const blk = item.input.closest('.unit-block');
+                if (blk) {
+                  const extraArea = blk.querySelector('input[name="extra_unit_areas[]"]');
+                  const extraFloor = blk.querySelector('input[name="extra_unit_floors[]"]');
+                  if (extraArea && uDetails.area) extraArea.value = uDetails.area;
+                  if (extraFloor && uDetails.floor) extraFloor.value = uDetails.floor;
+                }
+              }
+
               item.input.dispatchEvent(new Event('input', { bubbles: true }));
               item.input.dispatchEvent(new Event('change', { bubbles: true }));
               refreshAllUnitsPills();
@@ -5809,6 +5881,19 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       if (data && data.found) {
         const unitVal = data.unit_code || data.unit || (data.units && data.units[0]) || '';
+
+        // Save units_info into window.customerUnitsLookupInfo if provided
+        window.customerUnitsLookupInfo = window.customerUnitsLookupInfo || {};
+        if (data.units_info && Array.isArray(data.units_info)) {
+          data.units_info.forEach(info => {
+            if (info.code) {
+              window.customerUnitsLookupInfo[info.code] = {
+                floor: info.floor,
+                area: info.area
+              };
+            }
+          });
+        }
 
         // Save into global variable currentClientUnits (Requirement 1)
         currentClientUnits = (data.units && data.units.length > 0) ? [...data.units] : [unitVal];

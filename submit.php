@@ -656,13 +656,16 @@ $payment_period = $period;
 $unitsList = [];
 if (!empty($unit_code)) {
     $unitsList[] = [
-        'code'         => $unit_code,
-        'period'       => $period,
-        'price'        => $unit_price,
-        'rate'         => $finalRate,
-        'paid'         => $paid_5_percent,
-        'payment_date' => $payment_date,
-        'notes'        => $notes
+        'code'          => $unit_code,
+        'period'        => $period,
+        'price'         => $unit_price,
+        'rate'          => $finalRate,
+        'paid'          => $paid_5_percent,
+        'payment_date'  => $payment_date,
+        'notes'         => $notes,
+        'area'          => $unit_area,
+        'floor'         => $unit_floor,
+        'cheques_count' => $cheques_count
     ];
 }
 
@@ -673,6 +676,9 @@ if (!empty($data['extra_unit_codes']) && is_array($data['extra_unit_codes'])) {
     $extraNotes   = $data['extra_notes'] ?? [];
     $extraPaids   = $data['extra_paid_5_percent'] ?? [];
     $extraDates   = $data['extra_payment_dates'] ?? [];
+    $extraAreas   = $data['extra_unit_areas'] ?? [];
+    $extraFloors  = $data['extra_unit_floors'] ?? [];
+    $extraCheques = $data['extra_cheques_counts'] ?? [];
 
     foreach ($data['extra_unit_codes'] as $idx => $extraCodeRaw) {
         $cleanExtraCode = cleanInput($extraCodeRaw);
@@ -687,6 +693,16 @@ if (!empty($data['extra_unit_codes']) && is_array($data['extra_unit_codes'])) {
             $eNote   = cleanInput($extraNotes[$idx] ?? '');
             $ePaid   = cleanInput($extraPaids[$idx] ?? '') ?: $paid_5_percent;
             $eDate   = cleanInput($extraDates[$idx] ?? '') ?: $payment_date;
+            $eArea   = cleanInput($extraAreas[$idx] ?? '') ?: $unit_area;
+            $eFloor  = cleanInput($extraFloors[$idx] ?? '') ?: $unit_floor;
+            $eCheque = cleanInput($extraCheques[$idx] ?? '');
+
+            // إذا لم يتم تحديد عدد الشيكات للوحدة الإضافية، حسابه بناء على الفترة
+            if (empty($eCheque) && !empty($ePeriod)) {
+                if (preg_match('/(\d+)/', $ePeriod, $ym)) {
+                    $eCheque = intval($ym[1]) * 4;
+                }
+            }
 
             if ($ePaid === 'لا') {
                 http_response_code(422);
@@ -712,13 +728,16 @@ if (!empty($data['extra_unit_codes']) && is_array($data['extra_unit_codes'])) {
             }
 
             $unitsList[] = [
-                'code'         => $cleanExtraCode,
-                'period'       => $ePeriod,
-                'price'        => $ePrice,
-                'rate'         => $eRate ?: $finalRate,
-                'paid'         => $ePaid,
-                'payment_date' => ($ePaid === 'نعم') ? $eDate : null,
-                'notes'        => !empty($eNote) ? $eNote : $notes
+                'code'          => $cleanExtraCode,
+                'period'        => $ePeriod,
+                'price'         => $ePrice,
+                'rate'          => $eRate ?: $finalRate,
+                'paid'          => $ePaid,
+                'payment_date'  => ($ePaid === 'نعم') ? $eDate : null,
+                'notes'         => !empty($eNote) ? $eNote : $notes,
+                'area'          => $eArea,
+                'floor'         => $eFloor,
+                'cheques_count' => $eCheque ?: $cheques_count
             ];
         }
     }
@@ -848,6 +867,9 @@ try {
         $uNotes       = $u['notes'] ?? $notes;
         $uPaid        = $u['paid'] ?? $paid_5_percent;
         $uPaymentDate = $u['payment_date'] ?? $payment_date;
+        $uArea        = $u['area'] ?? $unit_area;
+        $uFloor       = $u['floor'] ?? $unit_floor;
+        $uCheques     = $u['cheques_count'] ?? $cheques_count;
 
         $stmt->execute([
             ':name'                       => $nameCombined,
@@ -863,13 +885,13 @@ try {
             ':preferred_signing_location' => $preferred_signing_location,
             ':unit_type'                  => '',
             ':eoi_number'                 => $u['code'],
-            ':unit_area'                  => $unit_area,
-            ':unit_floor'                 => $unit_floor,
+            ':unit_area'                  => $uArea,
+            ':unit_floor'                 => $uFloor,
             ':unit_price'                 => $u['price'],
             ':payment_period'             => $uPeriod,
             ':period'                     => $uPeriod,
             ':final_rate'                 => $uRate,
-            ':cheques_count'              => $cheques_count,
+            ':cheques_count'              => $uCheques,
             ':paid_5_percent'             => $uPaid,
             ':payment_date'               => $uPaymentDate,
             ':id_address'                 => $id_address,
