@@ -381,6 +381,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               <div id="clientsContainer" class="space-y-6 w-full">
                 <!-- سيتم بناء البطاقات هنا عبر Repeater Component JS -->
               </div>
+
+              <!-- صندوق عرض الشركاء المسجلين على الوحدة كـ Read-only (يظهر مباشرة تحت بيانات العميل) -->
+              <div id="unitPartnersBox" class="hidden mt-4"></div>
             </div>
 
             <!-- ── SECTION 02: بيانات الوحدة ونظام التعاقد وخطة السداد ── -->
@@ -503,9 +506,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                           />
                         </div>
                       </div>
-
-                      <!-- صندوق عرض الشركاء المسجلين على الوحدة كـ Read-only -->
-                      <div id="unitPartnersBox" class="hidden mt-2.5"></div>
 
                       <!-- تنبيه الجلب التلقائي وقائمة الوحدات المتعددة إن وجدت -->
                       <div id="unitAutoHint" class="hidden mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all">
