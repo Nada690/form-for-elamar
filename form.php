@@ -393,221 +393,59 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <span data-i18n="sec2TitleUnit">بيانات الوحدة ونظام التعاقد وخطة السداد</span>
               </div>
 
-              <!-- ── حاوية الوحدات الأساسية والإضافية ── -->
-              <div id="unitsContainer" class="space-y-4 w-full">
-
-                <!-- 1. الوحدة الأساسية (إلزامية) -->
-                <div class="unit-block p-4 rounded-2xl bg-white border-2 border-sky-200 space-y-3 relative shadow-md">
-                  <div class="flex items-center justify-between pb-1 border-b border-sky-100">
-                    <div class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm">
-                      <span>🏢</span>
-                      <span data-i18n="unitMainTitle">بيانات الوحدة الأساسية (الوحدة 1)</span>
-                      <span class="text-red-500 font-bold">*</span>
-                    </div>
+              <!-- ── حاوية الوحدات التلقائية المسجلة للعميل ── -->
+              <div class="space-y-3 w-full">
+                <!-- شريط الإحصائيات ورأس قسم الوحدات -->
+                <div id="unitsHeaderBar" class="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border-2 border-sky-300 rounded-2xl shadow-xs transition-all">
+                  <div class="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-950">
+                    <span class="text-base sm:text-lg">🏢</span>
+                    <span data-i18n="unitsSectionTitle">الوحدات المسجلة للعميل</span>
+                    <span id="unitsTotalBadge" class="hidden font-mono bg-sky-600 text-white px-2.5 py-0.5 rounded-full text-xs font-black shadow-2xs">0</span>
                   </div>
 
-                  <!-- سؤال: هل تم استكمال قيمة المقدم؟ (نعم / لا) وتاريخ الدفع الخاص بالوحدة 1 -->
-                  <div class="p-3 sm:p-3.5 rounded-xl bg-sky-50/80 border border-sky-200 mb-2">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <!-- السؤال وخيارات نعم / لا -->
-                      <div class="space-y-1.5 flex-1">
-                        <label class="block text-xs font-black text-slate-950">
-                          <span class="text-slate-950 font-black" data-i18n="labelAdvanceQuestion">هل تم استكمال قيمة المقدم؟</span> 
-                          <span class="text-red-500 font-bold">*</span>
-                        </label>
-                        <div class="flex items-center gap-2 max-w-[220px]">
-                          <label class="custom-check-box active flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-black text-slate-950 transition-all text-center" id="boxYes">
-                            <input type="radio" name="paid_5_percent" value="نعم" checked class="hidden" onchange="toggleAdvancePaidBox(this)">
-                            <span>✓</span> <span data-i18n="optYesPaid">نعم</span>
-                          </label>
-                          <label class="custom-check-box flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-black text-slate-950 transition-all text-center" id="boxNo">
-                            <input type="radio" name="paid_5_percent" value="لا" class="hidden" onchange="toggleAdvancePaidBox(this)">
-                            <span>✕</span> <span data-i18n="optNoPaid">لا</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      <!-- حقل تاريخ الدفع (يظهر عندما تكون الإجابة نعم) -->
-                      <div id="paymentDateContainer" class="space-y-1.5 sm:w-60 w-full transition-all">
-                        <label class="block text-xs font-black text-slate-950" for="paymentDate">
-                          <span class="text-slate-950 font-black" data-i18n="labelPaymentDate">📅 تاريخ الدفع:</span>
-                          <span class="text-red-500 font-bold">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          id="paymentDate"
-                          name="payment_date"
-                          class="glass-input w-full px-3.5 py-2 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500"
-                          value="<?= date('Y-m-d') ?>"
-                        />
-                        <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errPaymentDate" data-i18n="errPaymentDate">تاريخ الدفع مطلوب</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- رسالة التوقف عند اختيار "لا" في استكمال المقدم -->
-                  <div id="advanceNoticeNo" class="hidden p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 text-center space-y-2 my-2 animate-pulse">
-                    <div class="text-2xl">⚠️</div>
-                    <h4 class="text-amber-950 font-black text-sm sm:text-base" data-i18n="advanceNoticeTitle">سداد المقدم مطلوب لإتمام التعاقد</h4>
-                    <p class="text-xs text-slate-900 font-bold leading-relaxed max-w-lg mx-auto" data-i18n="advanceNoticeDesc">
-                      عفواً، لا يمكن استكمال تسجيل التعاقد وحجز الوحدة إلا بعد استكمال سداد قيمة المقدم رسمياً. يُرجى مراجعة إدارة المبيعات لسداد المقدم أولاً للمتابعة.
-                    </p>
-                  </div>
-
-                  <!-- حقول تفاصيل الوحدة الأساسية (تختفي إذا تم اختيار "لا") -->
-                  <div id="primaryUnitDetailsContainer" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
-                    <!-- كود الوحدة (تلقائي وغير قابل للتعديل) + مساحة الوحدة + رقم الدور -->
-                    <div class="sm:col-span-12 form-group">
-                      <label class="block text-xs font-black text-slate-950 mb-1.5" for="unit_code">
-                        <span class="text-slate-950 font-black" data-i18n="labelUnitCode">كود الوحدة (الرقم الكودي الخاص بالوحدة)</span>
-                        <span class="text-red-500 font-bold">*</span>
-                      </label>
-                      
-                      <div class="relative">
-                        <input
-                          type="text"
-                          id="unit_code"
-                          name="unit_code"
-                          data-alias="unitCode"
-                          dir="ltr"
-                          readonly
-                          placeholder="سيتم تحديد كود الوحدة تلقائياً بمجرد إدخال الرقم القومي..."
-                          class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-sm transition-all"
-                        />
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
-                      </div>
-
-                      <!-- حقول مساحة الوحدة ورقم الدور (تُجلب تلقائياً) -->
-                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">
-                        <div>
-                          <label class="block text-[11px] font-black text-slate-700 mb-1">
-                            <span>مساحة الوحدة:</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="unit_area"
-                            name="unit_area"
-                            readonly
-                            placeholder="المساحة بالمتر المربع..."
-                            class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed"
-                          />
-                        </div>
-                        <div>
-                          <label class="block text-[11px] font-black text-slate-700 mb-1">
-                            <span>رقم الدور:</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="unit_floor"
-                            name="unit_floor"
-                            readonly
-                            placeholder="رقم الدور..."
-                            class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed"
-                          />
-                        </div>
-                      </div>
-
-                      <!-- تنبيه الجلب التلقائي وقائمة الوحدات المتعددة إن وجدت -->
-                      <div id="unitAutoHint" class="hidden mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all">
-                        <div class="flex items-center gap-1.5 text-emerald-700 font-black" id="unit_msg_box">
-                          <span id="unit_msg_icon">✓</span>
-                          <span id="unit_msg">تم جلب كود الوحدة تلقائياً بناءً على الرقم القومي</span>
-                          <span id="unitAutoHintText" class="hidden"></span>
-                        </div>
-                        <div id="unit_multi_choices" class="hidden mt-2 flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-sky-200">
-                          <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">الوحدات المسجلة لهذا العميل (انقر للاختيار):</span>
-                          <div id="unit_pills" class="flex flex-wrap gap-1.5"></div>
-                          <div id="unitPillsContainer" class="hidden"></div>
-                          <p id="unitAllSelectedPrimary" class="text-[11px] text-emerald-700 font-black hidden">✓ تم اختيار كل وحدات العميل</p>
-                        </div>
-                      </div>
-
-                      <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errUnitCode" data-i18n="errUnitCode">كود الوحدة مطلوب</p>
-                      <p class="duplicate-unit-warning text-xs font-black text-amber-600 mt-1 hidden" id="duplicateUnitWarnPrimary"></p>
-                    </div>
-
-                    <!-- فترة السداد والنسبة (خطة السداد) -->
-                    <div class="sm:col-span-6 form-group">
-                      <label class="block text-xs font-black text-slate-950 mb-1.5" for="period">
-                        <span class="text-slate-950 font-black" data-i18n="labelPeriod">فترة السداد</span>
-                        <span class="text-red-500 font-bold">*</span>
-                      </label>
-                      <select 
-                        name="period" 
-                        id="period" 
-                        class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer" 
-                        onchange="handlePeriodChange(this); validateField(this, val => val !== '')"
-                      >
-                        <option value="" data-i18n="optSelectPeriod">اختر فترة السداد...</option>
-                        <option value="7 Years">7 Years</option>
-                        <option value="8 Years">8 Years</option>
-                        <option value="9 Years">9 Years</option>
-                        <option value="10 Years">10 Years</option>
-                      </select>
-                      <input type="hidden" name="payment_period" id="paymentPeriod" value="">
-                      <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errPeriod" data-i18n="errPeriod">فترة السداد مطلوبة</p>
-                    </div>
-
-                    <!-- حقل النسبة (Rate) - يظهر دائماً عند اختيار أي فترة -->
-                    <div class="sm:col-span-6 form-group hidden" id="rateSelectContainer">
-                      <label class="block text-xs font-black text-slate-950 mb-1.5" for="rateSelect">
-                        <span class="text-slate-950 font-black" data-i18n="labelRate">النسبة (Rate)</span>
-                        <span class="text-red-500 font-bold">*</span>
-                      </label>
-                      <select 
-                        id="rateSelect" 
-                        class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer"
-                        onchange="handleRateChange(this)"
-                      >
-                        <option value="" data-i18n="optSelectRate">اختر النسبة...</option>
-                      </select>
-                      <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errRateSelect" data-i18n="errRateSelect">يرجى اختيار النسبة</p>
-                    </div>
-
-                    <!-- حقل النسبة النهائي المخفي للباك إند وقاعدة البيانات -->
-                    <input type="hidden" name="final_rate" id="final_rate" value="">
-
-                    <!-- تنبيه عدد الشيكات اللحظي -->
-                    <div id="chequesNoticeBox" class="hidden sm:col-span-12 p-3.5 rounded-xl bg-amber-50 border-2 border-amber-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-sm transition-all">
-                      <span class="text-xl">📝</span>
-                      <div>
-                        <span>يوم التوقيع يتم إحضار عدد (</span>
-                        <span id="chequesCountSpan" class="text-amber-800 text-base font-mono font-black underline">0</span>
-                        <span>) من الشيكات</span>
-                      </div>
-                      <input type="hidden" name="cheques_count" id="cheques_count" value="">
-                    </div>
-
-                    <!-- مقترح نظام السداد (موجود مباشرة تحت الخطة المختارة) -->
-                    <div class="sm:col-span-12 form-group pt-2">
-                      <label class="block text-xs font-black text-slate-950 mb-1.5" for="clientPlanExceptions">
-                        <span class="text-slate-950 font-black" data-i18n="labelPlanExceptions">اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام</span>
-                        <span class="text-slate-600 text-[10px] font-bold" data-i18n="optOptional">(اختياري)</span>
-                      </label>
-                      <textarea
-                        id="clientPlanExceptions"
-                        name="notes"
-                        rows="2"
-                        data-i18n-placeholder="phPlanExceptions"
-                        placeholder="اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام..."
-                        class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 transition-all resize-y"
-                      ></textarea>
-                    </div>
+                  <!-- أزرار وعدادات التضمين والاستبعاد والطي -->
+                  <div id="unitsStatsActions" class="hidden flex flex-wrap items-center gap-2 text-xs font-bold">
+                    <span class="px-2.5 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 font-black flex items-center gap-1 shadow-2xs">
+                      <span>✓</span> <span>مشمولة بالعقد:</span> <strong id="unitsIncludedCount" class="font-mono font-black text-emerald-900">0</strong>
+                    </span>
+                    <span id="unitsExcludedBadge" class="hidden px-2.5 py-1 rounded-xl bg-slate-200 border border-slate-300 text-slate-700 font-black flex items-center gap-1 shadow-2xs">
+                      <span>✕</span> <span>مستبعدة:</span> <strong id="unitsExcludedCount" class="font-mono font-black text-slate-900">0</strong>
+                    </span>
+                    <button 
+                      type="button" 
+                      id="btnToggleAllUnits" 
+                      onclick="toggleAllUnitsAccordion()" 
+                      class="text-xs font-black text-sky-800 hover:text-sky-950 bg-sky-50 hover:bg-sky-100 border border-sky-300 hover:border-sky-500 px-3 py-1 rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1"
+                    >
+                      <span id="toggleAllUnitsIcon">🔼</span>
+                      <span id="toggleAllUnitsText">طي الكل</span>
+                    </button>
                   </div>
                 </div>
 
-              </div>
+                <!-- رسالة الانتظار المبدئية: قبل إدخال الرقم القومي -->
+                <div id="unitsInitialNotice" class="p-5 rounded-2xl bg-white border-2 border-dashed border-sky-300 text-center space-y-1.5 transition-all">
+                  <div class="text-2xl">🏢</div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-950" data-i18n="unitsInitialTitle">سيتم جلب وتوليد كروت الوحدات المسجلة للعميل تلقائياً</h4>
+                  <p class="text-[11px] text-slate-600 font-bold max-w-md mx-auto" data-i18n="unitsInitialDesc">بمجرد كتابة الرقم القومي أو رقم جواز السفر للعميل أعلاه، سيقوم النظام بالبحث فوراً وعرض جميع الوحدات المسجلة له بكافة تفاصيلها تلقائياً.</p>
+                </div>
 
-              <!-- زر إضافة وحدة أخرى -->
-              <button 
-                type="button" 
-                id="btnAddExtraUnit"
-                onclick="addExtraUnitField()" 
-                class="text-xs font-black text-slate-950 hover:bg-sky-100 bg-white border-2 border-sky-300 px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm w-full justify-center"
-              >
-                <span>➕</span>
-                <span data-i18n="btnAddUnit">إضافة وحدة أخرى (اختياري)</span>
-              </button>
+                <!-- مؤشر التحميل أثناء الجلب من قاعدة البيانات -->
+                <div id="unitsLoadingIndicator" class="hidden p-6 rounded-2xl bg-white border-2 border-sky-300 text-center space-y-2 animate-pulse">
+                  <div class="inline-block animate-spin text-2xl">⏳</div>
+                  <p class="text-xs sm:text-sm font-black text-sky-950">جاري جلب بيانات ووحدات العميل من قاعدة البيانات...</p>
+                </div>
+
+                <!-- رسالة التنبيه في حال عدم وجود وحدات لهذا الرقم القومي -->
+                <div id="unitsNotFoundNotice" class="hidden p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 text-center space-y-1.5">
+                  <div class="text-xl">⚠️</div>
+                  <p class="text-xs sm:text-sm font-black text-amber-950">لا توجد وحدات مسجلة لهذا الرقم القومي في قاعدة البيانات</p>
+                  <p class="text-[11px] text-slate-700 font-bold">يُرجى التأكد من صحة رقم البطاقة أو مراجعة إدارة المبيعات.</p>
+                </div>
+
+                <!-- الحاوية الديناميكية التي يتم فيها توليد جميع كروت الوحدات -->
+                <div id="unitsContainer" class="space-y-3.5 w-full"></div>
+              </div>
 
               <!-- المكان الأقرب لتوقيع العقد (فرع القاهرة / الإسكندرية) -->
               <div id="contractLocationContainer" class="form-group pt-2 border-t-2 border-sky-200 w-full">
@@ -1792,221 +1630,441 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       setTimeout(() => parent.remove(), 250);
     }
 
-    let extraUnitCounter = 1;
-    function addExtraUnitField() {
-      extraUnitCounter++;
+        let extraUnitCounter = 1;
+
+    // ── نظام توليد كروت الوحدات التلقائي وإدارتها (Accordion + Toggle + Calculations) ──
+    function renderClientUnitCards(unitsData) {
       const container = document.getElementById('unitsContainer');
-      const div = document.createElement('div');
-      div.className = "unit-block p-4 rounded-2xl bg-white border-2 border-sky-200 space-y-3 relative transform transition-all duration-300 opacity-0 translate-y-2 shadow-md";
-      const pickerId = `extraUnitPicker_${extraUnitCounter}`;
-      const cNum = extraUnitCounter;
+      const statsActions = document.getElementById('unitsStatsActions');
+      const totalBadge = document.getElementById('unitsTotalBadge');
+      const incCount = document.getElementById('unitsIncludedCount');
+      const excCount = document.getElementById('unitsExcludedCount');
+      const excBadge = document.getElementById('unitsExcludedBadge');
+      const initialNotice = document.getElementById('unitsInitialNotice');
+      const notFoundNotice = document.getElementById('unitsNotFoundNotice');
+      const isEn = (currentLang === 'en');
+      const t = translations[currentLang] || {};
 
-      const unitTitle = (currentLang === 'en') ? `Additional Unit (Unit ${cNum})` : `بيانات الوحدة الإضافية (الوحدة ${cNum})`;
-      const removeTitle = translations[currentLang]?.btnRemoveUnit || (currentLang === 'en' ? 'Remove this unit' : 'حذف هذه الوحدة');
-      const labelUnitCode = translations[currentLang]?.labelUnitCode || (currentLang === 'en' ? 'Unit Code' : 'كود الوحدة (الرقم الكودي الخاص بالوحدة)');
-      const phSelectUnit = translations[currentLang]?.phSelectUnit || (currentLang === 'en' ? 'Select unit code from list...' : 'اختر كود الوحدة من القائمة...');
-      const phSearchUnit = translations[currentLang]?.phSearchUnit || (currentLang === 'en' ? 'Search unit code...' : 'ابحث عن كود الوحدة...');
-      const labelPeriod = translations[currentLang]?.labelPeriod || (currentLang === 'en' ? 'Payment Term' : 'فترة السداد');
-      const labelRate = translations[currentLang]?.labelRate || (currentLang === 'en' ? 'Rate' : 'النسبة (Rate)');
-      const labelProposal = translations[currentLang]?.labelPlanExceptions || (currentLang === 'en' ? 'Write any proposed payment plan you wish to record freely without obligation' : 'اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام');
-      const phProposal = translations[currentLang]?.phPlanExceptions || (currentLang === 'en' ? 'Write any proposed payment plan you wish to record freely without obligation...' : 'اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...');
-      const optOptional = translations[currentLang]?.optOptional || (currentLang === 'en' ? '(Optional)' : '(اختياري)');
+      if (!container) return;
+      container.innerHTML = '';
 
-      div.innerHTML = `
-        <div class="flex items-center justify-between pb-1 border-b border-sky-100">
-          <div class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm">
-            <span>🏢</span>
-            <span class="unit-block-title">${unitTitle}</span>
-            <span class="text-slate-600 text-[10px] font-bold" data-i18n="optOptional">${optOptional}</span>
-          </div>
-          <button 
-            type="button" 
-            onclick="removeExtraUnit(this)" 
-            class="text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-300 px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1"
-            title="${removeTitle}"
-          >
-            <span>❌</span>
-            <span>${removeTitle}</span>
-          </button>
-        </div>
+      if (!unitsData || unitsData.length === 0) {
+        if (statsActions) statsActions.classList.add('hidden');
+        if (totalBadge) totalBadge.classList.add('hidden');
+        if (notFoundNotice) notFoundNotice.classList.remove('hidden');
+        if (initialNotice) initialNotice.classList.add('hidden');
+        return;
+      }
 
-        <!-- سؤال: هل تم استكمال قيمة المقدم؟ (نعم / لا) وتاريخ الدفع للوحدة الإضافية -->
-        <div class="p-3 sm:p-3.5 rounded-xl bg-sky-50/80 border border-sky-200 mb-2">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <!-- السؤال وخيارات نعم / لا -->
-            <div class="space-y-1.5 flex-1">
-              <label class="block text-xs font-black text-slate-950">
-                <span class="text-slate-950 font-black" data-i18n="labelAdvanceQuestion">${currentLang === 'en' ? 'Was the down payment completed?' : 'هل تم استكمال قيمة المقدم؟'}</span> 
-                <span class="text-red-500 font-bold">*</span>
+      if (initialNotice) initialNotice.classList.add('hidden');
+      if (notFoundNotice) notFoundNotice.classList.add('hidden');
+
+      if (totalBadge) {
+        totalBadge.innerText = unitsData.length;
+        totalBadge.classList.remove('hidden');
+      }
+      if (incCount) incCount.innerText = unitsData.length;
+      if (excCount) excCount.innerText = '0';
+      if (excBadge) excBadge.classList.add('hidden');
+      if (statsActions) statsActions.classList.remove('hidden');
+
+      unitsData.forEach((u, idx) => {
+        const cNum = idx + 1;
+        const uCode = (typeof u === 'object' && u.code) ? u.code : (typeof u === 'object' && u.unit) ? u.unit : String(u);
+        const uDetails = (typeof u === 'object' && u.area && u.floor) ? u : getUnitFloorAndArea(uCode);
+        const uArea = uDetails.area || '125 م²';
+        const uFloor = uDetails.floor || 'الدور الأرضي';
+
+        const div = document.createElement('div');
+        div.className = "unit-block unit-card-item p-4 rounded-2xl bg-white border-2 border-sky-300 space-y-3.5 relative shadow-md transition-all duration-300";
+        div.id = `unitCard_${idx}`;
+        div.setAttribute('data-unit-index', idx);
+        div.setAttribute('data-unit-code', uCode);
+
+        div.innerHTML = `
+          <!-- Card Header & Controls -->
+          <div class="flex items-center justify-between pb-2 border-b border-sky-100 flex-wrap gap-2">
+            <!-- Accordion Trigger Button -->
+            <button type="button" onclick="toggleUnitAccordion(${idx})" class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm cursor-pointer hover:text-sky-800 transition-colors text-start">
+              <span class="text-base sm:text-lg">🏢</span>
+              <span class="font-black text-slate-950">${isEn ? 'Unit ' + cNum : 'الوحدة ' + cNum}:</span>
+              <span class="font-mono font-black text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300 text-xs sm:text-sm tracking-wider uppercase">${uCode}</span>
+              <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 hidden sm:inline-flex">${uFloor}</span>
+              <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 hidden sm:inline-flex">${uArea}</span>
+              <span id="unitChevron_${idx}" class="text-xs text-sky-700 transition-transform transform rotate-0 mr-1">▼</span>
+            </button>
+
+            <!-- Inclusion / Exclusion Switch Checkbox -->
+            <div class="flex items-center gap-2">
+              <label class="unit-include-label inline-flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer transition-all border-2 text-xs font-black shadow-2xs bg-emerald-50 border-emerald-400 text-emerald-950" id="unitIncludeBadge_${idx}">
+                <input 
+                  type="checkbox" 
+                  id="unitIncludeCb_${idx}" 
+                  class="unit-include-cb w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer" 
+                  checked 
+                  onchange="handleUnitInclusionToggle(${idx}, this.checked)"
+                />
+                <span id="unitIncludeText_${idx}">${isEn ? 'Included in Contract' : 'مشمولة في العقد'}</span>
               </label>
-              <div class="flex items-center gap-2 max-w-[220px]">
-                <label class="custom-check-box active flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-black text-slate-950 transition-all text-center extra-box-yes" id="extraBoxYes_${cNum}">
-                  <input type="radio" name="extra_paid_5_percent_${cNum}" value="نعم" checked class="hidden" onchange="toggleExtraAdvancePaidBox(${cNum}, this)">
-                  <span>✓</span> <span data-i18n="optYesPaid">${currentLang === 'en' ? 'Yes' : 'نعم'}</span>
+            </div>
+          </div>
+
+          <!-- Card Body (Collapsible Accordion Content) -->
+          <div id="unitBody_${idx}" class="unit-body space-y-3.5 transition-all">
+            <!-- السؤال: هل تم استكمال قيمة المقدم؟ (نعم / لا) وتاريخ الدفع -->
+            <div class="p-3 sm:p-3.5 rounded-xl bg-sky-50/80 border border-sky-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1.5 flex-1">
+                  <label class="block text-xs font-black text-slate-950">
+                    <span>${isEn ? 'Was the down payment completed?' : 'هل تم استكمال قيمة المقدم؟'}</span>
+                    <span class="text-red-500 font-bold">*</span>
+                  </label>
+                  <div class="flex items-center gap-2 max-w-[220px]">
+                    <label class="custom-check-box active flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-black text-slate-950 transition-all text-center unit-box-yes" id="unitBoxYes_${idx}">
+                      <input type="radio" name="unit_paid_5_percent_${idx}" value="نعم" checked class="hidden" onchange="toggleUnitAdvancePaidBox(${idx}, this)">
+                      <span>✓</span> <span>${isEn ? 'Yes' : 'نعم'}</span>
+                    </label>
+                    <label class="custom-check-box flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-black text-slate-950 transition-all text-center unit-box-no" id="unitBoxNo_${idx}">
+                      <input type="radio" name="unit_paid_5_percent_${idx}" value="لا" class="hidden" onchange="toggleUnitAdvancePaidBox(${idx}, this)">
+                      <span>✕</span> <span>${isEn ? 'No' : 'لا'}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="unitPaymentDateContainer_${idx}" class="space-y-1.5 sm:w-60 w-full transition-all">
+                  <label class="block text-xs font-black text-slate-950" for="unitPaymentDate_${idx}">
+                    <span>📅 ${isEn ? 'Payment Date:' : 'تاريخ الدفع:'}</span>
+                    <span class="text-red-500 font-bold">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="unitPaymentDate_${idx}"
+                    class="unit-payment-date-input glass-input w-full px-3.5 py-2 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500 bg-white"
+                    value="${new Date().toISOString().split('T')[0]}"
+                  />
+                  <p class="error-msg text-red-600 font-black text-xs mt-1 hidden unit-payment-date-error">${isEn ? 'Payment date is required' : 'تاريخ الدفع مطلوب'}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- رسالة التوقف عند اختيار لا للمقدم -->
+            <div id="unitAdvanceNoticeNo_${idx}" class="hidden p-3 rounded-2xl bg-amber-50 border-2 border-amber-400 text-center space-y-1 my-2">
+              <div class="text-xl">⚠️</div>
+              <p class="text-xs text-amber-950 font-black">${isEn ? 'Down payment is required to register this unit' : 'استكمال سداد المقدم مطلوب لحجز هذه الوحدة'}</p>
+              <p class="text-[11px] text-slate-900 font-bold">${isEn ? 'Cannot proceed with registering this unit without completing down payment.' : 'لا يمكن تسجيل هذه الوحدة وحجزها بدون استكمال سداد المقدم.'}</p>
+            </div>
+
+            <!-- تفاصيل الوحدة الأساسية (ReadOnly) -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <!-- كود الوحدة -->
+              <div class="sm:col-span-4 form-group">
+                <label class="block text-xs font-black text-slate-950 mb-1.5">
+                  <span>🏢 ${isEn ? 'Unit Code (Letters & Numbers)' : 'كود الوحدة (بالحروف والأرقام)'}</span>
+                  <span class="text-red-500 font-bold">*</span>
                 </label>
-                <label class="custom-check-box flex-1 rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-black text-slate-950 transition-all text-center extra-box-no" id="extraBoxNo_${cNum}">
-                  <input type="radio" name="extra_paid_5_percent_${cNum}" value="لا" class="hidden" onchange="toggleExtraAdvancePaidBox(${cNum}, this)">
-                  <span>✕</span> <span data-i18n="optNoPaid">${currentLang === 'en' ? 'No' : 'لا'}</span>
+                <input
+                  type="text"
+                  dir="ltr"
+                  readonly
+                  value="${uCode}"
+                  class="unit-code-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-xs"
+                />
+              </div>
+
+              <!-- مساحة الوحدة -->
+              <div class="sm:col-span-4 form-group">
+                <label class="block text-xs font-black text-slate-950 mb-1.5">
+                  <span>${isEn ? 'Unit Area' : 'مساحة الوحدة'}</span>
                 </label>
+                <input 
+                  type="text" 
+                  readonly 
+                  value="${uArea}" 
+                  class="unit-area-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-bold border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-xs"
+                />
+              </div>
+
+              <!-- رقم الدور -->
+              <div class="sm:col-span-4 form-group">
+                <label class="block text-xs font-black text-slate-950 mb-1.5">
+                  <span>${isEn ? 'Floor Number' : 'رقم الدور'}</span>
+                </label>
+                <input 
+                  type="text" 
+                  readonly 
+                  value="${uFloor}" 
+                  class="unit-floor-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-bold border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-xs"
+                />
+              </div>
+
+              <!-- فترة السداد -->
+              <div class="sm:col-span-6 form-group">
+                <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitPeriod_${idx}">
+                  <span>${isEn ? 'Payment Term' : 'فترة السداد'}</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <select 
+                  id="unitPeriod_${idx}" 
+                  class="unit-period-select glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer shadow-xs"
+                  onchange="handleUnitCardPeriodChange(${idx}, this)"
+                >
+                  <option value="">${isEn ? 'Select Payment Term...' : 'اختر فترة السداد...'}</option>
+                  <option value="7 Years">7 Years</option>
+                  <option value="8 Years">8 Years</option>
+                  <option value="9 Years">9 Years</option>
+                  <option value="10 Years">10 Years</option>
+                </select>
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden unit-period-error">${isEn ? 'Payment term is required' : 'فترة السداد مطلوبة'}</p>
+              </div>
+
+              <!-- النسبة (Rate) -->
+              <div class="sm:col-span-6 form-group hidden" id="unitRateContainer_${idx}">
+                <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitRateSelect_${idx}">
+                  <span>${isEn ? 'Rate' : 'النسبة (Rate)'}</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <select 
+                  id="unitRateSelect_${idx}" 
+                  class="unit-rate-select glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer shadow-xs"
+                  onchange="handleUnitCardRateChange(${idx}, this)"
+                >
+                  <option value="">${isEn ? 'Select Rate...' : 'اختر النسبة...'}</option>
+                </select>
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden unit-rate-error">${isEn ? 'Please select a rate' : 'يرجى اختيار النسبة'}</p>
+              </div>
+
+              <!-- تنبيه عدد الشيكات اللحظي -->
+              <div id="unitChequesBox_${idx}" class="hidden sm:col-span-12 p-3.5 rounded-xl bg-amber-50 border-2 border-amber-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-xs transition-all">
+                <span class="text-xl">📝</span>
+                <div>
+                  <span>${isEn ? 'On signing day, bring (' : 'يوم التوقيع يتم إحضار عدد ('}</span>
+                  <span id="unitChequesCountSpan_${idx}" class="text-amber-800 text-base font-mono font-black underline">0</span>
+                  <span>${isEn ? ') cheques' : ') من الشيكات'}</span>
+                </div>
+                <input type="hidden" class="unit-cheques-count-input" id="unitChequesCount_${idx}" value="">
+              </div>
+
+              <!-- مقترح نظام السداد (اختياري) -->
+              <div class="sm:col-span-12 form-group pt-1">
+                <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitNotes_${idx}">
+                  <span>${isEn ? 'Write any proposed payment plan you wish to record freely without obligation' : 'اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام'}</span>
+                  <span class="text-slate-600 text-[10px] font-bold">${isEn ? '(Optional)' : '(اختياري)'}</span>
+                </label>
+                <textarea
+                  id="unitNotes_${idx}"
+                  rows="2"
+                  placeholder="${isEn ? 'Write any proposed payment plan you wish to record freely without obligation...' : 'اكتب أي مقترح لنظام سداد ترغب في تسجيله بحرية بدون إلزام...'}"
+                  class="unit-notes-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 bg-white transition-all resize-y shadow-xs"
+                ></textarea>
               </div>
             </div>
-
-            <!-- حقل تاريخ الدفع -->
-            <div id="extraPaymentDateContainer_${cNum}" class="space-y-1.5 sm:w-60 w-full transition-all">
-              <label class="block text-xs font-black text-slate-950" for="extraPaymentDate_${cNum}">
-                <span class="text-slate-950 font-black" data-i18n="labelPaymentDate">📅 ${currentLang === 'en' ? 'Payment Date:' : 'تاريخ الدفع:'}</span>
-                <span class="text-red-500 font-bold">*</span>
-              </label>
-              <input
-                type="date"
-                id="extraPaymentDate_${cNum}"
-                name="extra_payment_dates[]"
-                class="glass-input w-full px-3.5 py-2 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500"
-                value="<?= date('Y-m-d') ?>"
-              />
-              <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-payment-date-error" data-i18n="errPaymentDate">${currentLang === 'en' ? 'Payment date is required' : 'تاريخ الدفع مطلوب'}</p>
-            </div>
           </div>
-        </div>
+        `;
 
-        <!-- رسالة التوقف للوحدة الإضافية عند اختيار "لا" -->
-        <div id="extraAdvanceNoticeNo_${cNum}" class="hidden p-3 rounded-2xl bg-amber-50 border-2 border-amber-400 text-center space-y-1.5 my-2 animate-pulse">
-          <div class="text-xl">⚠️</div>
-          <p class="text-xs text-amber-950 font-black" data-i18n="advanceNoticeExtraTitle">${currentLang === 'en' ? 'Down payment is required to register this unit' : 'استكمال سداد المقدم مطلوب لحجز هذه الوحدة'}</p>
-          <p class="text-[11px] text-slate-900 font-bold" data-i18n="advanceNoticeExtraDesc">${currentLang === 'en' ? 'Cannot proceed with registering this unit without completing down payment.' : 'لا يمكن تسجيل هذه الوحدة وحجزها بدون استكمال سداد المقدم.'}</p>
-        </div>
+        container.appendChild(div);
+      });
+    }
 
-        <div id="extraUnitDetailsContainer_${cNum}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 transition-all">
-          <!-- كود الوحدة الإضافية (تلقائي بالزر بدون تعديل يدوي) -->
-          <div class="sm:col-span-12 form-group">
-            <label class="block text-xs font-black text-slate-950 mb-1.5">
-              <span class="text-slate-950 font-black" data-i18n="labelUnitCode">${labelUnitCode}</span>
-              <span class="text-red-500 font-bold">*</span>
-            </label>
-            <div class="relative">
-              <input
-                type="text"
-                name="extra_unit_codes[]"
-                dir="ltr"
-                readonly
-                placeholder="${currentLang === 'en' ? 'Click below to choose from your units...' : 'اختر كود الوحدة من وحداتك بالأسفل...'}"
-                class="extra-unit-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-400 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-slate-300 bg-slate-100 cursor-not-allowed shadow-sm transition-all"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🏢</span>
-            </div>
+    function handleUnitInclusionToggle(idx, isChecked) {
+      const card = document.getElementById(`unitCard_${idx}`);
+      const badge = document.getElementById(`unitIncludeBadge_${idx}`);
+      const text = document.getElementById(`unitIncludeText_${idx}`);
+      const body = document.getElementById(`unitBody_${idx}`);
+      const isEn = (currentLang === 'en');
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">
-              <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">مساحة الوحدة:</label>
-                <input type="text" name="extra_unit_areas[]" readonly placeholder="المساحة..." class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed" />
-              </div>
-              <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">رقم الدور:</label>
-                <input type="text" name="extra_unit_floors[]" readonly placeholder="رقم الدور..." class="glass-input w-full px-3 py-2 rounded-xl text-slate-950 text-xs font-bold border border-sky-300 bg-sky-50/70 cursor-not-allowed" />
-              </div>
-            </div>
+      if (!card) return;
 
-            <!-- أزرار الوحدات المتبقية لنفس الرقم القومي -->
-            <div class="extra-unit-pills-box mt-2 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 transition-all">
-              <div class="flex items-center justify-between gap-1 mb-1.5">
-                <span class="text-[11px] font-bold text-slate-700" data-i18n="lblCustomerUnits">${currentLang === 'en' ? 'Select unit from your registered units:' : 'اختر كود الوحدة من وحداتك المسجلة:'}</span>
-              </div>
-              <div class="extra-unit-pills flex flex-wrap gap-1.5"></div>
-              <p class="extra-unit-all-selected text-[11px] text-emerald-700 font-black hidden">${currentLang === 'en' ? '✓ All client units have been selected' : '✓ تم اختيار كل وحدات العميل'}</p>
-            </div>
+      if (isChecked) {
+        card.classList.remove('opacity-50', 'bg-slate-50', 'border-slate-300');
+        card.classList.add('bg-white', 'border-sky-300');
+        if (badge) {
+          badge.className = "unit-include-label inline-flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer transition-all border-2 text-xs font-black shadow-2xs bg-emerald-50 border-emerald-400 text-emerald-950";
+        }
+        if (text) {
+          text.innerText = isEn ? 'Included in Contract' : 'مشمولة في العقد';
+        }
+        if (body && body.classList.contains('hidden')) {
+          body.classList.remove('hidden');
+          const chevron = document.getElementById(`unitChevron_${idx}`);
+          if (chevron) chevron.classList.remove('rotate-180');
+        }
+      } else {
+        card.classList.add('opacity-50', 'bg-slate-50', 'border-slate-300');
+        card.classList.remove('bg-white', 'border-sky-300');
+        if (badge) {
+          badge.className = "unit-include-label inline-flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer transition-all border-2 text-xs font-black shadow-2xs bg-slate-100 border-slate-300 text-slate-600";
+        }
+        if (text) {
+          text.innerText = isEn ? 'Excluded from Contract' : 'مستبعدة من العقد';
+        }
+        if (body && !body.classList.contains('hidden')) {
+          body.classList.add('hidden');
+          const chevron = document.getElementById(`unitChevron_${idx}`);
+          if (chevron) chevron.classList.add('rotate-180');
+        }
+      }
 
-            <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-unit-error" data-i18n="errUnitCode">${currentLang === 'en' ? 'Unit code is required' : 'كود الوحدة مطلوب'}</p>
-            <p class="duplicate-unit-warning text-xs font-black text-amber-600 mt-1 hidden"></p>
-          </div>
+      // تحديث عدادات التضمين والاستبعاد
+      const incCount = document.querySelectorAll('.unit-card-item .unit-include-cb:checked').length;
+      const excCount = document.querySelectorAll('.unit-card-item .unit-include-cb:not(:checked)').length;
 
-          <!-- فترة السداد للوحدة الإضافية (مطابقة تماماً للوحدة 1) -->
-          <div class="sm:col-span-6 form-group">
-            <label class="block text-xs font-black text-slate-950 mb-1.5" for="extraPeriod_${cNum}">
-              <span class="text-slate-950 font-black" data-i18n="labelPeriod">${labelPeriod}</span>
-              <span class="text-red-500 font-bold">*</span>
-            </label>
-            <select 
-              name="extra_payment_periods[]" 
-              id="extraPeriod_${cNum}" 
-              class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer" 
-              onchange="handleExtraPeriodChange(${cNum}, this)"
-            >
-              <option value="" data-i18n="optSelectPeriod">${currentLang === 'en' ? 'Select Payment Term...' : 'اختر فترة السداد...'}</option>
-              <option value="7 Years">7 Years</option>
-              <option value="8 Years">8 Years</option>
-              <option value="9 Years">9 Years</option>
-              <option value="10 Years">10 Years</option>
-            </select>
-            <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-period-error" data-i18n="errPeriod">${currentLang === 'en' ? 'Payment term is required' : 'فترة السداد مطلوبة'}</p>
-          </div>
+      const incEl = document.getElementById('unitsIncludedCount');
+      const excEl = document.getElementById('unitsExcludedCount');
+      const excBadge = document.getElementById('unitsExcludedBadge');
 
-          <!-- حقل النسبة للوحدة الإضافية (يظهر عند اختيار الفترة، ويعرض النسبة فوراً حتى لو وحيدة) -->
-          <div class="sm:col-span-6 form-group hidden" id="extraRateContainer_${cNum}">
-            <label class="block text-xs font-black text-slate-950 mb-1.5" for="extraRateSelect_${cNum}">
-              <span class="text-slate-950 font-black" data-i18n="labelRate">${labelRate}</span>
-              <span class="text-red-500 font-bold">*</span>
-            </label>
-            <select 
-              name="extra_final_rates[]" 
-              id="extraRateSelect_${cNum}" 
-              class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer" 
-              onchange="handleExtraRateChange(${cNum}, this)"
-            >
-              <option value="" data-i18n="optSelectRate">${currentLang === 'en' ? 'Select Rate...' : 'اختر النسبة...'}</option>
-            </select>
-            <p class="error-msg text-red-600 font-black text-xs mt-1 hidden extra-rate-error" data-i18n="errRateSelect">${currentLang === 'en' ? 'Please select a rate' : 'يرجى اختيار النسبة'}</p>
-          </div>
-
-          <!-- تنبيه عدد الشيكات اللحظي للوحدة الإضافية (مطابق تماماً للوحدة 1) -->
-          <div id="extraChequesNoticeBox_${cNum}" class="hidden sm:col-span-12 p-3.5 rounded-xl bg-amber-50 border-2 border-amber-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-sm transition-all">
-            <span class="text-xl">📝</span>
-            <div>
-              <span>${currentLang === 'en' ? 'On signing day, bring (' : 'يوم التوقيع يتم إحضار عدد ('}</span>
-              <span id="extraChequesCountSpan_${cNum}" class="text-amber-800 text-base font-mono font-black underline">0</span>
-              <span>${currentLang === 'en' ? ') cheques' : ') من الشيكات'}</span>
-            </div>
-            <input type="hidden" name="extra_cheques_counts[]" id="extraChequesCount_${cNum}" value="">
-          </div>
-
-          <!-- مقترح نظام السداد للوحدة الإضافية (مطابق تماماً للوحدة 1) -->
-          <div class="sm:col-span-12 form-group pt-2">
-            <label class="block text-xs font-black text-slate-950 mb-1.5" for="extraNotes_${cNum}">
-              <span class="text-slate-950 font-black" data-i18n="labelPlanExceptions">${labelProposal}</span>
-              <span class="text-slate-600 text-[10px] font-bold" data-i18n="optOptional">${optOptional}</span>
-            </label>
-            <textarea
-              id="extraNotes_${cNum}"
-              name="extra_notes[]"
-              rows="2"
-              placeholder="${phProposal}"
-              data-i18n-placeholder="phPlanExceptions"
-              class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 bg-white transition-all resize-y"
-            ></textarea>
-          </div>
-        </div>
-      `;
-
-      container.appendChild(div);
-      setTimeout(() => {
-        div.classList.remove('opacity-0', 'translate-y-2');
-      }, 20);
-      if (typeof refreshAllUnitsPills === 'function') {
-        refreshAllUnitsPills();
+      if (incEl) incEl.innerText = incCount;
+      if (excEl) excEl.innerText = excCount;
+      if (excBadge) {
+        if (excCount > 0) excBadge.classList.remove('hidden');
+        else excBadge.classList.add('hidden');
       }
     }
 
-    function removeExtraUnit(btn) {
-      const block = btn.closest('.unit-block');
-      if (block) {
-        block.classList.add('opacity-0', '-translate-y-2');
-        setTimeout(() => {
-          block.remove();
-          if (typeof refreshAllUnitsPills === 'function') {
-            refreshAllUnitsPills();
-          }
-        }, 250);
+    function toggleUnitAccordion(idx) {
+      const body = document.getElementById(`unitBody_${idx}`);
+      const chevron = document.getElementById(`unitChevron_${idx}`);
+      if (!body) return;
+
+      const isHidden = body.classList.contains('hidden');
+      if (isHidden) {
+        body.classList.remove('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
       }
     }
+
+    function toggleAllUnitsAccordion() {
+      const allBodies = document.querySelectorAll('.unit-card-item .unit-body');
+      const allChevrons = document.querySelectorAll('.unit-card-item [id^="unitChevron_"]');
+      const btnText = document.getElementById('toggleAllUnitsText');
+      const btnIcon = document.getElementById('toggleAllUnitsIcon');
+      const isEn = (currentLang === 'en');
+
+      if (allBodies.length === 0) return;
+
+      const anyOpen = Array.from(allBodies).some(b => !b.classList.contains('hidden'));
+
+      if (anyOpen) {
+        // طي الكل
+        allBodies.forEach(b => b.classList.add('hidden'));
+        allChevrons.forEach(c => c.classList.add('rotate-180'));
+        if (btnText) btnText.innerText = isEn ? 'Expand All' : 'فتح الكل';
+        if (btnIcon) btnIcon.innerText = '🔽';
+      } else {
+        // فتح الكل
+        allBodies.forEach(b => b.classList.remove('hidden'));
+        allChevrons.forEach(c => c.classList.remove('rotate-180'));
+        if (btnText) btnText.innerText = isEn ? 'Collapse All' : 'طي الكل';
+        if (btnIcon) btnIcon.innerText = '🔼';
+      }
+    }
+
+    function toggleUnitAdvancePaidBox(idx, radioEl) {
+      const boxYes = document.getElementById(`unitBoxYes_${idx}`);
+      const boxNo = document.getElementById(`unitBoxNo_${idx}`);
+      const dateCont = document.getElementById(`unitPaymentDateContainer_${idx}`);
+      const noticeNo = document.getElementById(`unitAdvanceNoticeNo_${idx}`);
+
+      if (radioEl.value === 'نعم') {
+        if (boxYes) boxYes.classList.add('active');
+        if (boxNo) boxNo.classList.remove('active');
+        if (dateCont) dateCont.classList.remove('hidden');
+        if (noticeNo) noticeNo.classList.add('hidden');
+      } else {
+        if (boxYes) boxYes.classList.remove('active');
+        if (boxNo) boxNo.classList.add('active');
+        if (dateCont) dateCont.classList.add('hidden');
+        if (noticeNo) noticeNo.classList.remove('hidden');
+      }
+    }
+
+    function handleUnitCardPeriodChange(idx, selectEl) {
+      const selectedPeriod = selectEl.value;
+      const rateContainer = document.getElementById(`unitRateContainer_${idx}`);
+      const rateSelect = document.getElementById(`unitRateSelect_${idx}`);
+      const errPeriod = selectEl.closest('.unit-card-item')?.querySelector('.unit-period-error');
+      const isEn = (currentLang === 'en');
+
+      if (errPeriod) errPeriod.classList.add('hidden');
+      selectEl.classList.remove('invalid');
+
+      if (rateSelect) {
+        rateSelect.innerHTML = '<option value="">' + (isEn ? 'Select Rate...' : 'اختر النسبة...') + '</option>';
+        rateSelect.classList.remove('invalid');
+      }
+
+      if (!selectedPeriod) {
+        if (rateContainer) rateContainer.classList.add('hidden');
+        updateUnitCardChequesNotice(idx);
+        return;
+      }
+
+      const rates = paymentRatesConfig[selectedPeriod] || [];
+
+      if (rates.length === 1) {
+        if (rateSelect) {
+          rateSelect.innerHTML = `<option value="${rates[0]}" selected>${rates[0]}</option>`;
+          rateSelect.classList.remove('invalid');
+        }
+        if (rateContainer) rateContainer.classList.remove('hidden');
+      } else if (rates.length > 1) {
+        if (rateSelect) {
+          rateSelect.innerHTML = '<option value="">' + (isEn ? 'Select Rate...' : 'اختر النسبة...') + '</option>';
+          rates.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r;
+            rateSelect.appendChild(opt);
+          });
+          rateSelect.classList.remove('invalid');
+        }
+        if (rateContainer) rateContainer.classList.remove('hidden');
+      }
+
+      updateUnitCardChequesNotice(idx);
+    }
+
+    function handleUnitCardRateChange(idx, selectEl) {
+      const chosenRate = selectEl.value;
+      const errRate = selectEl.closest('.unit-card-item')?.querySelector('.unit-rate-error');
+      if (chosenRate) {
+        if (errRate) errRate.classList.add('hidden');
+        selectEl.classList.remove('invalid');
+      } else {
+        if (errRate) errRate.classList.remove('hidden');
+        selectEl.classList.add('invalid');
+      }
+      updateUnitCardChequesNotice(idx);
+    }
+
+    function updateUnitCardChequesNotice(idx) {
+      const periodVal = document.getElementById(`unitPeriod_${idx}`)?.value || '';
+      const noticeBox = document.getElementById(`unitChequesBox_${idx}`);
+      const countSpan = document.getElementById(`unitChequesCountSpan_${idx}`);
+      const hiddenCount = document.getElementById(`unitChequesCount_${idx}`);
+
+      if (!periodVal) {
+        if (noticeBox) noticeBox.classList.add('hidden');
+        if (hiddenCount) hiddenCount.value = '';
+        return;
+      }
+
+      const count = calculateChequesCount(periodVal);
+      if (count > 0) {
+        if (countSpan) countSpan.textContent = count;
+        if (hiddenCount) hiddenCount.value = count;
+        if (noticeBox) noticeBox.classList.remove('hidden');
+      } else {
+        if (noticeBox) noticeBox.classList.add('hidden');
+        if (hiddenCount) hiddenCount.value = '';
+      }
+    }
+
+    // للتوافق العكسي
+    function addExtraUnitField() {}
+    function removeExtraUnit() {}
 
     // ── دالة حساب عدد الشيكات N وتحديث التنبيه اللحظي ──
     function calculateChequesCount(period, rate) {
@@ -5073,13 +5131,35 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <label class="block text-[11px] font-black text-slate-700 mb-1">
                   <span class="client-lbl-city-text" data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
-                <select
-                  class="client-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled
-                  onchange="handleClientCityChange(${clientId}, this.value, 'id')"
-                >
-                  <option value="" data-i18n="optSelectGovFirst">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</option>
-                </select>
+                <!-- Searchable City / District Picker -->
+                <div class="searchable-picker searchable-id-city-picker relative w-full" id="idCityPicker_${clientId}">
+                  <button
+                    type="button"
+                    onclick="toggleIdCityPickerDropdown(${clientId}, this)"
+                    class="id-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all opacity-50 cursor-not-allowed"
+                    disabled
+                  >
+                    <span class="id-city-picker-display flex items-center gap-2 truncate">
+                      <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</span>
+                    </span>
+                    <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                  </button>
+
+                  <input type="hidden" class="client-city-select" value="" />
+
+                  <div class="id-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="relative mb-2">
+                      <input 
+                        type="text" 
+                        placeholder="${currentLang === 'en' ? 'Search city or district...' : 'ابحث عن المدينة أو الحي أو المركز...'}" 
+                        oninput="filterIdCityPicker(${clientId}, this)" 
+                        class="id-city-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
+                      />
+                      <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                    </div>
+                    <div class="id-city-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -5118,25 +5198,69 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
                     <span>الدولة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
-                  <select
-                    class="client-corr-country-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer"
-                    onchange="handleClientCorrCountryChange(${clientId}, this.value)"
-                  >
-                    <option value="">اختر الدولة...</option>
-                  </select>
+                  <!-- Searchable Correspondence Country Picker -->
+                  <div class="searchable-picker searchable-corr-country-picker relative w-full" id="corrCountryPicker_${clientId}">
+                    <button
+                      type="button"
+                      onclick="toggleCorrCountryPickerDropdown(${clientId}, this)"
+                      class="corr-country-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                    >
+                      <span class="corr-country-picker-display flex items-center gap-2 truncate">
+                        <span class="corr-country-flag text-base flex-shrink-0">🇪🇬</span>
+                        <span class="corr-country-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Egypt' : 'مصر'}</span>
+                      </span>
+                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                    </button>
+
+                    <input type="hidden" class="client-corr-country-select" value="مصر" />
+
+                    <div class="corr-country-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[280px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                      <div class="relative mb-2">
+                        <input 
+                          type="text" 
+                          placeholder="${currentLang === 'en' ? 'Search country (e.g. Egypt, Kuwait, UAE)...' : 'ابحث عن الدولة (مثال: مصر، السعودية، الكويت، فرنسا)...'}" 
+                          oninput="filterCorrCountryPicker(${clientId}, this)" 
+                          class="corr-country-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
+                        />
+                        <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                      </div>
+                      <div class="corr-country-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
                     <span class="client-corr-lbl-city-text">المحافظة / المدينة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
-                  <select
-                    class="client-corr-city-select glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 focus:border-sky-500 focus:outline-none text-xs sm:text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled
-                    onchange="handleClientCityChange(${clientId}, this.value, 'corr')"
-                  >
-                    <option value="">اختر الدولة أولاً...</option>
-                  </select>
+                  <!-- Searchable Correspondence City / Gov Picker -->
+                  <div class="searchable-picker searchable-corr-city-picker relative w-full" id="corrCityPicker_${clientId}">
+                    <button
+                      type="button"
+                      onclick="toggleCorrCityPickerDropdown(${clientId}, this)"
+                      class="corr-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                    >
+                      <span class="corr-city-picker-display flex items-center gap-2 truncate">
+                        <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select Governorate / City...' : 'اختر المحافظة / المدينة...'}</span>
+                      </span>
+                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                    </button>
+
+                    <input type="hidden" class="client-corr-city-select" value="" />
+
+                    <div class="corr-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                      <div class="relative mb-2">
+                        <input 
+                          type="text" 
+                          placeholder="${currentLang === 'en' ? 'Search governorate or city...' : 'ابحث عن المحافظة أو المدينة...'}" 
+                          oninput="filterCorrCityPicker(${clientId}, this)" 
+                          class="corr-city-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
+                        />
+                        <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                      </div>
+                      <div class="corr-city-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -5599,7 +5723,12 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     let currentLookupNationalId = '';
 
     function getUnitCodeInput() {
-      return document.getElementById('unit_code') || document.getElementById('unitCode');
+      const firstIncluded = document.querySelector('.unit-card-item .unit-include-cb:checked');
+      if (firstIncluded) {
+        const blk = firstIncluded.closest('.unit-card-item');
+        return blk?.querySelector('.unit-code-input') || null;
+      }
+      return document.querySelector('.unit-code-input') || document.getElementById('unit_code') || null;
     }
 
     function getAllUnitItems() {
@@ -5660,17 +5789,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       return hasDuplicates;
     }
 
-    function updateAddExtraUnitButtonVisibility() {
-      const addBtn = document.getElementById('btnAddExtraUnit');
-      if (!addBtn) return;
-      const currentCount = 1 + document.querySelectorAll('.unit-block').length;
-      const maxAllowed = window.maxAllowedUnits || 1;
-      if (currentCount >= maxAllowed || maxAllowed <= 1) {
-        addBtn.style.display = 'none';
-      } else {
-        addBtn.style.display = 'flex';
-      }
-    }
+    function updateAddExtraUnitButtonVisibility() {}
 
     function renderUnitPartners(partners) {
       let box = document.getElementById('unitPartnersBox');
@@ -5822,20 +5941,34 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       const hintText = document.getElementById('unit_msg') || document.getElementById('unitAutoHintText');
       const hintIcon = document.getElementById('unit_msg_icon');
       const hintMsgBox = document.getElementById('unit_msg_box');
-      const unitInput = getUnitCodeInput();
-      const errUnit = document.getElementById('errUnitCode');
+      const initialNotice = document.getElementById('unitsInitialNotice');
+      const loadingIndicator = document.getElementById('unitsLoadingIndicator');
+      const notFoundNotice = document.getElementById('unitsNotFoundNotice');
+      const container = document.getElementById('unitsContainer');
+      const statsActions = document.getElementById('unitsStatsActions');
+      const totalBadge = document.getElementById('unitsTotalBadge');
 
       if (!normId || normId.length < 5) {
         if (hintBox) hintBox.classList.add('hidden');
+        if (container) container.innerHTML = '';
+        if (statsActions) statsActions.classList.add('hidden');
+        if (totalBadge) totalBadge.classList.add('hidden');
+        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        if (notFoundNotice) notFoundNotice.classList.add('hidden');
+        if (initialNotice) initialNotice.classList.remove('hidden');
         currentClientUnits = [];
         window.currentClientUnits = [];
-        refreshAllUnitsPills();
         return;
       }
 
+      // إظهار مؤشر التحميل وإخفاء باقي التنبيهات
+      if (initialNotice) initialNotice.classList.add('hidden');
+      if (notFoundNotice) notFoundNotice.classList.add('hidden');
+      if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+
       let data = null;
 
-      // 1. Try fetching from lookup_unit.php backend first
+      // 1. محاولة الجلب من السيرفر قاعدة بيانات MySQL عبر AJAX (lookup_unit.php)
       try {
         const baseUrl = (typeof window.BACKEND_URL !== 'undefined') ? window.BACKEND_URL.replace(/\/+$/, '') : '';
         const lookupUrl = baseUrl ? `${baseUrl}/lookup_unit.php?national_id=` : 'lookup_unit.php?national_id=';
@@ -5847,30 +5980,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         // Fallback silently if offline or on static Vercel
       }
 
-      // 2. Fallback to client-side window.customerUnitsLookup (for static / Vercel hosting)
+      // 2. البديل الاحتياطي: استرجاع البيانات من customerUnitsLookup
       if (!data || typeof data.found === 'undefined') {
         if (window.customerUnitsLookup && window.customerUnitsLookup[normId]) {
           const matches = window.customerUnitsLookup[normId];
           const units = [...new Set(matches.map(m => m.unit))];
-          
-          // دالة استخراج الدور والمساحة في الـ Fallback
-          let floor = 'الدور الأرضي';
-          let area = '125 م²';
-          const uCode = units[0] || '';
-          const m = uCode.match(/-(\d)(\d{2})$/);
-          if (m) {
-            const fNames = {0:'الدور الأرضي', 1:'الدور الأول', 2:'الدور الثاني', 3:'الدور الثالث', 4:'الدور الرابع', 5:'الدور الخامس', 6:'الدور السادس'};
-            floor = fNames[parseInt(m[1], 10)] || ('الدور ' + m[1]);
-          }
+          const unitsInfo = units.map(u => {
+            const d = getUnitFloorAndArea(u);
+            return { code: u, floor: d.floor, area: d.area, partners: [] };
+          });
 
           data = {
             found: true,
             unit_code: units[0],
             unit: units[0],
-            unit_area: area,
-            unit_floor: floor,
+            unit_area: unitsInfo[0]?.area || '125 م²',
+            unit_floor: unitsInfo[0]?.floor || 'الدور الأرضي',
             name: matches[0].name,
             units: units,
+            units_info: unitsInfo,
             total_units: units.length,
             partners: []
           };
@@ -5879,10 +6007,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
       }
 
-      if (data && data.found) {
+      if (loadingIndicator) loadingIndicator.classList.add('hidden');
+
+      if (data && data.found && ((data.units_info && data.units_info.length > 0) || (data.units && data.units.length > 0))) {
+        const unitsList = (data.units_info && data.units_info.length > 0) ? data.units_info : data.units;
         const unitVal = data.unit_code || data.unit || (data.units && data.units[0]) || '';
 
-        // Save units_info into window.customerUnitsLookupInfo if provided
+        // حفظ تفاصيل الوحدات في الذاكرة
         window.customerUnitsLookupInfo = window.customerUnitsLookupInfo || {};
         if (data.units_info && Array.isArray(data.units_info)) {
           data.units_info.forEach(info => {
@@ -5895,35 +6026,14 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           });
         }
 
-        // Save into global variable currentClientUnits (Requirement 1)
         currentClientUnits = (data.units && data.units.length > 0) ? [...data.units] : [unitVal];
         window.currentClientUnits = currentClientUnits;
         currentLookupNationalId = normId;
 
-        // Auto-fill primary unit code, area, and floor
-        if (unitInput) {
-          unitInput.value = unitVal;
-          unitInput.dataset.autoFilled = 'true';
-          unitInput.classList.add('valid');
-          unitInput.classList.remove('invalid');
-          if (errUnit) errUnit.classList.add('hidden');
-        }
+        // توليد كروت الوحدات تلقائياً
+        renderClientUnitCards(unitsList);
 
-        const areaInput = document.getElementById('unit_area');
-        const floorInput = document.getElementById('unit_floor');
-        if (areaInput && data.unit_area) areaInput.value = data.unit_area;
-        if (floorInput && data.unit_floor) floorInput.value = data.unit_floor;
-
-        // عرض الشركاء المسجلين على الوحدة كـ Read-only
-        if (typeof renderUnitPartners === 'function') {
-          renderUnitPartners(data.partners || []);
-        }
-
-        // تحديث الحد الأقصى للوحدات المسموح بإضافتها وإخفاء زر الإضافة إذا وصل للحد
-        window.maxAllowedUnits = data.total_units || 1;
-        updateAddExtraUnitButtonVisibility();
-
-        // Auto-fill customer name if empty or very short
+        // ملء اسم العميل تلقائياً إن كان فارغاً
         const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById(`clientCard_1`);
         if (card) {
           const nameInput = card.querySelector('.client-name-input');
@@ -5935,7 +6045,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           }
         }
 
-        // Display success hint with isolated LTR unit code
+        // عرض رسالة النجاح
         if (hintBox) {
           hintBox.classList.remove('hidden');
           hintBox.className = 'mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all';
@@ -5943,19 +6053,19 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           if (hintIcon) hintIcon.textContent = '✓';
           if (hintText) {
             hintText.innerHTML = (currentLang === 'en')
-              ? `Unit (<bdi dir="ltr">${unitVal}</bdi>) retrieved automatically for customer: <strong>${data.name}</strong>`
-              : `✓ تم جلب كود الوحدة (<bdi dir="ltr">${unitVal}</bdi>) تلقائياً للعميل: <strong>${data.name}</strong>`;
+              ? `Found ${currentClientUnits.length} registered units for customer: <strong>${data.name}</strong>`
+              : `✓ تم جلب (${currentClientUnits.length}) وحدات مسجلة تلقائياً للعميل: <strong>${data.name}</strong>`;
           }
         }
-
-        // Refresh pills across all unit cards (Primary + Extra)
-        refreshAllUnitsPills();
-
       } else {
-        // Not found message
+        // لم يتم العثور على وحدات لهذا الرقم القومي
         currentClientUnits = [];
         window.currentClientUnits = [];
-        refreshAllUnitsPills();
+        if (container) container.innerHTML = '';
+        if (statsActions) statsActions.classList.add('hidden');
+        if (totalBadge) totalBadge.classList.add('hidden');
+        if (notFoundNotice) notFoundNotice.classList.remove('hidden');
+        if (initialNotice) initialNotice.classList.add('hidden');
 
         if (hintBox) {
           hintBox.classList.remove('hidden');
@@ -5963,7 +6073,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           if (hintMsgBox) hintMsgBox.className = 'flex items-center gap-1.5 text-amber-700 font-black';
           if (hintIcon) hintIcon.textContent = 'ℹ';
           if (hintText) {
-            hintText.textContent = (currentLang === 'en') ? 'This National ID / Passport was not found' : 'الرقم ده مش موجود';
+            hintText.textContent = (currentLang === 'en') ? 'This National ID / Passport was not found in the database' : 'الرقم ده مش موجود في قاعدة البيانات';
           }
         }
       }
@@ -5978,15 +6088,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       if (errEl) errEl.classList.add('hidden');
 
-      // Requirement 6: If primary card ID is cleared or changed, reset currentClientUnits and refresh pills
+      // إذا تم تغيير الرقم القومي أو مسحه، يتم تفريغ وتحديث كروت الوحدات فوراً بدون ريفرش
       if (clientId === 1 || clientId === '1') {
         const clean = normalizeIdForLookup(val);
         if (clean !== currentLookupNationalId) {
           currentLookupNationalId = clean;
           currentClientUnits = [];
           window.currentClientUnits = [];
-          if (typeof refreshAllUnitsPills === 'function') refreshAllUnitsPills();
+          const container = document.getElementById('unitsContainer');
+          const statsActions = document.getElementById('unitsStatsActions');
+          const totalBadge = document.getElementById('unitsTotalBadge');
+          const initialNotice = document.getElementById('unitsInitialNotice');
+          const notFoundNotice = document.getElementById('unitsNotFoundNotice');
           const hintBox = document.getElementById('unitAutoHint');
+
+          if (container) container.innerHTML = '';
+          if (statsActions) statsActions.classList.add('hidden');
+          if (totalBadge) totalBadge.classList.add('hidden');
+          if (notFoundNotice) notFoundNotice.classList.add('hidden');
+          if (initialNotice) initialNotice.classList.remove('hidden');
           if (hintBox) hintBox.classList.add('hidden');
         }
       }
@@ -6316,8 +6436,421 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     }
 
     function closeAllRegionPickerDropdowns() {
-      document.querySelectorAll('.region-picker-dropdown').forEach(d => d.classList.add('hidden'));
+      document.querySelectorAll('.region-picker-dropdown, .id-city-picker-dropdown, .corr-country-picker-dropdown, .corr-city-picker-dropdown').forEach(d => d.classList.add('hidden'));
     }
+
+    // ── Searchable Pickers: ID City Picker (Search Bar + Filtering) ──
+    function renderIdCityPickerItems(clientId, cities) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const picker = card.querySelector(`#idCityPicker_${clientId}`) || card.querySelector('.searchable-id-city-picker');
+      if (!picker) return;
+
+      const btn = picker.querySelector('.id-city-picker-btn');
+      const displaySpan = picker.querySelector('.id-city-picker-display');
+      const scrollContainer = picker.querySelector('.id-city-picker-scroll');
+      const hiddenInput = card.querySelector('.client-city-select');
+      const isEn = (currentLang === 'en');
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
+      const t = translations[currentLang] || {};
+
+      if (!scrollContainer) return;
+      scrollContainer.innerHTML = '';
+
+      if (!cities || cities.length === 0) {
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (displaySpan) {
+          displaySpan.innerHTML = `<span class="truncate font-black text-slate-500">${isOutside ? (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...') : (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...')}</span>`;
+        }
+        if (hiddenInput) hiddenInput.value = '';
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+      if (displaySpan) {
+        displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${isOutside ? (isEn ? 'Select City / State...' : 'اختر المدينة / الولاية...') : (isEn ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...')}</span>`;
+      }
+      if (hiddenInput) hiddenInput.value = '';
+
+      cities.forEach(city => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = "id-city-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start text-xs";
+        item.setAttribute('data-name', city);
+        item.innerHTML = `
+          <span class="flex items-center gap-2 truncate">
+            <span class="text-xs">🏙️</span>
+            <span class="truncate font-black text-slate-950">${city}</span>
+          </span>
+        `;
+        item.onclick = (e) => {
+          e.stopPropagation();
+          selectIdCityPickerItem(clientId, city);
+        };
+        scrollContainer.appendChild(item);
+      });
+
+      // خيار "أخرى"
+      const otherVal = isOutside
+        ? (t.optOtherCityAbroad || (isEn ? 'Other city / area abroad' : 'أخرى / مدينة أخرى بالخارج'))
+        : (t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى'));
+      const otherItem = document.createElement('button');
+      otherItem.type = 'button';
+      otherItem.className = "id-city-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-amber-100 text-amber-950 transition-colors cursor-pointer font-bold text-start text-xs border-t border-sky-100 mt-1 pt-1.5";
+      otherItem.setAttribute('data-name', otherVal);
+      otherItem.innerHTML = `
+        <span class="flex items-center gap-2 truncate">
+          <span class="text-xs">✏️</span>
+          <span class="truncate font-black text-amber-950">${otherVal}</span>
+        </span>
+      `;
+      otherItem.onclick = (e) => {
+        e.stopPropagation();
+        selectIdCityPickerItem(clientId, otherVal);
+      };
+      scrollContainer.appendChild(otherItem);
+    }
+
+    function selectIdCityPickerItem(clientId, cityName) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const picker = card.querySelector(`#idCityPicker_${clientId}`) || card.querySelector('.searchable-id-city-picker');
+      const hiddenInput = card.querySelector('.client-city-select');
+      const displaySpan = picker?.querySelector('.id-city-picker-display');
+      const dropdown = picker?.querySelector('.id-city-picker-dropdown');
+      const btn = picker?.querySelector('.id-city-picker-btn');
+
+      if (hiddenInput) {
+        hiddenInput.value = cityName;
+        hiddenInput.classList.remove('invalid');
+      }
+      if (btn) {
+        btn.classList.remove('invalid');
+      }
+      if (displaySpan) {
+        displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${cityName}</span>`;
+      }
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+      }
+
+      handleClientCityChange(clientId, cityName, 'id');
+    }
+
+    function filterIdCityPicker(clientId, searchInput) {
+      const q = searchInput.value.trim().toLowerCase();
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const items = card.querySelectorAll(`#idCityPicker_${clientId} .id-city-picker-item, .searchable-id-city-picker .id-city-picker-item`);
+      items.forEach(item => {
+        const name = (item.getAttribute('data-name') || '').toLowerCase();
+        item.style.display = name.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    function toggleIdCityPickerDropdown(clientId, btn) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const dropdown = card.querySelector(`#idCityPicker_${clientId} .id-city-picker-dropdown`) || card.querySelector('.id-city-picker-dropdown');
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+      closeAllRegionPickerDropdowns();
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = dropdown.querySelector('.id-city-picker-search');
+        if (searchInput) {
+          searchInput.value = '';
+          filterIdCityPicker(clientId, searchInput);
+          setTimeout(() => searchInput.focus(), 50);
+        }
+      }
+    }
+
+    // ── Searchable Pickers: Correspondence Country Picker (Search Bar + World Countries) ──
+    function renderCorrCountryPickerItems(clientId) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const scrollContainer = card.querySelector(`#corrCountryPicker_${clientId} .corr-country-picker-scroll`) || card.querySelector('.corr-country-picker-scroll');
+      if (!scrollContainer) return;
+      scrollContainer.innerHTML = '';
+
+      const isEn = (currentLang === 'en');
+
+      // Group 1: Pinned / Popular Countries
+      const pinnedHeading = document.createElement('div');
+      pinnedHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start flex items-center justify-between";
+      pinnedHeading.innerHTML = `<span>${isEn ? '⭐ Egypt & Popular Countries' : '⭐ مصر والدول الأكثر استخداماً'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">194 دولة</span>`;
+      scrollContainer.appendChild(pinnedHeading);
+
+      const pinned = worldCountriesData.filter(c => c.pinned);
+      pinned.forEach(c => {
+        scrollContainer.appendChild(createCorrCountryPickerItemEl(c, clientId));
+      });
+
+      const divider = document.createElement('div');
+      divider.className = "border-t-2 border-sky-100 my-1.5";
+      scrollContainer.appendChild(divider);
+
+      // Group 2: All other countries
+      const allHeading = document.createElement('div');
+      allHeading.className = "text-[10px] font-black text-slate-700 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start";
+      allHeading.innerText = isEn ? '🌍 All World Countries' : '🌍 باقي دول العالم (كافة القارات)';
+      scrollContainer.appendChild(allHeading);
+
+      const others = worldCountriesData.filter(c => !c.pinned);
+      others.forEach(c => {
+        scrollContainer.appendChild(createCorrCountryPickerItemEl(c, clientId));
+      });
+    }
+
+    function createCorrCountryPickerItemEl(c, clientId) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = "corr-country-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start text-xs";
+      item.setAttribute('data-name-ar', c.nameAr);
+      item.setAttribute('data-name-en', c.nameEn);
+      item.setAttribute('data-continent-ar', c.continentAr || '');
+      item.setAttribute('data-continent-en', c.continentEn || '');
+
+      const isEn = (currentLang === 'en');
+      const displayName = isEn ? c.nameEn : c.nameAr;
+
+      item.innerHTML = `
+        <span class="flex items-center gap-2 truncate">
+          <span class="text-base flex-shrink-0">${c.flag}</span>
+          <span class="truncate font-black text-slate-950">${displayName}</span>
+        </span>
+      `;
+
+      item.onclick = (e) => {
+        e.stopPropagation();
+        selectCorrCountryPickerItem(clientId, c);
+      };
+      return item;
+    }
+
+    function selectCorrCountryPickerItem(clientId, c) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const picker = card.querySelector(`#corrCountryPicker_${clientId}`) || card.querySelector('.searchable-corr-country-picker');
+      const hiddenInput = card.querySelector('.client-corr-country-select');
+      const govInput = card.querySelector('.client-corr-gov-select');
+      const displaySpan = picker?.querySelector('.corr-country-picker-display');
+      const dropdown = picker?.querySelector('.corr-country-picker-dropdown');
+      const isEn = (currentLang === 'en');
+      const displayName = isEn ? c.nameEn : c.nameAr;
+
+      if (hiddenInput) {
+        hiddenInput.value = c.nameAr;
+        hiddenInput.classList.remove('invalid');
+      }
+      if (govInput) {
+        govInput.value = c.nameAr;
+      }
+      if (displaySpan) {
+        displaySpan.innerHTML = `
+          <span class="corr-country-flag text-base flex-shrink-0">${c.flag}</span>
+          <span class="corr-country-name font-black truncate text-slate-950">${displayName}</span>
+        `;
+      }
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+      }
+
+      handleClientCorrCountryChange(clientId, c.nameAr);
+    }
+
+    function filterCorrCountryPicker(clientId, searchInput) {
+      const q = searchInput.value.trim().toLowerCase();
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const items = card.querySelectorAll(`#corrCountryPicker_${clientId} .corr-country-picker-item, .searchable-corr-country-picker .corr-country-picker-item`);
+      items.forEach(item => {
+        const ar = (item.getAttribute('data-name-ar') || '').toLowerCase();
+        const en = (item.getAttribute('data-name-en') || '').toLowerCase();
+        const match = ar.includes(q) || en.includes(q);
+        item.style.display = match ? 'flex' : 'none';
+      });
+    }
+
+    function toggleCorrCountryPickerDropdown(clientId, btn) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const dropdown = card.querySelector(`#corrCountryPicker_${clientId} .corr-country-picker-dropdown`) || card.querySelector('.corr-country-picker-dropdown');
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+      closeAllRegionPickerDropdowns();
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = dropdown.querySelector('.corr-country-picker-search');
+        if (searchInput) {
+          searchInput.value = '';
+          filterCorrCountryPicker(clientId, searchInput);
+          setTimeout(() => searchInput.focus(), 50);
+        }
+      }
+    }
+
+    // ── Searchable Pickers: Correspondence City / Gov Picker (Search Bar + Cities) ──
+    function renderCorrCityPickerItems(clientId, countryVal) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const picker = card.querySelector(`#corrCityPicker_${clientId}`) || card.querySelector('.searchable-corr-city-picker');
+      if (!picker) return;
+
+      const btn = picker.querySelector('.corr-city-picker-btn');
+      const displaySpan = picker.querySelector('.corr-city-picker-display');
+      const scrollContainer = picker.querySelector('.corr-city-picker-scroll');
+      const hiddenInput = card.querySelector('.client-corr-city-select');
+      const isEn = (currentLang === 'en');
+
+      if (!scrollContainer) return;
+      scrollContainer.innerHTML = '';
+
+      if (!countryVal) {
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (displaySpan) {
+          displaySpan.innerHTML = `<span class="truncate font-black text-slate-500">${isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'}</span>`;
+        }
+        if (hiddenInput) hiddenInput.value = '';
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+      if (displaySpan) {
+        displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${isEn ? 'Select Governorate / City...' : 'اختر المحافظة / المدينة...'}</span>`;
+      }
+      if (hiddenInput) hiddenInput.value = '';
+
+      // Cities based on country
+      let cities = [];
+      if (countryVal === 'مصر') {
+        cities = Object.keys(egyptGovernoratesAndCities).filter(g => !g.includes('خارج'));
+      } else {
+        const cObj = worldCountriesData.find(c => c.nameAr === countryVal);
+        cities = (cObj && cObj.cities) ? cObj.cities : [];
+      }
+
+      cities.forEach(city => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = "corr-city-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start text-xs";
+        item.setAttribute('data-name', city);
+        item.innerHTML = `
+          <span class="flex items-center gap-2 truncate">
+            <span class="text-xs">📍</span>
+            <span class="truncate font-black text-slate-950">${city}</span>
+          </span>
+        `;
+        item.onclick = (e) => {
+          e.stopPropagation();
+          selectCorrCityPickerItem(clientId, city);
+        };
+        scrollContainer.appendChild(item);
+      });
+
+      // خيار "أخرى"
+      const otherVal = isEn ? 'Other city / area' : 'أخرى / مدينة أخرى';
+      const otherItem = document.createElement('button');
+      otherItem.type = 'button';
+      otherItem.className = "corr-city-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-amber-100 text-amber-950 transition-colors cursor-pointer font-bold text-start text-xs border-t border-sky-100 mt-1 pt-1.5";
+      otherItem.setAttribute('data-name', otherVal);
+      otherItem.innerHTML = `
+        <span class="flex items-center gap-2 truncate">
+          <span class="text-xs">✏️</span>
+          <span class="truncate font-black text-amber-950">${otherVal}</span>
+        </span>
+      `;
+      otherItem.onclick = (e) => {
+        e.stopPropagation();
+        selectCorrCityPickerItem(clientId, otherVal);
+      };
+      scrollContainer.appendChild(otherItem);
+    }
+
+    function selectCorrCityPickerItem(clientId, cityName) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const picker = card.querySelector(`#corrCityPicker_${clientId}`) || card.querySelector('.searchable-corr-city-picker');
+      const hiddenInput = card.querySelector('.client-corr-city-select');
+      const displaySpan = picker?.querySelector('.corr-city-picker-display');
+      const dropdown = picker?.querySelector('.corr-city-picker-dropdown');
+      const btn = picker?.querySelector('.corr-city-picker-btn');
+
+      if (hiddenInput) {
+        hiddenInput.value = cityName;
+        hiddenInput.classList.remove('invalid');
+      }
+      if (btn) {
+        btn.classList.remove('invalid');
+      }
+      if (displaySpan) {
+        displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${cityName}</span>`;
+      }
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+      }
+
+      updateCombinedAddress(clientId, 'corr');
+    }
+
+    function filterCorrCityPicker(clientId, searchInput) {
+      const q = searchInput.value.trim().toLowerCase();
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const items = card.querySelectorAll(`#corrCityPicker_${clientId} .corr-city-picker-item, .searchable-corr-city-picker .corr-city-picker-item`);
+      items.forEach(item => {
+        const name = (item.getAttribute('data-name') || '').toLowerCase();
+        item.style.display = name.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    function toggleCorrCityPickerDropdown(clientId, btn) {
+      const card = document.getElementById(`clientCard_${clientId}`);
+      if (!card) return;
+      const dropdown = card.querySelector(`#corrCityPicker_${clientId} .corr-city-picker-dropdown`) || card.querySelector('.corr-city-picker-dropdown');
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+      closeAllRegionPickerDropdowns();
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = dropdown.querySelector('.corr-city-picker-search');
+        if (searchInput) {
+          searchInput.value = '';
+          filterCorrCityPicker(clientId, searchInput);
+          setTimeout(() => searchInput.focus(), 50);
+        }
+      }
+    }
+
+    // إغلاق أي قائمة مفتوحة عند الضغط في أي مكان خارجي
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.searchable-region-picker') && 
+          !e.target.closest('.searchable-id-city-picker') && 
+          !e.target.closest('.searchable-corr-country-picker') && 
+          !e.target.closest('.searchable-corr-city-picker') &&
+          !e.target.closest('.country-picker')) {
+        closeAllRegionPickerDropdowns();
+      }
+    });
 
     function initClientAddressFields(clientId) {
       const card = document.getElementById(`clientCard_${clientId}`);
@@ -6325,88 +6858,57 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       updateClientAddressLabels(clientId);
       renderRegionPickerItems(clientId);
-
-      // Populate Correspondence Country Dropdown with all world countries
-      const corrCountrySelect = card.querySelector('.client-corr-country-select');
-      populateWorldCountryOptions(corrCountrySelect);
-    }
-
-    function populateWorldCountryOptions(selectEl) {
-      if (!selectEl) return;
-      selectEl.innerHTML = '<option value="">اختر الدولة...</option>';
-      
-      worldCountriesData.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.nameAr;
-        opt.textContent = `${c.flag} ${c.nameAr}`;
-        opt.className = "bg-white text-slate-950 font-bold";
-        selectEl.appendChild(opt);
-      });
-
-      // Default to Egypt
-      selectEl.value = 'مصر';
-      const card = selectEl.closest('.client-card');
-      if (card) {
-        const cId = card.dataset.clientId;
-        handleClientCorrCountryChange(cId, 'مصر');
-      }
+      renderCorrCountryPickerItems(clientId);
+      renderCorrCityPickerItems(clientId, 'مصر');
     }
 
     function handleClientCorrCountryChange(clientId, countryVal) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
 
-      const citySelect = card.querySelector('.client-corr-city-select');
       const govInput = card.querySelector('.client-corr-gov-select');
       if (govInput) govInput.value = countryVal;
 
-      if (!citySelect) return;
-      citySelect.innerHTML = '';
+      // تحديث قائمة المدن في الـ Searchable Picker
+      renderCorrCityPickerItems(clientId, countryVal);
 
-      if (!countryVal) {
-        citySelect.disabled = true;
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'اختر الدولة أولاً...';
-        citySelect.appendChild(opt);
-        return;
-      }
-
-      citySelect.disabled = false;
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = '';
-      defaultOpt.textContent = 'اختر المحافظة / المدينة...';
-      citySelect.appendChild(defaultOpt);
-
-      if (countryVal === 'مصر') {
-        // إذا كانت مصر، نعرض كل محافظات مصر
-        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
-          if (gov.includes('خارج')) return;
+      // تحديث select القديم للتوافق في حال وجوده
+      const citySelect = card.querySelector('.client-corr-city-select');
+      if (citySelect && citySelect.tagName === 'SELECT') {
+        citySelect.innerHTML = '';
+        if (!countryVal) {
+          citySelect.disabled = true;
           const opt = document.createElement('option');
-          opt.value = gov;
-          opt.textContent = gov;
+          opt.value = '';
+          opt.textContent = 'اختر الدولة أولاً...';
+          citySelect.appendChild(opt);
+          return;
+        }
+        citySelect.disabled = false;
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'اختر المحافظة / المدينة...';
+        citySelect.appendChild(defaultOpt);
+
+        let cities = [];
+        if (countryVal === 'مصر') {
+          cities = Object.keys(egyptGovernoratesAndCities).filter(g => !g.includes('خارج'));
+        } else {
+          const countryObj = worldCountriesData.find(c => c.nameAr === countryVal);
+          cities = (countryObj && countryObj.cities) ? countryObj.cities : [];
+        }
+        cities.forEach(city => {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = city;
           opt.className = "bg-white text-slate-950 font-bold";
           citySelect.appendChild(opt);
         });
-      } else {
-        // إذا كانت دولة أخرى، نبحث عن مدنها في worldCountriesData
-        const countryObj = worldCountriesData.find(c => c.nameAr === countryVal);
-        if (countryObj && countryObj.cities && countryObj.cities.length > 0) {
-          countryObj.cities.forEach(city => {
-            const opt = document.createElement('option');
-            opt.value = city;
-            opt.textContent = city;
-            opt.className = "bg-white text-slate-950 font-bold";
-            citySelect.appendChild(opt);
-          });
-        }
+        const otherOpt = document.createElement('option');
+        otherOpt.value = 'أخرى / مدينة أخرى';
+        otherOpt.textContent = 'أخرى / مدينة أخرى';
+        citySelect.appendChild(otherOpt);
       }
-
-      const otherOpt = document.createElement('option');
-      otherOpt.value = 'أخرى / مدينة أخرى';
-      otherOpt.textContent = 'أخرى / مدينة أخرى';
-      otherOpt.className = "bg-white text-slate-950 font-bold";
-      citySelect.appendChild(otherOpt);
 
       updateCombinedAddress(clientId, 'corr');
     }
@@ -6419,53 +6921,50 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       const isEn = (currentLang === 'en');
       const t = translations[currentLang] || {};
 
-      const citySelect = (type === 'id') 
-        ? card.querySelector('.client-city-select') 
-        : card.querySelector('.client-corr-city-select');
+      if (type === 'id') {
+        const cities = !regionVal 
+          ? [] 
+          : (isOutside ? (worldCountriesAndCities[regionVal] || []) : (egyptGovernoratesAndCities[regionVal] || []));
 
-      if (!citySelect) return;
-      citySelect.innerHTML = '';
+        // تحديث الـ Searchable Picker
+        renderIdCityPickerItems(clientId, cities);
 
-      if (!regionVal) {
-        citySelect.disabled = true;
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = isOutside 
-          ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
-          : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
-        opt.className = "bg-white text-slate-950 font-bold";
-        citySelect.appendChild(opt);
-      } else {
-        citySelect.disabled = false;
-        const defaultOpt = document.createElement('option');
-        defaultOpt.value = '';
-        defaultOpt.textContent = isOutside
-          ? (t.optSelectCityAbroad || (isEn ? 'Select City / State / Province...' : 'اختر المدينة / الولاية / المقاطعة...'))
-          : (t.optSelectCity || (isEn ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...'));
-        defaultOpt.className = "bg-white text-slate-950 font-bold";
-        citySelect.appendChild(defaultOpt);
+        // تحديث الـ select العادي إن وجد
+        const citySelect = card.querySelector('.client-city-select');
+        if (citySelect && citySelect.tagName === 'SELECT') {
+          citySelect.innerHTML = '';
+          if (!regionVal) {
+            citySelect.disabled = true;
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = isOutside 
+              ? (t.optSelectCountryFirst || (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'))
+              : (t.optSelectGovFirst || (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'));
+            citySelect.appendChild(opt);
+          } else {
+            citySelect.disabled = false;
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = isOutside
+              ? (t.optSelectCityAbroad || (isEn ? 'Select City / State / Province...' : 'اختر المدينة / الولاية / المقاطعة...'))
+              : (t.optSelectCity || (isEn ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...'));
+            citySelect.appendChild(defaultOpt);
 
-        const cities = isOutside 
-          ? (worldCountriesAndCities[regionVal] || []) 
-          : (egyptGovernoratesAndCities[regionVal] || []);
-
-        cities.forEach(city => {
-          const opt = document.createElement('option');
-          opt.value = city;
-          opt.textContent = city;
-          opt.className = "bg-white text-slate-950 font-bold";
-          citySelect.appendChild(opt);
-        });
-
-        // Other option
-        const otherOpt = document.createElement('option');
-        const otherVal = isOutside
-          ? (t.optOtherCityAbroad || (isEn ? 'Other city / area abroad' : 'أخرى / مدينة أخرى بالخارج'))
-          : (t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى'));
-        otherOpt.value = otherVal;
-        otherOpt.textContent = otherVal;
-        otherOpt.className = "bg-white text-slate-950 font-bold";
-        citySelect.appendChild(otherOpt);
+            cities.forEach(city => {
+              const opt = document.createElement('option');
+              opt.value = city;
+              opt.textContent = city;
+              citySelect.appendChild(opt);
+            });
+            const otherOpt = document.createElement('option');
+            const otherVal = isOutside
+              ? (t.optOtherCityAbroad || (isEn ? 'Other city / area abroad' : 'أخرى / مدينة أخرى بالخارج'))
+              : (t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى'));
+            otherOpt.value = otherVal;
+            otherOpt.textContent = otherVal;
+            citySelect.appendChild(otherOpt);
+          }
+        }
       }
 
       updateCombinedAddress(clientId, type);
@@ -6984,104 +7483,42 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         });
       }
 
-      // Check for duplicate units across all unit cards
-      if (typeof checkDuplicateUnits === 'function' && checkDuplicateUnits()) {
-        alert(currentLang === 'en'
-          ? 'There are duplicate unit codes across cards. Please ensure each unit is unique before submitting.'
-          : 'يوجد تكرار في كود الوحدة بين البطاقات. يرجى التأكد من عدم تكرار أي وحدة قبل الإرسال.');
+      // التحقق من بيانات قسم الوحدات
+      const allUnitCards = document.querySelectorAll('.unit-card-item');
+      if (allUnitCards.length === 0) {
+        alert(currentLang === 'en' 
+          ? 'Please enter a valid National ID / Passport to load your units.' 
+          : 'يرجى إدخال الرقم القومي أو رقم جواز السفر لتحميل الوحدات المسجلة للعميل.');
         hasError = true;
       }
 
-      // التحقق من بيانات الوحدة ونظام السداد (Section 02) - التأكد من اكتمال كود الوحدة كاملاً بدون أي نقص
-      const unitCodeInput = getUnitCodeInput();
-      const unitCode = unitCodeInput ? unitCodeInput.value.trim() : '';
-      if (!unitCode || (typeof validateCompleteUnitCode === 'function' && !validateCompleteUnitCode(unitCodeInput))) {
-        document.getElementById('errUnitCode')?.classList.remove('hidden');
-        if (unitCodeInput) {
-          unitCodeInput.classList.add('invalid');
-          unitCodeInput.classList.remove('valid');
-        }
-        hasError = true;
-      } else {
-        document.getElementById('errUnitCode')?.classList.add('hidden');
-        if (unitCodeInput) {
-          unitCodeInput.classList.add('valid');
-          unitCodeInput.classList.remove('invalid');
-        }
-      }
+      const includedCards = Array.from(allUnitCards).filter(card => {
+        const cb = card.querySelector('.unit-include-cb');
+        return cb && cb.checked;
+      });
 
-      const periodEl = document.getElementById('period') || document.getElementById('paymentPeriod');
-      const period = periodEl ? periodEl.value : '';
-      const finalRateEl = document.getElementById('final_rate');
-      const finalRate = finalRateEl ? finalRateEl.value : '';
-
-      if (!period) {
-        document.getElementById('errPeriod')?.classList.remove('hidden');
+      if (allUnitCards.length > 0 && includedCards.length === 0) {
+        alert(currentLang === 'en' 
+          ? 'Please include at least one unit in the contract.' 
+          : 'يرجى تضمين وحدة واحدة على الأقل في التعاقد.');
         hasError = true;
       }
-      if (period && !finalRate) {
-        const errRateSelect = document.getElementById('errRateSelect');
-        const rateSelect = document.getElementById('rateSelect');
-        if (errRateSelect) errRateSelect.classList.remove('hidden');
-        if (rateSelect) rateSelect.classList.add('invalid');
-        hasError = true;
-      } else {
-        const errRateSelect = document.getElementById('errRateSelect');
-        const rateSelect = document.getElementById('rateSelect');
-        if (errRateSelect) errRateSelect.classList.add('hidden');
-        if (rateSelect) rateSelect.classList.remove('invalid');
-      }
 
-      // التحقق من الوحدات الإضافية إن وجدت
-      const extraBlocks = document.querySelectorAll('#unitsContainer .unit-block:not(:first-child)');
-      extraBlocks.forEach(blk => {
-        const uInput = blk.querySelector('input[name="extra_unit_codes[]"]');
-        const errUnit = blk.querySelector('.extra-unit-error');
-        const isExtraValid = uInput && uInput.value.trim() && (typeof validateCompleteUnitCode === 'function' ? validateCompleteUnitCode(uInput) : true);
-        if (!isExtraValid) {
-          if (errUnit) errUnit.classList.remove('hidden');
-          if (uInput) {
-            uInput.classList.add('invalid');
-            uInput.classList.remove('valid');
-          }
+      includedCards.forEach(card => {
+        const uCode = card.getAttribute('data-unit-code') || card.querySelector('.unit-code-input')?.value.trim() || '';
+        
+        // 1. هل تم استكمال المقدم؟
+        const paidRadio = card.querySelector('input[type="radio"]:checked');
+        const paidVal = paidRadio ? paidRadio.value : '';
+        if (paidVal === 'لا') {
+          alert((currentLang === 'en' ? 'Down payment is required to register unit: ' : 'استكمال سداد المقدم مطلوب لحجز الوحدة: ') + uCode);
           hasError = true;
-        } else {
-          if (errUnit) errUnit.classList.add('hidden');
-          if (uInput) {
-            uInput.classList.add('valid');
-            uInput.classList.remove('invalid');
-          }
         }
 
-        const pSel = blk.querySelector('select[name="extra_payment_periods[]"]');
-        const rSel = blk.querySelector('select[name="extra_final_rates[]"]');
-        const errRate = blk.querySelector('.extra-rate-error');
-        if (pSel && pSel.value) {
-          const rates = paymentRatesConfig[pSel.value] || [];
-          if (rates.length > 1 && (!rSel || !rSel.value)) {
-            if (errRate) errRate.classList.remove('hidden');
-            if (rSel) rSel.classList.add('invalid');
-            hasError = true;
-          } else {
-            if (errRate) errRate.classList.add('hidden');
-            if (rSel) rSel.classList.remove('invalid');
-          }
-        }
-
-        // التحقق من استكمال المقدم وتاريخ الدفع للوحدة الإضافية
-        const extraPaidRadio = blk.querySelector('input[type="radio"]:checked');
-        const extraPaidVal = extraPaidRadio ? extraPaidRadio.value : '';
-        if (extraPaidVal === 'لا') {
-          alert(currentLang === 'en'
-            ? 'Contract registration cannot proceed without completing the down payment for all units.'
-            : 'عفواً، لا يمكن استكمال حجز الوحدة الإضافية إلا بعد استكمال سداد قيمة المقدم الخاص بها.');
-          hasError = true;
-          return;
-        }
-
-        const dateInput = blk.querySelector('input[name="extra_payment_dates[]"]');
-        const dateErr = blk.querySelector('.extra-payment-date-error');
-        if (extraPaidVal === 'نعم' && (!dateInput || !dateInput.value)) {
+        // 2. تاريخ الدفع إذا كان المقدم نعم
+        const dateInput = card.querySelector('.unit-payment-date-input');
+        const dateErr = card.querySelector('.unit-payment-date-error');
+        if (paidVal === 'نعم' && (!dateInput || !dateInput.value)) {
           if (dateErr) dateErr.classList.remove('hidden');
           if (dateInput) dateInput.classList.add('invalid');
           hasError = true;
@@ -7089,32 +7526,39 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           if (dateErr) dateErr.classList.add('hidden');
           if (dateInput) dateInput.classList.remove('invalid');
         }
-      });
 
-      // التحقق من استكمال المقدم وتاريخ الدفع للوحدة 1
-      const advancePaidRadio = document.querySelector('input[name="paid_5_percent"]:checked');
-      const advancePaidVal = advancePaidRadio ? advancePaidRadio.value : '';
-      if (advancePaidVal === 'لا') {
-        const noticeNo = document.getElementById('advanceNoticeNo');
-        if (noticeNo) noticeNo.classList.remove('hidden');
-        alert(currentLang === 'en'
-          ? 'Contract registration cannot proceed without completing the down payment.'
-          : 'عفواً، لا يمكن استكمال تسجيل التعاقد وحجز الوحدة إلا بعد استكمال سداد قيمة المقدم.');
-        return;
-      }
-
-      if (advancePaidVal === 'نعم') {
-        const paymentDate = document.getElementById('paymentDate').value;
-        if (!paymentDate) {
-          document.getElementById('errPaymentDate')?.classList.remove('hidden');
+        // 3. فترة السداد
+        const periodSelect = card.querySelector('.unit-period-select');
+        const periodErr = card.querySelector('.unit-period-error');
+        if (!periodSelect || !periodSelect.value) {
+          if (periodErr) periodErr.classList.remove('hidden');
+          if (periodSelect) periodSelect.classList.add('invalid');
           hasError = true;
+        } else {
+          if (periodErr) periodErr.classList.add('hidden');
+          if (periodSelect) periodSelect.classList.remove('invalid');
         }
-      }
+
+        // 4. النسبة
+        const rateSelect = card.querySelector('.unit-rate-select');
+        const rateErr = card.querySelector('.unit-rate-error');
+        if (periodSelect && periodSelect.value) {
+          const rates = paymentRatesConfig[periodSelect.value] || [];
+          if (rates.length > 1 && (!rateSelect || !rateSelect.value)) {
+            if (rateErr) rateErr.classList.remove('hidden');
+            if (rateSelect) rateSelect.classList.add('invalid');
+            hasError = true;
+          } else {
+            if (rateErr) rateErr.classList.add('hidden');
+            if (rateSelect) rateSelect.classList.remove('invalid');
+          }
+        }
+      });
 
       // فرع توثيق العقد (يطلب فقط لو كان هناك عميل داخل مصر)
       const anyInside = Object.values(clientResidenceMap).some(v => v.includes('داخل'));
       if (anyInside) {
-        const location = document.getElementById('contractLocation').value;
+        const location = document.getElementById('contractLocation')?.value;
         if (!location) {
           document.getElementById('errLocation')?.classList.remove('hidden');
           hasError = true;
@@ -7129,7 +7573,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
         alert(currentLang === 'en' 
           ? 'Please complete all required fields indicated in red before submitting.' 
-          : 'يرجى استيفاء وتصحيح جميع البيانات المطلوبة والمحددة باللون الأحمر (بما فيها صور الهوية والمقدم).');
+          : 'يرجى استيفاء وتصحيح جميع البيانات المطلوبة والمحددة باللون الأحمر (بما فيها صور الهوية وسداد المقدم).');
         return;
       }
 
@@ -7137,6 +7581,48 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       document.getElementById('loadingOverlay').classList.remove('hidden');
 
       const formData = new FormData(this);
+      formData.append('lang', currentLang);
+      formData.append('clients_json', JSON.stringify(clientsData));
+
+      // تمرير كافة الوحدات في مصفوفات موحدة للـ backend
+      allUnitCards.forEach(card => {
+        const isIncluded = card.querySelector('.unit-include-cb')?.checked ? true : false;
+        const uCode = card.getAttribute('data-unit-code') || card.querySelector('.unit-code-input')?.value.trim() || '';
+        const uPaid = card.querySelector('input[type="radio"]:checked')?.value || 'نعم';
+        const uDate = card.querySelector('.unit-payment-date-input')?.value || '';
+        const uPeriod = card.querySelector('.unit-period-select')?.value || '';
+        const uRate = card.querySelector('.unit-rate-select')?.value || '';
+        const uCheque = card.querySelector('.unit-cheques-count-input')?.value || '';
+        const uNote = card.querySelector('.unit-notes-input')?.value || '';
+
+        formData.append('unit_codes[]', uCode);
+        formData.append('units_included[]', isIncluded ? '1' : '0');
+        formData.append('unit_paid_5_percent[]', uPaid);
+        formData.append('unit_payment_dates[]', uDate);
+        formData.append('unit_payment_periods[]', uPeriod);
+        formData.append('unit_final_rates[]', uRate);
+        formData.append('unit_cheques_counts[]', uCheque);
+        formData.append('unit_notes[]', uNote);
+      });
+
+      // تمرير حقول الوحدة الأساسية الأولى المشمولة للتوافق العكسي
+      if (includedCards.length > 0) {
+        const prim = includedCards[0];
+        formData.set('unit_code', prim.getAttribute('data-unit-code') || prim.querySelector('.unit-code-input')?.value.trim() || '');
+        formData.set('unit_area', prim.querySelector('.unit-area-input')?.value || '');
+        formData.set('unit_floor', prim.querySelector('.unit-floor-input')?.value || '');
+        formData.set('payment_period', prim.querySelector('.unit-period-select')?.value || '');
+        formData.set('final_rate', prim.querySelector('.unit-rate-select')?.value || '');
+        formData.set('cheques_count', prim.querySelector('.unit-cheques-count-input')?.value || '');
+        formData.set('paid_5_percent', prim.querySelector('input[type="radio"]:checked')?.value || 'نعم');
+        formData.set('payment_date', prim.querySelector('.unit-payment-date-input')?.value || '');
+        formData.set('notes', prim.querySelector('.unit-notes-input')?.value || '');
+      }
+
+      // تمرير مكان توثيق العقد
+      const signingLoc = document.getElementById('contractLocation')?.value || '';
+      formData.set('contract_location', signingLoc);
+      formData.set('preferred_signing_location', signingLoc);
       formData.append('lang', currentLang);
       formData.append('clients_json', JSON.stringify(clientsData));
 
@@ -7153,12 +7639,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       formData.append('correspondence_country', primaryCorrCountry);
       formData.append('correspondence_city', primaryCorrCity || primaryCorrGov);
 
-      // تمرير حالة سداد المقدم لكل وحدة إضافية
-      extraBlocks.forEach(blk => {
-        const extraPaidRadio = blk.querySelector('input[type="radio"]:checked');
-        const extraPaidVal = extraPaidRadio ? extraPaidRadio.value : 'لا';
-        formData.append('extra_paid_5_percent[]', extraPaidVal);
-      });
+      
 
       // إضافة الحقول المسطحة (Flat arrays) لضمان التوافقية الكاملة
       clientsData.forEach(c => {

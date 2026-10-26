@@ -546,38 +546,31 @@ if (empty($correspondence_address)) {
     $errors[] = ($lang === 'en') ? 'Approved correspondence address is required.' : 'العنوان المعتمد بالتفصيل للمراسلات مطلوب.';
 }
 
-// كود الوحدة والتحقق منه من قاعدة البيانات
-$lookupFile = __DIR__ . '/customer_units_lookup.json';
-if (file_exists($lookupFile)) {
-    $dbLookup = json_decode(file_get_contents($lookupFile), true);
-    $primaryIdNum = $idNumbersArr[0] ?? '';
-    $cleanCheckId = strtoupper(preg_replace('/[\s\-_–—]/u', '', $primaryIdNum));
+function getUnitDetailsHelper($unitCode) {
+    $floor = 'الدور الأرضي';
+    $area = '125 م²';
+    $fNames = [
+        0 => 'الدور الأرضي',
+        1 => 'الدور الأول',
+        2 => 'الدور الثاني',
+        3 => 'الدور الثالث',
+        4 => 'الدور الرابع',
+        5 => 'الدور الخامس',
+        6 => 'الدور السادس'
+    ];
 
-    if (isset($dbLookup[$cleanCheckId])) {
-        $allowedUnitCodes = array_column($dbLookup[$cleanCheckId], 'unit');
-        
-        // التحقق من كود الوحدة الأساسية
-        if (!in_array($unit_code, $allowedUnitCodes)) {
-            // اعتماد الكود الأصلي المسجل للعميل في الداتابيز حمايةً من أي تلاعب
-            $unit_code = $allowedUnitCodes[0];
-        }
-
-        // التحقق من أن عدد الوحدات الإجمالي لا يتجاوز المسجل للرقم القومي
-        $totalSubmittedUnits = 1 + count($data['extra_unit_codes'] ?? []);
-        if ($totalSubmittedUnits > count($allowedUnitCodes)) {
-            http_response_code(422);
-            echo json_encode([
-                'status'  => 'error',
-                'field'   => 'extra_unit_codes',
-                'message' => 'عدد الوحدات المدخلة يتجاوز عدد الوحدات المسجلة لهذا الرقم القومي في قاعدة البيانات.'
-            ], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
+    if (preg_match('/[-_](\d)(\d{1,2})$/', $unitCode, $m)) {
+        $floorNum = intval($m[1]);
+        $floor = $fNames[$floorNum] ?? ("الدور " . $floorNum);
+    } elseif (preg_match('/[-_](\d+)$/', $unitCode, $m)) {
+        $floorNum = intval(substr($m[1], 0, 1));
+        $floor = $fNames[$floorNum] ?? ("الدور " . $floorNum);
+    } elseif (preg_match('/(\d+)/', $unitCode, $m)) {
+        $floorNum = intval(substr($m[1], 0, 1));
+        $floor = $fNames[$floorNum] ?? ("الدور " . $floorNum);
     }
-}
 
-if (empty($unit_code)) {
-    $errors[] = ($lang === 'en') ? 'Unit code is required (e.g. nn-13).' : 'كود الوحدة مطلوب (مثال: nn-13).';
+    return ['floor' => $floor, 'area' => $area];
 }
 
 // ── التحقق من خطة السداد والنسبة (Payment Plan & Final Rate Validation) ──
@@ -595,66 +588,160 @@ $periodAliases = [
     '10 Years' => '10 Years', '10 سنوات' => '10 Years',
 ];
 
-$period = $periodAliases[$rawPeriod] ?? $rawPeriod;
+// ── جلب الوحدات الرسمية للعميل من قاعدة البيانات (Prepared Statements) للتحقق الصارم ──
+$primaryIdNum = $idNumbersArr[0] ?? '';
+$cleanCheckId = strtoupper(preg_replace('/[\s\-_–—]/u', '', $primaryIdNum));
+$allowedUnitsMap = []; // code => ['area' => ..., 'floor' => ...]
 
-if (empty($period)) {
-    http_response_code(400);
-    echo json_encode([
-        'status'  => 'error',
-        'field'   => 'period',
-        'message' => ($lang === 'en') ? 'Payment period is required.' : 'يرجى تحديد فترة السداد (Period).'
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-if (!isset($paymentPlans[$period])) {
-    http_response_code(400);
-    echo json_encode([
-        'status'  => 'error',
-        'field'   => 'period',
-        'message' => ($lang === 'en') ? 'Invalid payment period selected.' : 'فترة السداد المختارة غير صالحة. يرجى اختيار إحدى الفترات المعتمدة.'
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$allowedRates = $paymentPlans[$period];
-$finalRate = '';
-
-if (count($allowedRates) === 1) {
-    // فترة بنسبة وحيدة: يتم اعتماد النسبة من إعدادات السيرفر وتجاهل أي مدخل من المتصفح
-    $finalRate = $allowedRates[0];
-} else {
-    // فترة بأكثر من نسبة: التحقق الدقيق من النسبة المختارة
-    $incomingRate = cleanInput($data['final_rate'] ?? '');
-    if (empty($incomingRate)) {
-        http_response_code(400);
-        echo json_encode([
-            'status'  => 'error',
-            'field'   => 'final_rate',
-            'message' => ($lang === 'en') ? 'Please select a rate for the chosen period.' : 'في أكثر من نسبة لهذه الفترة، يرجى اختيار النسبة.'
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+if (!empty($cleanCheckId)) {
+    // 1. فحص جدول customer_units في MySQL بواسطة Prepared Statement
+    if (isset($pdo)) {
+        try {
+            $chkStmt = $pdo->prepare("SELECT unit_code, client_name, unit_area, unit_floor FROM customer_units WHERE national_id = :nid");
+            $chkStmt->execute([':nid' => $cleanCheckId]);
+            $dbRows = $chkStmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($dbRows as $r) {
+                $uc = trim($r['unit_code']);
+                $uDetails = getUnitDetailsHelper($uc);
+                $allowedUnitsMap[$uc] = [
+                    'area'  => !empty($r['unit_area']) ? $r['unit_area'] : $uDetails['area'],
+                    'floor' => !empty($r['unit_floor']) ? $r['unit_floor'] : $uDetails['floor']
+                ];
+            }
+        } catch (Exception $e) {}
     }
 
-    if (!in_array($incomingRate, $allowedRates, true)) {
-        http_response_code(400);
-        echo json_encode([
-            'status'  => 'error',
-            'field'   => 'final_rate',
-            'message' => ($lang === 'en') ? 'The selected rate does not match the chosen period.' : 'النسبة المختارة لا تخص هذه الفترة.'
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+    // 2. بديل آمن: customer_units_lookup.json إذا لم يتم العثور في الداتابيز
+    if (empty($allowedUnitsMap)) {
+        $lookupFile = __DIR__ . '/customer_units_lookup.json';
+        if (file_exists($lookupFile)) {
+            $jsonDb = json_decode(file_get_contents($lookupFile), true);
+            if (isset($jsonDb[$cleanCheckId])) {
+                foreach ($jsonDb[$cleanCheckId] as $entry) {
+                    $uc = trim($entry['unit'] ?? '');
+                    if ($uc) {
+                        $uDetails = getUnitDetailsHelper($uc);
+                        $allowedUnitsMap[$uc] = [
+                            'area'  => $uDetails['area'],
+                            'floor' => $uDetails['floor']
+                        ];
+                    }
+                }
+            }
+        }
     }
-
-    $finalRate = $incomingRate;
 }
 
-// مزامنة فترة السداد المعتمدة
-$payment_period = $period;
-
-// استخراج الوحدات (الوحدة الأساسية + الوحدات الإضافية) مع فتراتها ونسبها وملاحظاتها وحالة السداد
+// ── استخراج ومعالجة الوحدات المشمولة في العقد ──
 $unitsList = [];
-if (!empty($unit_code)) {
+
+// أ. النظام الموحد الجديد: unit_codes[] مع units_included[]
+if (!empty($data['unit_codes']) && is_array($data['unit_codes'])) {
+    $rawUnitCodes  = $data['unit_codes'];
+    $includedFlags = $data['units_included'] ?? [];
+    $unitPaids     = $data['unit_paid_5_percent'] ?? [];
+    $unitDates     = $data['unit_payment_dates'] ?? [];
+    $unitPeriods   = $data['unit_payment_periods'] ?? [];
+    $unitRates     = $data['unit_final_rates'] ?? [];
+    $unitCheques   = $data['unit_cheques_counts'] ?? [];
+    $unitNotes     = $data['unit_notes'] ?? [];
+
+    foreach ($rawUnitCodes as $idx => $rawCode) {
+        $cCode = cleanInput($rawCode);
+        if (empty($cCode)) continue;
+
+        // التحقق من حالة التضمين (هل الوحدة مشمولة في العقد؟)
+        $isIncluded = true;
+        if (isset($includedFlags[$idx])) {
+            $val = $includedFlags[$idx];
+            $isIncluded = ($val === '1' || $val === 1 || $val === true || $val === 'true' || $val === 'on');
+        }
+        if (!$isIncluded) {
+            continue; // تم استبعاد هذه الوحدة بواسطة العميل
+        }
+
+        // التحقق الإلزامي: هل الوحدة مسجلة رسمياً لهذا الرقم القومي في الداتابيز؟
+        if (!empty($allowedUnitsMap) && !isset($allowedUnitsMap[$cCode])) {
+            http_response_code(422);
+            echo json_encode([
+                'status'  => 'error',
+                'field'   => 'unit_code',
+                'message' => ($lang === 'en')
+                    ? "Unit ({$cCode}) is not registered to this National ID in the database."
+                    : "عفواً، الوحدة ({$cCode}) غير مسجلة لهذا الرقم القومي في قاعدة البيانات."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // جلب المساحة والدور حصراً من السيرفر / الداتابيز وليس من الـ POST
+        $officialArea = $allowedUnitsMap[$cCode]['area'] ?? getUnitDetailsHelper($cCode)['area'];
+        $officialFloor = $allowedUnitsMap[$cCode]['floor'] ?? getUnitDetailsHelper($cCode)['floor'];
+
+        $uPaid = cleanInput($unitPaids[$idx] ?? 'نعم');
+        $uDate = cleanInput($unitDates[$idx] ?? date('Y-m-d'));
+        $uPeriodRaw = cleanInput($unitPeriods[$idx] ?? '');
+        $uPeriod = $periodAliases[$uPeriodRaw] ?? $uPeriodRaw;
+        $uRate = cleanInput($unitRates[$idx] ?? '');
+        $uCheque = cleanInput($unitCheques[$idx] ?? '');
+        $uNote = cleanInput($unitNotes[$idx] ?? '');
+
+        if ($uPaid === 'لا') {
+            http_response_code(422);
+            echo json_encode([
+                'status'  => 'error',
+                'field'   => 'unit_paid_5_percent',
+                'message' => ($lang === 'en')
+                    ? "Down payment is required for unit ({$cCode}) to proceed with contract registration."
+                    : "عفواً، لا يمكن استكمال تسجيل الوحدة ({$cCode}) إلا بعد استكمال سداد قيمة المقدم الخاص بها."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if (empty($uPeriod) || !isset($paymentPlans[$uPeriod])) {
+            $errors[] = ($lang === 'en')
+                ? "Payment period is required for unit ({$cCode})."
+                : "يرجى تحديد فترة السداد للوحدة ({$cCode}).";
+        }
+
+        if (isset($paymentPlans[$uPeriod])) {
+            $pAllowed = $paymentPlans[$uPeriod];
+            if (count($pAllowed) === 1) {
+                $uRate = $pAllowed[0];
+            } elseif (empty($uRate) || !in_array($uRate, $pAllowed, true)) {
+                $uRate = $pAllowed[0];
+            }
+        }
+
+        if (empty($uCheque) && !empty($uPeriod)) {
+            if (preg_match('/(\d+)/', $uPeriod, $ym)) {
+                $uCheque = intval($ym[1]) * 4;
+            }
+        }
+
+        $unitsList[] = [
+            'code'          => $cCode,
+            'period'        => $uPeriod,
+            'price'         => null,
+            'rate'          => $uRate,
+            'paid'          => $uPaid,
+            'payment_date'  => ($uPaid === 'نعم') ? $uDate : null,
+            'notes'         => !empty($uNote) ? $uNote : $notes,
+            'area'          => $officialArea,
+            'floor'         => $officialFloor,
+            'cheques_count' => $uCheque
+        ];
+    }
+}
+
+// ب. التوافق العكسي: إذا تم الإرسال بالنظام القديم unit_code + extra_unit_codes
+if (empty($unitsList) && !empty($unit_code)) {
+    $period = $periodAliases[$rawPeriod] ?? $rawPeriod;
+    $finalRate = $data['final_rate'] ?? '';
+    if (isset($paymentPlans[$period]) && count($paymentPlans[$period]) === 1) {
+        $finalRate = $paymentPlans[$period][0];
+    }
+
+    $uDetails = getUnitDetailsHelper($unit_code);
     $unitsList[] = [
         'code'          => $unit_code,
         'period'        => $period,
@@ -663,85 +750,96 @@ if (!empty($unit_code)) {
         'paid'          => $paid_5_percent,
         'payment_date'  => $payment_date,
         'notes'         => $notes,
-        'area'          => $unit_area,
-        'floor'         => $unit_floor,
+        'area'          => $allowedUnitsMap[$unit_code]['area'] ?? $uDetails['area'],
+        'floor'         => $allowedUnitsMap[$unit_code]['floor'] ?? $uDetails['floor'],
         'cheques_count' => $cheques_count
     ];
-}
 
-if (!empty($data['extra_unit_codes']) && is_array($data['extra_unit_codes'])) {
-    $extraPeriods = $data['extra_payment_periods'] ?? [];
-    $extraPrices  = $data['extra_unit_prices'] ?? [];
-    $extraRates   = $data['extra_final_rates'] ?? [];
-    $extraNotes   = $data['extra_notes'] ?? [];
-    $extraPaids   = $data['extra_paid_5_percent'] ?? [];
-    $extraDates   = $data['extra_payment_dates'] ?? [];
-    $extraAreas   = $data['extra_unit_areas'] ?? [];
-    $extraFloors  = $data['extra_unit_floors'] ?? [];
-    $extraCheques = $data['extra_cheques_counts'] ?? [];
+    if (!empty($data['extra_unit_codes']) && is_array($data['extra_unit_codes'])) {
+        $extraPeriods = $data['extra_payment_periods'] ?? [];
+        $extraPrices  = $data['extra_unit_prices'] ?? [];
+        $extraRates   = $data['extra_final_rates'] ?? [];
+        $extraNotes   = $data['extra_notes'] ?? [];
+        $extraPaids   = $data['extra_paid_5_percent'] ?? [];
+        $extraDates   = $data['extra_payment_dates'] ?? [];
+        $extraAreas   = $data['extra_unit_areas'] ?? [];
+        $extraFloors  = $data['extra_unit_floors'] ?? [];
+        $extraCheques = $data['extra_cheques_counts'] ?? [];
 
-    foreach ($data['extra_unit_codes'] as $idx => $extraCodeRaw) {
-        $cleanExtraCode = cleanInput($extraCodeRaw);
-        if (!empty($cleanExtraCode)) {
-            $ePeriodRaw = cleanInput($extraPeriods[$idx] ?? '') ?: $rawPeriod;
-            $ePeriod = $periodAliases[$ePeriodRaw] ?? $ePeriodRaw;
-            if (empty($ePeriod) || !isset($paymentPlans[$ePeriod])) {
-                $ePeriod = $period;
-            }
-            $ePrice  = !empty($extraPrices[$idx]) ? floatval(str_replace(',', '', $extraPrices[$idx])) : null;
-            $eRate   = cleanInput($extraRates[$idx] ?? '');
-            $eNote   = cleanInput($extraNotes[$idx] ?? '');
-            $ePaid   = cleanInput($extraPaids[$idx] ?? '') ?: $paid_5_percent;
-            $eDate   = cleanInput($extraDates[$idx] ?? '') ?: $payment_date;
-            $eArea   = cleanInput($extraAreas[$idx] ?? '') ?: $unit_area;
-            $eFloor  = cleanInput($extraFloors[$idx] ?? '') ?: $unit_floor;
-            $eCheque = cleanInput($extraCheques[$idx] ?? '');
-
-            // إذا لم يتم تحديد عدد الشيكات للوحدة الإضافية، حسابه بناء على الفترة
-            if (empty($eCheque) && !empty($ePeriod)) {
-                if (preg_match('/(\d+)/', $ePeriod, $ym)) {
-                    $eCheque = intval($ym[1]) * 4;
+        foreach ($data['extra_unit_codes'] as $idx => $extraCodeRaw) {
+            $cleanExtraCode = cleanInput($extraCodeRaw);
+            if (!empty($cleanExtraCode)) {
+                $ePeriodRaw = cleanInput($extraPeriods[$idx] ?? '') ?: $rawPeriod;
+                $ePeriod = $periodAliases[$ePeriodRaw] ?? $ePeriodRaw;
+                if (empty($ePeriod) || !isset($paymentPlans[$ePeriod])) {
+                    $ePeriod = $period;
                 }
-            }
+                $ePrice  = !empty($extraPrices[$idx]) ? floatval(str_replace(',', '', $extraPrices[$idx])) : null;
+                $eRate   = cleanInput($extraRates[$idx] ?? '');
+                $eNote   = cleanInput($extraNotes[$idx] ?? '');
+                $ePaid   = cleanInput($extraPaids[$idx] ?? '') ?: $paid_5_percent;
+                $eDate   = cleanInput($extraDates[$idx] ?? '') ?: $payment_date;
+                $eCheque = cleanInput($extraCheques[$idx] ?? '');
 
-            if ($ePaid === 'لا') {
-                http_response_code(422);
-                echo json_encode([
-                    'status'  => 'error',
-                    'field'   => 'extra_paid_5_percent',
-                    'message' => ($lang === 'en')
-                        ? "Registration cannot proceed for extra unit ({$cleanExtraCode}) without completing its down payment."
-                        : "عفواً، لا يمكن استكمال تسجيل الوحدة الإضافية ({$cleanExtraCode}) إلا بعد استكمال سداد قيمة المقدم."
-                ], JSON_UNESCAPED_UNICODE);
-                exit;
-            }
-
-            if (isset($paymentPlans[$ePeriod])) {
-                $eAllowed = $paymentPlans[$ePeriod];
-                if (count($eAllowed) === 1) {
-                    $eRate = $eAllowed[0];
-                } elseif (!in_array($eRate, $eAllowed, true)) {
-                    $eRate = !empty($eRate) ? $eRate : ($eAllowed[0] ?? $finalRate);
+                if (empty($eCheque) && !empty($ePeriod)) {
+                    if (preg_match('/(\d+)/', $ePeriod, $ym)) {
+                        $eCheque = intval($ym[1]) * 4;
+                    }
                 }
-            } else {
-                $eRate = $finalRate;
-            }
 
-            $unitsList[] = [
-                'code'          => $cleanExtraCode,
-                'period'        => $ePeriod,
-                'price'         => $ePrice,
-                'rate'          => $eRate ?: $finalRate,
-                'paid'          => $ePaid,
-                'payment_date'  => ($ePaid === 'نعم') ? $eDate : null,
-                'notes'         => !empty($eNote) ? $eNote : $notes,
-                'area'          => $eArea,
-                'floor'         => $eFloor,
-                'cheques_count' => $eCheque ?: $cheques_count
-            ];
+                if ($ePaid === 'لا') {
+                    http_response_code(422);
+                    echo json_encode([
+                        'status'  => 'error',
+                        'field'   => 'extra_paid_5_percent',
+                        'message' => ($lang === 'en')
+                            ? "Registration cannot proceed for extra unit ({$cleanExtraCode}) without completing its down payment."
+                            : "عفواً، لا يمكن استكمال تسجيل الوحدة الإضافية ({$cleanExtraCode}) إلا بعد استكمال سداد قيمة المقدم."
+                    ], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+
+                $uDetailsExtra = getUnitDetailsHelper($cleanExtraCode);
+                $unitsList[] = [
+                    'code'          => $cleanExtraCode,
+                    'period'        => $ePeriod,
+                    'price'         => $ePrice,
+                    'rate'          => $eRate ?: $finalRate,
+                    'paid'          => $ePaid,
+                    'payment_date'  => ($ePaid === 'نعم') ? $eDate : null,
+                    'notes'         => !empty($eNote) ? $eNote : $notes,
+                    'area'          => $allowedUnitsMap[$cleanExtraCode]['area'] ?? $uDetailsExtra['area'],
+                    'floor'         => $allowedUnitsMap[$cleanExtraCode]['floor'] ?? $uDetailsExtra['floor'],
+                    'cheques_count' => $eCheque ?: $cheques_count
+                ];
+            }
         }
     }
 }
+
+// التحقق من وجود وحدة واحدة على الأقل مشمولة في العقد
+if (empty($unitsList)) {
+    http_response_code(422);
+    echo json_encode([
+        'status'  => 'error',
+        'field'   => 'unit_codes',
+        'message' => ($lang === 'en')
+            ? 'At least one unit must be included in the contract to proceed.'
+            : 'يجب تضمين وحدة واحدة على الأقل في العقد لإتمام التعاقد.'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// مزامنة المتغيرات الرئيسية للتوافق الكامل
+$unit_code       = $unitsList[0]['code'];
+$unit_area       = $unitsList[0]['area'];
+$unit_floor      = $unitsList[0]['floor'];
+$payment_period  = $unitsList[0]['period'];
+$period          = $unitsList[0]['period'];
+$finalRate       = $unitsList[0]['rate'];
+$paid_5_percent  = $unitsList[0]['paid'];
+$payment_date    = $unitsList[0]['payment_date'];
+$cheques_count   = $unitsList[0]['cheques_count'];
 
 // تاريخ الدفع إذا تم استكمال المقدم
 if ($paid_5_percent === 'نعم' && empty($payment_date)) {
