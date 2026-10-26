@@ -533,23 +533,23 @@
                 <span data-i18n="btnAddUnit">إضافة وحدة أخرى (اختياري)</span>
               </button>
 
-              <!-- المكان الأقرب لتوثيق العقد (فرع القاهرة / الإسكندرية) -->
+              <!-- المكان الأقرب لتوقيع العقد (فرع القاهرة / الإسكندرية) -->
               <div id="contractLocationContainer" class="form-group pt-2 border-t-2 border-sky-200 w-full">
                 <label class="block text-xs font-black text-slate-950 mb-1.5" for="contractLocation">
-                  <span class="text-slate-950 font-black" data-i18n="labelLocation">المكان الأقرب لتوثيق العقد</span>
+                  <span class="text-slate-950 font-black">المكان الأقرب لتوقيع العقد</span>
                   <span class="text-red-500 font-bold">*</span>
                 </label>
                 <select 
                   name="contract_location" 
                   id="contractLocation" 
-                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white" 
+                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer" 
                   onchange="validateField(this, val => val !== '')"
                 >
-                  <option value="" data-i18n="optSelectLocation">اختر المكان الأقرب لتوثيق العقد...</option>
-                  <option value="القاهرة" selected data-i18n="branchCairoClean">القاهرة</option>
-                  <option value="الإسكندرية" data-i18n="branchAlexClean">الإسكندرية</option>
+                  <option value="">اختر المكان الأقرب لتوقيع العقد...</option>
+                  <option value="القاهرة" selected>القاهرة</option>
+                  <option value="الإسكندرية">الإسكندرية</option>
                 </select>
-                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errLocation" data-i18n="errLocation">المكان الأقرب لتوثيق العقد مطلوب</p>
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errLocation">المكان الأقرب لتوقيع العقد مطلوب</p>
               </div>
 
               <!-- 5. هل لديك أي ملاحظات تود إخبارنا بها؟ (اختياري) -->
@@ -786,11 +786,11 @@
         optOptional: "(اختياري)",
         btnAddUnit: "إضافة وحدة أخرى (اختياري)",
         btnRemoveUnit: "حذف هذه الوحدة",
-        labelLocation: "المكان الأقرب لتوثيق العقد",
-        optSelectLocation: "اختر المكان الأقرب لتوثيق العقد...",
+        labelLocation: "المكان الأقرب لتوقيع العقد",
+        optSelectLocation: "اختر المكان الأقرب لتوقيع العقد...",
         branchCairoClean: "القاهرة",
         branchAlexClean: "الإسكندرية",
-        errLocation: "المكان الأقرب لتوثيق العقد مطلوب",
+        errLocation: "المكان الأقرب لتوقيع العقد مطلوب",
         labelGeneralNotes: "هل لديك أي ملاحظات تود إخبارنا بها؟",
         phGeneralNotes: "اكتب هنا أي ملاحظات أو استفسارات إضافية تود إخبارنا بها...",
         submitBtnText: "استيفاء وتسجيل بيانات التعاقد رسمياً",
