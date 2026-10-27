@@ -333,7 +333,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
         $editUnitCode      = trim($_POST['edit_unit_code'] ?? '');
         $editUnitPrice     = !empty($_POST['edit_unit_price']) ? floatval(str_replace(',', '', $_POST['edit_unit_price'])) : null;
         $editLocation      = trim($_POST['edit_contract_location'] ?? 'القاهرة');
-        $editPayment       = trim($_POST['edit_payment_period'] ?? '');
+        $editPayment       = trim($_POST['edit_payment_period'] ?? '7 Years');
+        $editFinalRate     = trim($_POST['edit_final_rate'] ?? '');
+        $editChequesCount  = trim($_POST['edit_cheques_count'] ?? '');
         $editPaid5         = trim($_POST['edit_paid_5_percent'] ?? 'لا');
         $editPaymentDate   = !empty($_POST['edit_payment_date']) ? trim($_POST['edit_payment_date']) : null;
         $editIdAddress     = trim($_POST['edit_id_address'] ?? '');
@@ -412,6 +414,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
                         eoi_number = :unit_code, 
                         unit_price = :unit_price,
                         payment_period = :payment_period, 
+                        period = :period,
+                        final_rate = :final_rate,
+                        cheques_count = :cheques_count,
                         paid_5_percent = :paid_5_percent, 
                         payment_date = :payment_date,
                         id_address = :id_address,
@@ -434,6 +439,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
                 ':unit_code'              => $editUnitCode,
                 ':unit_price'             => $editUnitPrice,
                 ':payment_period'         => $editPayment,
+                ':period'                 => $editPayment,
+                ':final_rate'             => $editFinalRate,
+                ':cheques_count'          => $editChequesCount,
                 ':paid_5_percent'         => $editPaid5,
                 ':payment_date'           => $editPaymentDate,
                 ':id_address'             => $editIdAddress,
@@ -461,6 +469,78 @@ if (!function_exists('splitPartnerValues')) {
         $normalized = str_replace(["\r\n", "\r", "\n", '،'], ',', (string)$val);
         $items = array_map('trim', explode(',', $normalized));
         return array_values(array_filter($items, fn($x) => $x !== ''));
+    }
+}
+
+// ── دالة جلب العملاء الآخرين في نفس الوحدة والمشروع ──
+if (!function_exists('getOtherClientsInSameUnit')) {
+    /**
+     * جلب كافة العملاء الآخرين المسجلين بنفس كود الوحدة مع مقارنة المشروع واستبعاد العميل المعروض
+     * 
+     * @param PDO $pdo كائن الاتصال بقاعدة البيانات
+     * @param int $currentClientId معرف العميل الحالي لاستبعاده
+     * @param string $unitCode كود الوحدة
+     * @param string $project اسم المشروع لمطابقته ومنع تشابه الأكواد بين المشاريع المختلفة
+     * @param array|null $prefetchedMap خريطة بيانات مسبقة التجهيز (Batch Prefetch) لتفادي استعلامات N+1
+     * @return array مصفوفة العملاء الآخرين المسجلين في نفس الوحدة
+     */
+    function getOtherClientsInSameUnit(PDO $pdo, int $currentClientId, string $unitCode, string $project = '', ?array &$prefetchedMap = null): array {
+        $unitCode = trim((string)$unitCode);
+        if ($unitCode === '') {
+            return [];
+        }
+
+        $projectClean = trim((string)$project);
+        $mapKey = mb_strtolower($unitCode, 'UTF-8') . '|' . mb_strtolower($projectClean, 'UTF-8');
+        $mapFallbackKey = mb_strtolower($unitCode, 'UTF-8');
+
+        // 1. استخدام الخريطة المجهزة مسبقاً دفعة واحدة لتحقيق أعلى أداء وسرعة
+        if ($prefetchedMap !== null) {
+            $candidates = $prefetchedMap[$mapKey] ?? ($prefetchedMap[$mapFallbackKey] ?? []);
+            $result = [];
+            $seenIds = [];
+            foreach ($candidates as $c) {
+                $cId = (int)($c['id'] ?? 0);
+                if ($cId === $currentClientId || isset($seenIds[$cId])) {
+                    continue; // استبعاد العميل نفسه والتكرار
+                }
+                // مقارنة المشروع/العمارة لمنع ظهور عملاء من مشروع آخر بنفس كود الوحدة
+                $cProj = trim((string)($c['project'] ?? ''));
+                if ($projectClean !== '' && $cProj !== '' && mb_strtolower($projectClean, 'UTF-8') !== mb_strtolower($cProj, 'UTF-8')) {
+                    continue;
+                }
+                $seenIds[$cId] = true;
+                $result[] = $c;
+            }
+            return $result;
+        }
+
+        // 2. استعلام PDO Prepared Statement مباشر عند الاستدعاء الفردي
+        try {
+            $sql = "SELECT c.id, c.name, c.id_number, c.project, c.eoi_number 
+                    FROM clients c 
+                    WHERE c.eoi_number = :eoi 
+                      AND c.id != :current_id";
+            
+            $params = [
+                ':eoi'        => $unitCode,
+                ':current_id' => $currentClientId
+            ];
+
+            if ($projectClean !== '') {
+                $sql .= " AND (c.project = :proj OR c.project IS NULL OR c.project = '')";
+                $params[':proj'] = $projectClean;
+            }
+
+            $sql .= " ORDER BY c.id ASC";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error in getOtherClientsInSameUnit: " . $e->getMessage());
+            return [];
+        }
     }
 }
 
@@ -667,6 +747,36 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $clients = $stmt->fetchAll();
+
+    // ── تجهيز خريطة العملاء المشتركين في نفس الوحدات مسبقاً (Single Batch Prefetch) لتفادي استعلامات N+1 ──
+    $unitsOtherClientsMap = [];
+    $allEoiNumbers = array_values(array_filter(array_unique(array_map('trim', array_column($clients, 'eoi_number')))));
+
+    if (!empty($allEoiNumbers)) {
+        $placeholders = implode(',', array_fill(0, count($allEoiNumbers), '?'));
+        // جلب جميع العملاء المسجلين بهذه الوحدات (الاسم والرقم القومي والمشروع) بغض النظر عن السيلز
+        // وفق قرار الصلاحيات المعتمد مع الإدارة
+        $batchStmt = $pdo->prepare("
+            SELECT c.id, c.name, c.id_number, c.project, c.eoi_number 
+            FROM clients c 
+            WHERE c.eoi_number IN ($placeholders)
+            ORDER BY c.id ASC
+        ");
+        $batchStmt->execute($allEoiNumbers);
+        $allBatchRows = $batchStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($allBatchRows as $bRow) {
+            $bUnit = trim((string)$bRow['eoi_number']);
+            $bProj = trim((string)($bRow['project'] ?? ''));
+            $kFull = mb_strtolower($bUnit, 'UTF-8') . '|' . mb_strtolower($bProj, 'UTF-8');
+            $kUnitOnly = mb_strtolower($bUnit, 'UTF-8');
+
+            $unitsOtherClientsMap[$kFull][] = $bRow;
+            if ($kFull !== $kUnitOnly) {
+                $unitsOtherClientsMap[$kUnitOnly][] = $bRow;
+            }
+        }
+    }
 
 } catch (PDOException $e) {
     die("خطأ في جلب تقارير العملاء: " . htmlspecialchars($e->getMessage()));
@@ -1247,6 +1357,16 @@ try {
               foreach ($clients as $client): 
                 $attachments = json_decode($client['attachments'] ?? '[]', true);
                 if (!is_array($attachments)) $attachments = [];
+                
+                // جلب كافة العملاء الآخرين المسجلين في نفس الوحدة والمشروع (مع استبعاد العميل المعروض)
+                $otherUnitClients = getOtherClientsInSameUnit(
+                    $pdo, 
+                    (int)$client['id'], 
+                    (string)$client['eoi_number'], 
+                    (string)($client['project'] ?? ''), 
+                    $unitsOtherClientsMap
+                );
+                $client['other_unit_clients'] = $otherUnitClients;
                 $clientJson = htmlspecialchars(json_encode($client), ENT_QUOTES, 'UTF-8');
                 $loc = $client['contract_location'] ?? 'القاهرة';
                 $residence = $client['residence_country'] ?? 'داخل جمهورية مصر العربية';
@@ -1260,16 +1380,25 @@ try {
 
                 $partnerCount = max(count($cNames), count($cPhones), count($cEmails), 1);
 
+                // إدراج أسماء وأرقام بطاقات العملاء الآخرين في نفس الوحدة ضمن مؤشر البحث اللحظي
+                $otherSearchText = '';
+                if (!empty($otherUnitClients)) {
+                    foreach ($otherUnitClients as $oc) {
+                        $otherSearchText .= ' ' . ($oc['name'] ?? '') . ' ' . ($oc['id_number'] ?? '');
+                    }
+                }
+
                 for ($pIdx = 0; $pIdx < $partnerCount; $pIdx++):
                   $pName  = $cNames[$pIdx] ?? ($cNames[0] ?? $client['name']);
                   $pPhone = $cPhones[$pIdx] ?? ($cPhones[0] ?? $client['phone']);
                   $pEmail = $cEmails[$pIdx] ?? ($cEmails[0] ?? $client['email']);
                   $pIdNum = $cIdNums[$pIdx] ?? ($cIdNums[0] ?? $client['id_number']);
                   $rawPhone = preg_replace('/[^0-9]/', '', (string)$pPhone);
+                  $rowSearchText = mb_strtolower($pName . ' ' . $pPhone . ' ' . $client['eoi_number'] . ' ' . ($client['sales_name'] ?? '') . $otherSearchText);
               ?>
                 <tr 
                   class="hover:bg-sky-50/90 transition-colors client-row" 
-                  data-search="<?= htmlspecialchars(mb_strtolower($pName . ' ' . $pPhone . ' ' . $client['eoi_number'] . ' ' . ($client['sales_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
+                  data-search="<?= htmlspecialchars($rowSearchText, ENT_QUOTES, 'UTF-8') ?>"
                 >
                   
                   <!-- م (تسلسلي مرئي) -->
@@ -1349,10 +1478,44 @@ try {
                   </td>
 
                   <!-- اسم العميل والشركاء -->
-                  <td class="p-4 font-black text-slate-950 max-w-[200px] break-words">
-                    <span class="text-slate-950 font-black"><?= htmlspecialchars($pName) ?></span>
-                    <?php if ($partnerCount > 1): ?>
-                      <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-slate-950 border-2 border-amber-300 mr-1 font-black whitespace-nowrap shadow-xs">شريك <?= ($pIdx + 1) ?></span>
+                  <td class="p-4 font-black text-slate-950 max-w-[240px] break-words col-name">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-slate-950 font-black"><?= htmlspecialchars($pName, ENT_QUOTES, 'UTF-8') ?></span>
+                      <?php if ($partnerCount > 1): ?>
+                        <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-slate-950 border-2 border-amber-300 font-black whitespace-nowrap shadow-xs">شريك <?= ($pIdx + 1) ?></span>
+                      <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($otherUnitClients)): ?>
+                      <div class="mt-2.5 pt-2 border-t-2 border-sky-200">
+                        <div class="text-[11px] font-black text-blue-900 flex items-center gap-1 mb-1.5">
+                          <span>👥</span>
+                          <span>عملاء آخرون في نفس الوحدة</span>
+                        </div>
+                        <div class="space-y-1">
+                          <?php foreach ($otherUnitClients as $oc): 
+                            $ocNames = splitPartnerValues((string)$oc['name']);
+                            $ocIds   = splitPartnerValues((string)($oc['id_number'] ?? ''));
+                            $ocCount = max(count($ocNames), count($ocIds), 1);
+                            for ($k = 0; $k < $ocCount; $k++):
+                              $ocSingleName = trim($ocNames[$k] ?? ($ocNames[0] ?? $oc['name']));
+                              $ocSingleId   = trim($ocIds[$k] ?? ($ocIds[0] ?? ($oc['id_number'] ?? '')));
+                              if ($ocSingleName === '') continue;
+                          ?>
+                            <div class="text-[11px] bg-sky-100/90 hover:bg-sky-200/90 p-1.5 px-2 rounded-xl border border-sky-300 text-slate-950 font-bold transition-colors shadow-2xs">
+                              <div class="font-black text-slate-950"><?= htmlspecialchars($ocSingleName, ENT_QUOTES, 'UTF-8') ?></div>
+                              <?php if ($ocSingleId !== ''): ?>
+                                <div class="text-[10px] text-slate-800 font-mono font-bold mt-0.5">
+                                  <?= htmlspecialchars($ocSingleId, ENT_QUOTES, 'UTF-8') ?>
+                                </div>
+                              <?php endif; ?>
+                            </div>
+                          <?php 
+                            endfor;
+                          endforeach; 
+                          ?>
+                        </div>
+                      </div>
                     <?php endif; ?>
                   </td>
 
@@ -1558,6 +1721,15 @@ try {
           </div>
         </div>
 
+        <!-- قسم عملاء آخرون في نفس الوحدة داخل المودال إن وجدوا -->
+        <div id="modal_other_clients_container" class="hidden p-3 rounded-2xl bg-sky-50 border-2 border-sky-300 text-xs">
+          <div class="font-black text-blue-900 mb-1.5 flex items-center gap-1.5">
+            <span>👥</span>
+            <span>عملاء آخرون في نفس الوحدة</span>
+          </div>
+          <div id="modal_other_clients_list" class="space-y-1"></div>
+        </div>
+
         <!-- مكان الإقامة ومكان توثيق العقد -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -1608,31 +1780,49 @@ try {
           </div>
         </div>
 
-        <!-- فترة السداد واستكمال مقدم أكتوبر وتاريخ الدفع -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="thPlan">فترة السداد:</label>
-            <select name="edit_payment_period" id="edit_payment_period" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
-              <option value="3 سنوات">3 سنوات</option>
-              <option value="4 سنوات">4 سنوات</option>
-              <option value="5 سنوات">5 سنوات</option>
-              <option value="6 سنوات">6 سنوات</option>
-              <option value="7 سنوات">7 سنوات</option>
-              <option value="8 سنوات">8 سنوات</option>
-              <option value="9 سنوات">9 سنوات</option>
-              <option value="10 سنوات">10 سنوات</option>
-            </select>
+        <!-- تفاصيل خطة السداد والنسب والشيكات (Payment Plan) -->
+        <div class="p-3.5 rounded-2xl bg-sky-50/70 border-2 border-sky-200 space-y-3">
+          <div class="flex items-center gap-2 text-xs font-black text-slate-950 pb-2 border-b border-sky-200">
+            <span>💳</span>
+            <span>نظام وخطة السداد المعتمدة (Payment Plan):</span>
           </div>
-          <div>
-            <label class="block text-xs font-black text-slate-950 mb-1">استكمال مقدم أكتوبر:</label>
-            <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
-              <option value="نعم">نعم (تم الاستكمال)</option>
-              <option value="لا">لا (لم يستكمل)</option>
-            </select>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="thPlan">فترة السداد:</label>
+              <select name="edit_payment_period" id="edit_payment_period" onchange="handleModalPeriodChange(this.value)" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-black shadow-xs focus:border-sky-500 cursor-pointer">
+                <option value="7 Years">7 سنوات (7 Years)</option>
+                <option value="8 Years">8 سنوات (8 Years)</option>
+                <option value="9 Years">9 سنوات (9 Years)</option>
+                <option value="10 Years">10 سنوات (10 Years)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-950 mb-1">النسبة (Rate):</label>
+              <select name="edit_final_rate" id="edit_final_rate" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-black shadow-xs focus:border-sky-500 cursor-pointer">
+                <!-- يُملأ ديناميكياً حسب خطة السداد -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-950 mb-1">عدد الشيكات المطلوب:</label>
+              <input type="text" readonly name="edit_cheques_count" id="edit_cheques_count" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 border-2 border-slate-300 text-amber-950 font-mono text-xs font-black shadow-xs cursor-not-allowed">
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-black text-slate-950 mb-1">تاريخ الدفع:</label>
-            <input type="date" name="edit_payment_date" id="edit_payment_date" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label class="block text-xs font-black text-slate-950 mb-1">استكمال مقدم أكتوبر / سداد المقدم:</label>
+              <select name="edit_paid_5_percent" id="edit_paid_5_percent" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
+                <option value="نعم">نعم (تم الاستكمال)</option>
+                <option value="لا">لا (لم يستكمل)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-black text-slate-950 mb-1">تاريخ الدفع:</label>
+              <input type="date" name="edit_payment_date" id="edit_payment_date" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-xs focus:border-sky-500 focus:outline-none font-bold shadow-xs">
+            </div>
           </div>
         </div>
 
@@ -1859,6 +2049,17 @@ try {
     document.addEventListener('DOMContentLoaded', () => {
       setLanguage(currentLang);
       animateCounters();
+
+      // التحقق من وجود استعلام بحث في الرابط لتطبيقه فوراً (?search=... أو ?q=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchQuery = urlParams.get('search') || urlParams.get('q');
+      if (searchQuery) {
+        const searchInput = document.getElementById('tableSearchInput');
+        if (searchInput) {
+          searchInput.value = searchQuery;
+          liveFilterClients(searchQuery);
+        }
+      }
     });
 
     function toggleLanguage() {
@@ -1972,6 +2173,59 @@ try {
       document.getElementById('deleteClientModal').classList.add('hidden');
     }
 
+    // ── Payment Plan Configuration & Dynamic Modal Handlers ──
+    const paymentRatesConfig = {
+      "7 Years": ["5% - 5%"],
+      "8 Years": ["5% - 7%"],
+      "9 Years": ["5% - 12%", "5% - 10%"],
+      "10 Years": ["10% - 10%", "5% - 10%"]
+    };
+
+    function normalizePeriodKey(val) {
+      if (!val) return "7 Years";
+      const s = String(val).trim();
+      if (s.includes("7")) return "7 Years";
+      if (s.includes("8")) return "8 Years";
+      if (s.includes("9")) return "9 Years";
+      if (s.includes("10")) return "10 Years";
+      return "7 Years";
+    }
+
+    function handleModalPeriodChange(selectedPeriod, initialRate = null) {
+      const periodKey = normalizePeriodKey(selectedPeriod);
+      const periodSelect = document.getElementById('edit_payment_period');
+      if (periodSelect && periodSelect.value !== periodKey) {
+        periodSelect.value = periodKey;
+      }
+
+      const rateSelect = document.getElementById('edit_final_rate');
+      const chequesInput = document.getElementById('edit_cheques_count');
+      const rates = paymentRatesConfig[periodKey] || [];
+
+      if (rateSelect) {
+        rateSelect.innerHTML = '';
+        rates.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r;
+          opt.textContent = r;
+          if (initialRate && initialRate === r) {
+            opt.selected = true;
+          }
+          rateSelect.appendChild(opt);
+        });
+        if (!initialRate && rates.length > 0) {
+          rateSelect.value = rates[0];
+        }
+      }
+
+      const yearsMatch = periodKey.match(/\d+/);
+      const years = yearsMatch ? parseInt(yearsMatch[0], 10) : 7;
+      const cheques = years * 4;
+      if (chequesInput) {
+        chequesInput.value = `${cheques} شيك (${years} سنوات × 4)`;
+      }
+    }
+
     // Edit Modal Open & Populate
     function openEditModal(client) {
       document.getElementById('edit_client_id').value = client.id;
@@ -1985,7 +2239,12 @@ try {
       document.getElementById('edit_residence_country').value = client.residence_country || 'داخل جمهورية مصر العربية';
       document.getElementById('edit_contract_location').value = client.contract_location || 'القاهرة';
       document.getElementById('edit_unit_price').value = client.unit_price || '';
-      document.getElementById('edit_payment_period').value = client.payment_period || '3 سنوات';
+
+      const rawPeriod = client.period || client.payment_period || '7 Years';
+      const periodKey = normalizePeriodKey(rawPeriod);
+      document.getElementById('edit_payment_period').value = periodKey;
+      handleModalPeriodChange(periodKey, client.final_rate || null);
+
       document.getElementById('edit_paid_5_percent').value = client.paid_5_percent || 'لا';
       document.getElementById('edit_payment_date').value = client.payment_date || '';
       document.getElementById('edit_id_address').value = client.id_address || client.addresses || '';
@@ -2017,7 +2276,36 @@ try {
         filesContainer.innerHTML = `<span class="text-xs text-slate-950 font-black">${currentLang === 'ar' ? 'لا توجد ملفات مرفقة حالياً' : 'No attachments currently'}</span>`;
       }
 
+      // عرض عملاء آخرين في نفس الوحدة داخل المودال إن وجدوا
+      const otherContainer = document.getElementById('modal_other_clients_container');
+      const otherList = document.getElementById('modal_other_clients_list');
+      if (otherContainer && otherList) {
+        otherList.innerHTML = '';
+        if (Array.isArray(client.other_unit_clients) && client.other_unit_clients.length > 0) {
+          client.other_unit_clients.forEach(oc => {
+            const div = document.createElement('div');
+            div.className = "flex items-center justify-between p-2 rounded-xl bg-white border border-sky-300 font-bold shadow-2xs";
+            const ocId = oc.id_number ? `<span class="font-mono text-slate-800 text-[11px] font-bold">${escapeHtml(oc.id_number)}</span>` : '';
+            div.innerHTML = `<span class="font-black text-slate-950">${escapeHtml(oc.name)}</span> ${ocId}`;
+            otherList.appendChild(div);
+          });
+          otherContainer.classList.remove('hidden');
+        } else {
+          otherContainer.classList.add('hidden');
+        }
+      }
+
       document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
     function closeEditModal() {

@@ -382,8 +382,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <!-- سيتم بناء البطاقات هنا عبر Repeater Component JS -->
               </div>
 
-              <!-- صندوق عرض الشركاء المسجلين على الوحدة كـ Read-only (يظهر مباشرة تحت بيانات العميل) -->
-              <div id="unitPartnersBox" class="hidden mt-4"></div>
+              <!-- ── قسم الشركاء في التعاقد والوحدة (يظهر تلقائياً قبل بيانات الوحدة عند وجود شركاء مسجلين للوحدة) ── -->
+              <div id="unitPartnersSection" class="hidden p-4 sm:p-5 rounded-2xl bg-white border-2 border-sky-300 shadow-sm space-y-3.5 transition-all mt-4">
+                <div class="flex items-center justify-between pb-2.5 border-b border-sky-100 flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-lg">👥</span>
+                    <h4 class="text-slate-950 font-black text-xs sm:text-sm">
+                      <span data-i18n="partnersSectionTitle">الشركاء في التعاقد والوحدة</span>
+                    </h4>
+                    <span class="text-[11px] font-bold text-amber-950 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-300 hidden" id="partnersSectionCountBadge"></span>
+                  </div>
+                </div>
+
+                <p class="text-xs text-slate-600 font-bold" data-i18n="partnersSectionNotice">
+                  بيانات العملاء الشركاء المسجلين على هذه الوحدة (كل شريك في كونتينر مستقل):
+                </p>
+
+                <!-- الحاوية التي تحتضن كونتينرات بيانات الشركاء تحت بعضها -->
+                <div id="unitPartnersListContainer" class="space-y-3 w-full"></div>
+              </div>
             </div>
 
             <!-- ── SECTION 02: بيانات الوحدة ونظام التعاقد وخطة السداد ── -->
@@ -401,25 +418,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                     <span class="text-base sm:text-lg">🏢</span>
                     <span data-i18n="unitsSectionTitle">الوحدات المسجلة للعميل</span>
                     <span id="unitsTotalBadge" class="hidden font-mono bg-sky-600 text-white px-2.5 py-0.5 rounded-full text-xs font-black shadow-2xs">0</span>
-                  </div>
-
-                  <!-- أزرار وعدادات التضمين والاستبعاد والطي -->
-                  <div id="unitsStatsActions" class="hidden flex flex-wrap items-center gap-2 text-xs font-bold">
-                    <span class="px-2.5 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 font-black flex items-center gap-1 shadow-2xs">
-                      <span>✓</span> <span>مشمولة بالعقد:</span> <strong id="unitsIncludedCount" class="font-mono font-black text-emerald-900">0</strong>
-                    </span>
-                    <span id="unitsExcludedBadge" class="hidden px-2.5 py-1 rounded-xl bg-slate-200 border border-slate-300 text-slate-700 font-black flex items-center gap-1 shadow-2xs">
-                      <span>✕</span> <span>مستبعدة:</span> <strong id="unitsExcludedCount" class="font-mono font-black text-slate-900">0</strong>
-                    </span>
-                    <button 
-                      type="button" 
-                      id="btnToggleAllUnits" 
-                      onclick="toggleAllUnitsAccordion()" 
-                      class="text-xs font-black text-sky-800 hover:text-sky-950 bg-sky-50 hover:bg-sky-100 border border-sky-300 hover:border-sky-500 px-3 py-1 rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1"
-                    >
-                      <span id="toggleAllUnitsIcon">🔼</span>
-                      <span id="toggleAllUnitsText">طي الكل</span>
-                    </button>
                   </div>
                 </div>
 
@@ -447,22 +445,70 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <div id="unitsContainer" class="space-y-3.5 w-full"></div>
               </div>
 
-              <!-- المكان الأقرب لتوقيع العقد (فرع القاهرة / الإسكندرية) -->
+              <!-- المكان الأقرب لتوقيع العقد (فرع القاهرة / الإسكندرية) مع سيرش بار -->
               <div id="contractLocationContainer" class="form-group pt-2 border-t-2 border-sky-200 w-full">
                 <label class="block text-xs font-black text-slate-950 mb-1.5" for="contractLocation">
-                  <span class="text-slate-950 font-black">المكان الأقرب لتوقيع العقد</span>
+                  <span class="text-slate-950 font-black" data-i18n="lblContractLocation">المكان الأقرب لتوقيع العقد</span>
                   <span class="text-red-500 font-bold">*</span>
                 </label>
-                <select 
-                  name="contract_location" 
-                  id="contractLocation" 
-                  class="glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-black border-2 border-sky-300 focus:border-sky-500 bg-white cursor-pointer" 
-                  onchange="validateField(this, val => val !== '')"
-                >
-                  <option value="">اختر المكان الأقرب لتوقيع العقد...</option>
-                  <option value="القاهرة" selected>القاهرة</option>
-                  <option value="الإسكندرية">الإسكندرية</option>
-                </select>
+                <!-- Searchable Contract Location Picker -->
+                <div class="searchable-picker searchable-contract-location-picker relative w-full" id="contractLocationPicker">
+                  <button
+                    type="button"
+                    onclick="toggleContractLocationDropdown(this)"
+                    class="contract-location-btn glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-black shadow-xs transition-all"
+                  >
+                    <span class="contract-location-display flex items-center gap-2 truncate">
+                      <span class="text-base flex-shrink-0">🏢</span>
+                      <span class="truncate font-black text-slate-950" id="contractLocationDisplayText">القاهرة</span>
+                    </span>
+                    <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                  </button>
+
+                  <input type="hidden" name="contract_location" id="contractLocation" value="القاهرة" />
+
+                  <div class="contract-location-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                      <div class="relative">
+                        <input 
+                          type="text" 
+                          placeholder="🔍 ابحث عن مكان توقيع العقد (القاهرة / الإسكندرية)..." 
+                          oninput="filterContractLocationPicker(this)" 
+                          class="contract-location-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                        />
+                        <button type="button" onclick="clearPickerSearch(this, () => filterContractLocationPicker(this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                      </div>
+                      <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                        <span class="search-hint-text">اكتب للبحث الفوري</span>
+                        <span class="text-sky-600 font-mono">🔍 بحث</span>
+                      </div>
+                    </div>
+                    <div class="contract-location-scroll max-h-48 overflow-y-auto space-y-1 text-xs pr-1">
+                      <button 
+                        type="button" 
+                        onclick="selectContractLocationItem('القاهرة')"
+                        data-name="القاهرة"
+                        class="contract-loc-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-black text-start text-xs border border-transparent hover:border-sky-200"
+                      >
+                        <span class="flex items-center gap-2 truncate">
+                          <span class="text-sm">🏢</span>
+                          <span class="truncate">القاهرة</span>
+                        </span>
+                      </button>
+                      <button 
+                        type="button" 
+                        onclick="selectContractLocationItem('الإسكندرية')"
+                        data-name="الإسكندرية"
+                        class="contract-loc-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-black text-start text-xs border border-transparent hover:border-sky-200"
+                      >
+                        <span class="flex items-center gap-2 truncate">
+                          <span class="text-sm">🏢</span>
+                          <span class="truncate">الإسكندرية</span>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" id="errLocation">المكان الأقرب لتوقيع العقد مطلوب</p>
               </div>
 
@@ -619,9 +665,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         pageSubtitle: "يرجى تسجيل وتدقيق بيانات العقد بدقة لضمان سرعة إتمام الإجراءات وتجهيز وثائق الملكية",
         sec1Title: "بيانات أطراف العقد والشركاء (بيانات العملاء)",
         btnAddClientCard: "+ إضافة شريك / عميل جديد بالعقد",
+        btnAddContractPartner: "+ إضافة شريك في التعاقد (اختياري)",
+        partnersSectionTitle: "الشركاء في التعاقد والوحدة",
+        partnersSectionNotice: "أسماء العملاء الشركاء المسجلين على هذه الوحدة (كل شريك في كونتينر مستقل):",
         badgePrimaryParty: "الطرف الأساسي",
         badgePartnerParty: "شريك بالعقد",
         btnRemovePartner: "حذف هذا الشريك",
+        btnAddPartnerName: "+ إضافة اسم شريك آخر",
         labelPrimaryName: "اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط)",
         phPrimaryName: "(الاسم كاملاً باللغة العربية مطابقاً للهوية)",
         errPrimaryName: "اسم العميل مطلوب ويجب أن يكون باللغة العربية فقط",
@@ -735,9 +785,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         pageSubtitle: "Please review and enter contract information accurately for formal processing & official registry",
         sec1Title: "Contract Parties & Partners Information (Client Data)",
         btnAddClientCard: "+ Add Partner / New Contract Client",
+        btnAddContractPartner: "+ Add Contract Partner (Optional)",
+        partnersSectionTitle: "Contract & Unit Partners",
+        partnersSectionNotice: "Names of registered partners for this unit (each in a separate container):",
         badgePrimaryParty: "Primary Party",
         badgePartnerParty: "Contract Partner",
         btnRemovePartner: "Remove Partner",
+        btnAddPartnerName: "+ Add Partner Name",
         labelPrimaryName: "Client Name as in ID (Arabic Only)",
         phPrimaryName: "(Full name in Arabic matching ID)",
         errPrimaryName: "Client name is required (Arabic letters only)",
@@ -849,18 +903,6 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     document.addEventListener('DOMContentLoaded', () => {
       addNewClientCard(true);
       setLanguage(currentLang);
-      
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.searchable-region-picker')) {
-          closeAllRegionPickerDropdowns();
-        }
-        if (!e.target.closest('.country-picker')) {
-          document.querySelectorAll('.country-dropdown').forEach(d => d.classList.add('hidden'));
-        }
-        if (!e.target.closest('.unit-picker')) {
-          closeAllUnitDropdowns();
-        }
-      });
     });
 
     function toggleLanguage() {
@@ -1632,6 +1674,17 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         let extraUnitCounter = 1;
 
+    // دالة تفكيك واستخراج كافة أسماء الشركاء بدقة
+    function extractPartnerNames(rawString) {
+      if (!rawString) return [];
+      let str = String(rawString).replace(/[\r\n/&،,]+/g, '###');
+      str = str.replace(/\s+-\s+/g, '###');
+      return str.split('###')
+        .map(s => s.trim())
+        .filter(s => s.length >= 3)
+        .filter((v, i, a) => a.indexOf(v) === i);
+    }
+
     // ── نظام توليد كروت الوحدات التلقائي وإدارتها (Accordion + Toggle + Calculations) ──
     function renderClientUnitCards(unitsData) {
       const container = document.getElementById('unitsContainer');
@@ -1674,6 +1727,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         const uDetails = (typeof u === 'object' && u.area && u.floor) ? u : getUnitFloorAndArea(uCode);
         const uArea = uDetails.area || '125 م²';
         const uFloor = uDetails.floor || 'الدور الأرضي';
+        const uPartners = (typeof u === 'object' && Array.isArray(u.partners)) ? u.partners : [];
+        const hasUnitPartners = uPartners.length > 1;
+        const partnersBadge = hasUnitPartners ? `
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-black shadow-2xs">
+            <span>👥</span>
+            <span>${isEn ? 'Partners: ' : 'الشركاء: '}</span>
+            <span class="font-bold text-slate-950">${uPartners.join(' ، ')}</span>
+          </div>
+        ` : '';
 
         const div = document.createElement('div');
         div.className = "unit-block unit-card-item p-4 rounded-2xl bg-white border-2 border-sky-300 space-y-3.5 relative shadow-md transition-all duration-300";
@@ -1694,19 +1756,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               <span id="unitChevron_${idx}" class="text-xs text-sky-700 transition-transform transform rotate-0 mr-1">▼</span>
             </button>
 
-            <!-- Inclusion / Exclusion Switch Checkbox -->
-            <div class="flex items-center gap-2">
-              <label class="unit-include-label inline-flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer transition-all border-2 text-xs font-black shadow-2xs bg-emerald-50 border-emerald-400 text-emerald-950" id="unitIncludeBadge_${idx}">
-                <input 
-                  type="checkbox" 
-                  id="unitIncludeCb_${idx}" 
-                  class="unit-include-cb w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer" 
-                  checked 
-                  onchange="handleUnitInclusionToggle(${idx}, this.checked)"
-                />
-                <span id="unitIncludeText_${idx}">${isEn ? 'Included in Contract' : 'مشمولة في العقد'}</span>
-              </label>
-            </div>
+            <!-- Partners Badge if unit has multiple partners -->
+            ${partnersBadge}
           </div>
 
           <!-- Card Body (Collapsible Accordion Content) -->
@@ -1809,10 +1860,10 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                   onchange="handleUnitCardPeriodChange(${idx}, this)"
                 >
                   <option value="">${isEn ? 'Select Payment Term...' : 'اختر فترة السداد...'}</option>
-                  <option value="7 Years">7 Years</option>
-                  <option value="8 Years">8 Years</option>
-                  <option value="9 Years">9 Years</option>
-                  <option value="10 Years">10 Years</option>
+                  <option value="7 Years">${isEn ? '7 Years' : '7 سنوات (7 Years)'}</option>
+                  <option value="8 Years">${isEn ? '8 Years' : '8 سنوات (8 Years)'}</option>
+                  <option value="9 Years">${isEn ? '9 Years' : '9 سنوات (9 Years)'}</option>
+                  <option value="10 Years">${isEn ? '10 Years' : '10 سنوات (10 Years)'}</option>
                 </select>
                 <p class="error-msg text-red-600 font-black text-xs mt-1 hidden unit-period-error">${isEn ? 'Payment term is required' : 'فترة السداد مطلوبة'}</p>
               </div>
@@ -5112,15 +5163,21 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
                   <input type="hidden" class="client-gov-select" value="" />
 
-                  <div class="region-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[280px] sm:min-w-[320px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
-                    <div class="relative mb-2">
-                      <input 
-                        type="text" 
-                        placeholder="${currentLang === 'en' ? 'Search country or continent...' : 'ابحث عن الدولة أو القارة (مثال: مصر، السعودية، فرنسا، كندا)...'}" 
-                        oninput="filterRegionPicker(${clientId}, this)" 
-                        class="region-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
-                      />
-                      <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                  <div class="region-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[280px] sm:min-w-[320px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                      <div class="relative">
+                        <input 
+                          type="text" 
+                          placeholder="${currentLang === 'en' ? '🔍 Search country or governorate...' : '🔍 ابحث عن المحافظة أو الدولة (مثال: القاهرة، الجيزة، فرنسا)...'}" 
+                          oninput="filterRegionPicker(${clientId}, this)" 
+                          class="region-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                        />
+                        <button type="button" onclick="clearPickerSearch(this, () => filterRegionPicker(${clientId}, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                      </div>
+                      <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                        <span class="search-hint-text">اكتب للبحث الفوري</span>
+                        <span class="text-sky-600 font-mono">🔍 بحث</span>
+                      </div>
                     </div>
                     <div class="region-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
                   </div>
@@ -5131,31 +5188,36 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 <label class="block text-[11px] font-black text-slate-700 mb-1">
                   <span class="client-lbl-city-text" data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
-                <!-- Searchable City / District Picker -->
+                <!-- Searchable City / District Picker with Search Bar -->
                 <div class="searchable-picker searchable-id-city-picker relative w-full" id="idCityPicker_${clientId}">
                   <button
                     type="button"
                     onclick="toggleIdCityPickerDropdown(${clientId}, this)"
-                    class="id-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all opacity-50 cursor-not-allowed"
-                    disabled
+                    class="id-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
                   >
                     <span class="id-city-picker-display flex items-center gap-2 truncate">
-                      <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select Governorate first...' : 'اختر المحافظة أولاً...'}</span>
+                      <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...'}</span>
                     </span>
                     <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
                   </button>
 
                   <input type="hidden" class="client-city-select" value="" />
 
-                  <div class="id-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
-                    <div class="relative mb-2">
-                      <input 
-                        type="text" 
-                        placeholder="${currentLang === 'en' ? 'Search city or district...' : 'ابحث عن المدينة أو الحي أو المركز...'}" 
-                        oninput="filterIdCityPicker(${clientId}, this)" 
-                        class="id-city-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
-                      />
-                      <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                  <div class="id-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[260px] sm:min-w-[300px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                      <div class="relative">
+                        <input 
+                          type="text" 
+                          placeholder="${currentLang === 'en' ? '🔍 Search city or district...' : '🔍 ابحث عن المدينة أو الحي أو المركز (مثال: الشيخ زايد، المعادي)...'}" 
+                          oninput="filterIdCityPicker(${clientId}, this)" 
+                          class="id-city-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                        />
+                        <button type="button" onclick="clearPickerSearch(this, () => filterIdCityPicker(${clientId}, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                      </div>
+                      <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                        <span class="search-hint-text">اكتب للبحث الفوري</span>
+                        <span class="text-sky-600 font-mono">🔍 بحث</span>
+                      </div>
                     </div>
                     <div class="id-city-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
                   </div>
@@ -5198,7 +5260,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
                     <span>الدولة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
-                  <!-- Searchable Correspondence Country Picker -->
+                  <!-- Searchable Correspondence Country Picker with Search Bar -->
                   <div class="searchable-picker searchable-corr-country-picker relative w-full" id="corrCountryPicker_${clientId}">
                     <button
                       type="button"
@@ -5214,15 +5276,21 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
                     <input type="hidden" class="client-corr-country-select" value="مصر" />
 
-                    <div class="corr-country-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[280px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
-                      <div class="relative mb-2">
-                        <input 
-                          type="text" 
-                          placeholder="${currentLang === 'en' ? 'Search country (e.g. Egypt, Kuwait, UAE)...' : 'ابحث عن الدولة (مثال: مصر، السعودية، الكويت، فرنسا)...'}" 
-                          oninput="filterCorrCountryPicker(${clientId}, this)" 
-                          class="corr-country-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
-                        />
-                        <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                    <div class="corr-country-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[280px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                      <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                        <div class="relative">
+                          <input 
+                            type="text" 
+                            placeholder="${currentLang === 'en' ? '🔍 Search country (e.g. Egypt, Kuwait, UAE)...' : '🔍 ابحث عن الدولة (مثال: مصر، السعودية، الكويت، فرنسا)...'}" 
+                            oninput="filterCorrCountryPicker(${clientId}, this)" 
+                            class="corr-country-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                          />
+                          <button type="button" onclick="clearPickerSearch(this, () => filterCorrCountryPicker(${clientId}, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                        </div>
+                        <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                          <span class="search-hint-text">اكتب للبحث الفوري</span>
+                          <span class="text-sky-600 font-mono">🔍 بحث</span>
+                        </div>
                       </div>
                       <div class="corr-country-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
                     </div>
@@ -5233,7 +5301,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                   <label class="block text-[11px] font-black text-slate-700 mb-1">
                     <span class="client-corr-lbl-city-text">المحافظة / المدينة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
-                  <!-- Searchable Correspondence City / Gov Picker -->
+                  <!-- Searchable Correspondence City / Gov Picker with Search Bar -->
                   <div class="searchable-picker searchable-corr-city-picker relative w-full" id="corrCityPicker_${clientId}">
                     <button
                       type="button"
@@ -5248,15 +5316,21 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
                     <input type="hidden" class="client-corr-city-select" value="" />
 
-                    <div class="corr-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
-                      <div class="relative mb-2">
-                        <input 
-                          type="text" 
-                          placeholder="${currentLang === 'en' ? 'Search governorate or city...' : 'ابحث عن المحافظة أو المدينة...'}" 
-                          oninput="filterCorrCityPicker(${clientId}, this)" 
-                          class="corr-city-picker-search w-full px-3 py-2 text-xs bg-sky-50 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
-                        />
-                        <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                    <div class="corr-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                      <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                        <div class="relative">
+                          <input 
+                            type="text" 
+                            placeholder="${currentLang === 'en' ? '🔍 Search governorate or city...' : '🔍 ابحث عن المحافظة أو المدينة (مثال: القاهرة، الجيزة، الإسكندرية)...'}" 
+                            oninput="filterCorrCityPicker(${clientId}, this)" 
+                            class="corr-city-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                          />
+                          <button type="button" onclick="clearPickerSearch(this, () => filterCorrCityPicker(${clientId}, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                        </div>
+                        <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                          <span class="search-hint-text">اكتب للبحث الفوري</span>
+                          <span class="text-sky-600 font-mono">🔍 بحث</span>
+                        </div>
                       </div>
                       <div class="corr-city-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
                     </div>
@@ -5334,6 +5408,116 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       `;
 
       return card;
+    }
+
+    // ── Partner Containers (Located right before Unit Data) ──
+    function addPartnerContainerRow(partnerData = '') {
+      const container = document.getElementById('unitPartnersListContainer');
+      const section = document.getElementById('unitPartnersSection');
+      if (!container) return;
+
+      if (section) section.classList.remove('hidden');
+
+      let pName = '';
+      let pNid = '';
+      if (typeof partnerData === 'object' && partnerData !== null) {
+        pName = (partnerData.name || '').trim();
+        pNid = (partnerData.national_id || '').trim();
+      } else {
+        pName = String(partnerData || '').trim();
+      }
+
+      if (!pName) return;
+
+      const hasNid = (pNid.length > 0);
+      const existingRows = container.querySelectorAll('.partner-container-row');
+      const partnerNum = existingRows.length + 2;
+      const isEn = (currentLang === 'en');
+
+      const div = document.createElement('div');
+      div.className = "partner-container-row p-3 sm:p-4 rounded-2xl bg-sky-50/80 border-2 border-sky-200 transition-all shadow-xs space-y-2.5";
+
+      div.innerHTML = `
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <span class="partner-role-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-amber-950 text-xs font-black shrink-0 shadow-2xs">
+            <span>👥</span>
+            <span class="partner-role-text">${isEn ? 'Partner (' + partnerNum + ')' : 'الشريك (' + partnerNum + ')'}</span>
+          </span>
+          ${hasNid ? `
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-800 bg-sky-100/70 px-2.5 py-1 rounded-lg border border-sky-300 shadow-2xs">
+              <span>🪪</span>
+              <span>${isEn ? 'National ID in records' : 'الرقم القومي مسجل'}</span>
+            </span>
+          ` : `
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-white/80 px-2.5 py-1 rounded-lg border border-slate-300 shadow-2xs">
+              <span>ℹ️</span>
+              <span>${isEn ? 'Name only' : 'اسم الشريك فقط'}</span>
+            </span>
+          `}
+        </div>
+
+        <div class="grid grid-cols-1 ${hasNid ? 'sm:grid-cols-2' : ''} gap-3">
+          <div>
+            <label class="block text-[11px] font-black text-slate-700 mb-1">
+              <span>${isEn ? 'Partner Name' : 'اسم الشريك'}</span>
+            </label>
+            <input
+              type="text"
+              readonly
+              class="partner-name-input glass-input w-full px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-slate-950 text-xs sm:text-sm font-bold border-2 border-sky-300 bg-white shadow-2xs cursor-default"
+              value="${pName.replace(/"/g, '&quot;')}"
+            />
+          </div>
+
+          ${hasNid ? `
+          <div>
+            <label class="block text-[11px] font-black text-slate-700 mb-1">
+              <span>${isEn ? 'Partner National ID' : 'الرقم القومي للشريك'}</span>
+            </label>
+            <input
+              type="text"
+              dir="ltr"
+              readonly
+              class="partner-nid-input font-mono glass-input w-full px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-slate-950 text-xs sm:text-sm font-bold border-2 border-sky-300 bg-white shadow-2xs cursor-default"
+              value="${pNid.replace(/"/g, '&quot;')}"
+            />
+          </div>
+          ` : ''}
+        </div>
+      `;
+
+      container.appendChild(div);
+      reNumberPartnerContainerRows();
+    }
+
+    function reNumberPartnerContainerRows() {
+      const container = document.getElementById('unitPartnersListContainer');
+      const section = document.getElementById('unitPartnersSection');
+      const countBadge = document.getElementById('partnersSectionCountBadge');
+      if (!container) return;
+
+      const rows = container.querySelectorAll('.partner-container-row');
+      const isEn = (currentLang === 'en');
+
+      if (rows.length === 0) {
+        if (section) section.classList.add('hidden');
+        if (countBadge) countBadge.classList.add('hidden');
+        return;
+      }
+
+      if (section) section.classList.remove('hidden');
+      if (countBadge) {
+        countBadge.textContent = isEn ? `${rows.length} Partners` : `${rows.length} شركاء`;
+        countBadge.classList.remove('hidden');
+      }
+
+      rows.forEach((r, idx) => {
+        const textEl = r.querySelector('.partner-role-text');
+        const partnerNum = idx + 2;
+        if (textEl) {
+          textEl.textContent = isEn ? `Partner (${partnerNum})` : `الشريك (${partnerNum})`;
+        }
+      });
     }
 
     // ── Phone Rows Repeater per Client ──
@@ -5956,6 +6140,10 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
         if (notFoundNotice) notFoundNotice.classList.add('hidden');
         if (initialNotice) initialNotice.classList.remove('hidden');
+        const pCont = document.getElementById('unitPartnersListContainer');
+        const pSec = document.getElementById('unitPartnersSection');
+        if (pCont) pCont.innerHTML = '';
+        if (pSec) pSec.classList.add('hidden');
         currentClientUnits = [];
         window.currentClientUnits = [];
         return;
@@ -5985,10 +6173,44 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (window.customerUnitsLookup && window.customerUnitsLookup[normId]) {
           const matches = window.customerUnitsLookup[normId];
           const units = [...new Set(matches.map(m => m.unit))];
+          let allExtracted = [];
+
+          // فحص الشركاء لكل وحدة عبر قاعدة بيانات JSON المحلية
           const unitsInfo = units.map(u => {
             const d = getUnitFloorAndArea(u);
-            return { code: u, floor: d.floor, area: d.area, partners: [] };
+            let uPartners = [];
+
+            // استخراج أسماء الشركاء من كافة السجلات المطابقة لكود الوحدة
+            Object.keys(window.customerUnitsLookup).forEach(otherId => {
+              const otherEntries = window.customerUnitsLookup[otherId];
+              otherEntries.forEach(oe => {
+                if (oe.unit === u && oe.name) {
+                  const names = extractPartnerNames(oe.name);
+                  names.forEach(n => {
+                    if (!uPartners.includes(n)) uPartners.push(n);
+                    if (!allExtracted.includes(n)) allExtracted.push(n);
+                  });
+                }
+              });
+            });
+
+            if (uPartners.length === 0 && matches[0].name) {
+              uPartners = extractPartnerNames(matches[0].name);
+              uPartners.forEach(n => {
+                if (!allExtracted.includes(n)) allExtracted.push(n);
+              });
+            }
+
+            return {
+              code: u,
+              floor: d.floor,
+              area: d.area,
+              partners: uPartners,
+              partners_text: uPartners.join(' ، ')
+            };
           });
+
+          const combinedName = allExtracted.length > 0 ? allExtracted.join(' ، ') : matches[0].name;
 
           data = {
             found: true,
@@ -5996,11 +6218,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             unit: units[0],
             unit_area: unitsInfo[0]?.area || '125 م²',
             unit_floor: unitsInfo[0]?.floor || 'الدور الأرضي',
-            name: matches[0].name,
+            name: combinedName,
             units: units,
             units_info: unitsInfo,
             total_units: units.length,
-            partners: []
+            partners: allExtracted,
+            has_partners: allExtracted.length > 1,
+            partners_text: allExtracted.join(' ، ')
           };
         } else {
           data = { found: false, message: 'الرقم ده مش موجود' };
@@ -6030,31 +6254,75 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         window.currentClientUnits = currentClientUnits;
         currentLookupNationalId = normId;
 
-        // توليد كروت الوحدات تلقائياً
+        // توليد كروت الوحدات تلقائياً مع الشركاء
         renderClientUnitCards(unitsList);
 
-        // ملء اسم العميل تلقائياً إن كان فارغاً
+        // استخراج اسم العميل الأساسي وأسماء الشركاء
+        let partnersList = (data.partners && data.partners.length > 0) ? [...data.partners] : [];
+        if (partnersList.length === 0 && data.name) {
+          partnersList = extractPartnerNames(data.name);
+        }
+
+        const primaryName = data.primary_name || partnersList[0] || data.name || '';
+        const partnerNames = data.partner_names || (partnersList.length > 1 ? partnersList.slice(1) : []);
+
+        // ملء اسم العميل الأساسي في كارت العميل (الطرف الأساسي)
         const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById(`clientCard_1`);
         if (card) {
           const nameInput = card.querySelector('.client-name-input');
-          if (nameInput && (!nameInput.value.trim() || nameInput.value.trim().length < 2)) {
-            nameInput.value = data.name;
+          if (nameInput && primaryName) {
+            nameInput.value = primaryName;
             if (typeof handleClientNameInput === 'function') {
               handleClientNameInput(nameInput);
             }
           }
         }
 
-        // عرض رسالة النجاح
+        // توليد كونتينرات بيانات الشركاء في القسم المخصص المباشر قبل بيانات الوحدة
+        const partnersContainer = document.getElementById('unitPartnersListContainer');
+        const partnersSection = document.getElementById('unitPartnersSection');
+        if (partnersContainer) {
+          partnersContainer.innerHTML = '';
+          const partnerItems = (data.partner_details && data.partner_details.length > 0)
+            ? data.partner_details
+            : (partnerNames || []);
+
+          if (partnerItems.length > 0) {
+            partnerItems.forEach(pItem => {
+              addPartnerContainerRow(pItem);
+            });
+            if (partnersSection) partnersSection.classList.remove('hidden');
+          } else {
+            if (partnersSection) partnersSection.classList.add('hidden');
+          }
+        }
+
+        // عرض رسالة النجاح وتوضيح كافة أسماء العملاء الشركاء
         if (hintBox) {
           hintBox.classList.remove('hidden');
           hintBox.className = 'mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-950 transition-all';
           if (hintMsgBox) hintMsgBox.className = 'flex items-center gap-1.5 text-emerald-700 font-black';
           if (hintIcon) hintIcon.textContent = '✓';
           if (hintText) {
+            const hasMultiplePartners = data.has_partners || (data.partners && data.partners.length > 1) || (data.name && data.name.includes('،'));
+            const partnerLabel = hasMultiplePartners 
+              ? (currentLang === 'en' ? 'co-owners / partners' : 'العملاء الشركاء') 
+              : (currentLang === 'en' ? 'customer' : 'العميل');
+
+            let unitMsg = '';
+            if (currentClientUnits.length === 1) {
+              unitMsg = (currentLang === 'en')
+                ? `Unit (${currentClientUnits[0]})`
+                : `كود الوحدة (${currentClientUnits[0]})`;
+            } else {
+              unitMsg = (currentLang === 'en')
+                ? `(${currentClientUnits.length}) units`
+                : `(${currentClientUnits.length}) وحدات`;
+            }
+
             hintText.innerHTML = (currentLang === 'en')
-              ? `Found ${currentClientUnits.length} registered units for customer: <strong>${data.name}</strong>`
-              : `✓ تم جلب (${currentClientUnits.length}) وحدات مسجلة تلقائياً للعميل: <strong>${data.name}</strong>`;
+              ? `✓ Retrieved ${unitMsg} automatically for ${partnerLabel}: <strong>${data.name}</strong>`
+              : `✓ تم جلب ${unitMsg} تلقائياً لـ${partnerLabel}: <strong>${data.name}</strong>`;
           }
         }
       } else {
@@ -6066,6 +6334,11 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (totalBadge) totalBadge.classList.add('hidden');
         if (notFoundNotice) notFoundNotice.classList.remove('hidden');
         if (initialNotice) initialNotice.classList.add('hidden');
+
+        const partnersContainer = document.getElementById('unitPartnersListContainer');
+        const partnersSection = document.getElementById('unitPartnersSection');
+        if (partnersContainer) partnersContainer.innerHTML = '';
+        if (partnersSection) partnersSection.classList.add('hidden');
 
         if (hintBox) {
           hintBox.classList.remove('hidden');
@@ -6108,6 +6381,11 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           if (notFoundNotice) notFoundNotice.classList.add('hidden');
           if (initialNotice) initialNotice.classList.remove('hidden');
           if (hintBox) hintBox.classList.add('hidden');
+
+          const partnersContainer = document.getElementById('unitPartnersListContainer');
+          const partnersSection = document.getElementById('unitPartnersSection');
+          if (partnersContainer) partnersContainer.innerHTML = '';
+          if (partnersSection) partnersSection.classList.add('hidden');
         }
       }
 
@@ -6399,26 +6677,71 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       handleClientRegionChange(clientId, storageValue, 'id');
     }
 
+    // ── دوال مساعدة لفلترة البحث الفوري وتطبيع الحروف العربية ──
+    function normalizeArabic(text) {
+      if (!text) return '';
+      return text.toString().toLowerCase()
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/[\u064B-\u065F]/g, '')
+        .trim();
+    }
+
+    function handleSearchInputWithClear(input) {
+      if (!input) return;
+      const clearBtn = input.parentElement ? input.parentElement.querySelector('.search-clear-btn') : null;
+      if (clearBtn) {
+        if (input.value.trim().length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      }
+    }
+
+    function clearPickerSearch(btn, callback) {
+      const container = btn.parentElement;
+      const input = container ? container.querySelector('input') : null;
+      if (input) {
+        input.value = '';
+        btn.classList.add('hidden');
+        input.focus();
+        if (typeof callback === 'function') {
+          callback();
+        }
+      }
+    }
+
+    // ── Searchable Pickers: Region / Governorate Picker ──
     function filterRegionPicker(clientId, searchInput) {
-      const q = searchInput.value.trim().toLowerCase();
+      handleSearchInputWithClear(searchInput);
+      const q = normalizeArabic(searchInput.value);
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
 
-      const items = card.querySelectorAll('.region-picker-item');
+      const items = card.querySelectorAll(`#regionPicker_${clientId} .region-picker-item, .searchable-region-picker .region-picker-item`);
+      let matchCount = 0;
       items.forEach(item => {
-        const ar = (item.getAttribute('data-name-ar') || '').toLowerCase();
+        const ar = normalizeArabic(item.getAttribute('data-name-ar') || '');
         const en = (item.getAttribute('data-name-en') || '').toLowerCase();
-        const contAr = (item.getAttribute('data-continent-ar') || '').toLowerCase();
+        const contAr = normalizeArabic(item.getAttribute('data-continent-ar') || '');
         const contEn = (item.getAttribute('data-continent-en') || '').toLowerCase();
         const match = ar.includes(q) || en.includes(q) || contAr.includes(q) || contEn.includes(q);
         item.style.display = match ? 'flex' : 'none';
+        if (match) matchCount++;
       });
+
+      const hint = card.querySelector(`#regionPicker_${clientId} .search-hint-text`);
+      if (hint) {
+        hint.textContent = q ? `النتائج المطابقة: ${matchCount}` : 'اكتب للبحث الفوري';
+      }
     }
 
     function toggleRegionPickerDropdown(clientId, btn) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
-      const dropdown = card.querySelector('.region-picker-dropdown');
+      const dropdown = card.querySelector(`#regionPicker_${clientId} .region-picker-dropdown`) || card.querySelector('.region-picker-dropdown');
       if (!dropdown) return;
 
       const isHidden = dropdown.classList.contains('hidden');
@@ -6430,13 +6753,84 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (searchInput) {
           searchInput.value = '';
           filterRegionPicker(clientId, searchInput);
-          setTimeout(() => searchInput.focus(), 50);
+          setTimeout(() => searchInput.focus(), 60);
         }
       }
     }
 
     function closeAllRegionPickerDropdowns() {
-      document.querySelectorAll('.region-picker-dropdown, .id-city-picker-dropdown, .corr-country-picker-dropdown, .corr-city-picker-dropdown').forEach(d => d.classList.add('hidden'));
+      document.querySelectorAll(
+        '.region-picker-dropdown, .id-city-picker-dropdown, .corr-country-picker-dropdown, .corr-city-picker-dropdown, .contract-location-dropdown'
+      ).forEach(d => d.classList.add('hidden'));
+    }
+
+    // دليل كامل لكافة مدن ومراكز مصر مع محافظاتها
+    function getAllEgyptianCitiesList() {
+      const list = [];
+      const popularOrder = [
+        { city: "الشيخ زايد", gov: "الجيزة" },
+        { city: "6 أكتوبر", gov: "الجيزة" },
+        { city: "حدائق أكتوبر", gov: "الجيزة" },
+        { city: "الدقي", gov: "الجيزة" },
+        { city: "المهندسين", gov: "الجيزة" },
+        { city: "العجوزة", gov: "الجيزة" },
+        { city: "الهرم", gov: "الجيزة" },
+        { city: "فيصل", gov: "الجيزة" },
+        { city: "التجمع الخامس (القاهرة الجديدة)", gov: "القاهرة" },
+        { city: "التجمع الأول", gov: "القاهرة" },
+        { city: "الرحاب", gov: "القاهرة" },
+        { city: "مدينتي", gov: "القاهرة" },
+        { city: "مدينة نصر", gov: "القاهرة" },
+        { city: "مصر الجديدة", gov: "القاهرة" },
+        { city: "المعادي", gov: "القاهرة" },
+        { city: "المقطم", gov: "القاهرة" },
+        { city: "الشروق", gov: "القاهرة" },
+        { city: "العبور", gov: "القليوبية" },
+        { city: "سموحة", gov: "الإسكندرية" },
+        { city: "سيدي جابر", gov: "الإسكندرية" },
+        { city: "لوران", gov: "الإسكندرية" },
+        { city: "سيدي بشر", gov: "الإسكندرية" },
+        { city: "ميامي", gov: "الإسكندرية" },
+        { city: "المنصورة", gov: "الدقهلية" },
+        { city: "طنطا", gov: "الغربية" },
+        { city: "المحلة الكبرى", gov: "الغربية" },
+        { city: "الزقازيق", gov: "الشرقية" },
+        { city: "العاشر من رمضان", gov: "الشرقية" },
+        { city: "بنها", gov: "القليوبية" },
+        { city: "شبرا الخيمة", gov: "القليوبية" },
+        { city: "دمياط الجديدة", gov: "دمياط" },
+        { city: "رأس البر", gov: "دمياط" },
+        { city: "بورفؤاد", gov: "بورسعيد" },
+        { city: "الإسماعيلية", gov: "الإسماعيلية" },
+        { city: "السويس", gov: "السويس" },
+        { city: "الغردقة", gov: "البحر الأحمر" },
+        { city: "الجونة", gov: "البحر الأحمر" },
+        { city: "شرم الشيخ", gov: "جنوب سيناء" },
+        { city: "العلمين الجديدة", gov: "مطروح" },
+        { city: "مرسى مطروح", gov: "مطروح" }
+      ];
+
+      const added = new Set();
+      popularOrder.forEach(item => {
+        list.push(item);
+        added.add(`${item.city}_${item.gov}`);
+      });
+
+      if (typeof egyptGovernoratesAndCities === 'object') {
+        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+          if (gov.includes('خارج')) return;
+          const cities = egyptGovernoratesAndCities[gov] || [];
+          cities.forEach(c => {
+            const key = `${c}_${gov}`;
+            if (!added.has(key)) {
+              list.push({ city: c, gov: gov });
+              added.add(key);
+            }
+          });
+        });
+      }
+
+      return list;
     }
 
     // ── Searchable Pickers: ID City Picker (Search Bar + Filtering) ──
@@ -6457,26 +6851,83 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       if (!scrollContainer) return;
       scrollContainer.innerHTML = '';
 
-      if (!cities || cities.length === 0) {
-        if (btn) {
-          btn.disabled = true;
-          btn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-        if (displaySpan) {
-          displaySpan.innerHTML = `<span class="truncate font-black text-slate-500">${isOutside ? (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...') : (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...')}</span>`;
-        }
-        if (hiddenInput) hiddenInput.value = '';
-        return;
-      }
-
+      // الزر دائماً مفعل وقابل للضغط والبحث
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
-      if (displaySpan) {
+
+      // الحالة 1: لا توجد مدن محددة بعد (لم يتم اختيار محافظة)
+      if (!cities || cities.length === 0) {
+        if (displaySpan && (!hiddenInput || !hiddenInput.value)) {
+          displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${isOutside ? (isEn ? 'Select City / State...' : 'اختر المدينة / الولاية...') : (isEn ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...')}</span>`;
+        }
+
+        if (isOutside) {
+          const abroadNotice = document.createElement('div');
+          abroadNotice.className = "text-[11px] font-black text-sky-950 px-2.5 py-1.5 rounded-lg bg-sky-100/70 mb-1 flex items-center gap-1.5";
+          abroadNotice.innerHTML = `<span>🌍</span><span>${isEn ? 'Please select residence country first' : 'يرجى اختيار دولة الإقامة أولاً'}</span>`;
+          scrollContainer.appendChild(abroadNotice);
+        } else {
+          // عرض جميع مدن الجمهورية مع تحديد المحافظة تلقائياً عند الضغط
+          const hintHeading = document.createElement('div');
+          hintHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-1 flex items-center justify-between";
+          hintHeading.innerHTML = `<span>${isEn ? '🏙️ All Egyptian Cities (Auto-selects Governorate):' : '🏙️ جميع مدن ومراكز الجمهورية (تحدد المحافظة تلقائياً):'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">بحث شامل</span>`;
+          scrollContainer.appendChild(hintHeading);
+
+          const allCities = getAllEgyptianCitiesList();
+          allCities.forEach(itemObj => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = "id-city-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start text-xs";
+            item.setAttribute('data-name', itemObj.city);
+            item.setAttribute('data-gov', itemObj.gov);
+            item.innerHTML = `
+              <span class="flex items-center gap-2 truncate">
+                <span class="text-xs">🏙️</span>
+                <span class="truncate font-black text-slate-950">${itemObj.city}</span>
+              </span>
+              <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md flex-shrink-0">${itemObj.gov}</span>
+            `;
+            item.onclick = (e) => {
+              e.stopPropagation();
+              selectIdCityPickerItem(clientId, itemObj.city, itemObj.gov);
+            };
+            scrollContainer.appendChild(item);
+          });
+        }
+
+        // خيار "أخرى"
+        const otherVal = isOutside
+          ? (t.optOtherCityAbroad || (isEn ? 'Other city / area abroad' : 'أخرى / مدينة أخرى بالخارج'))
+          : (t.optOtherArea || (isEn ? 'Other district / area' : 'أخرى / منطقة أخرى'));
+        const otherItem = document.createElement('button');
+        otherItem.type = 'button';
+        otherItem.className = "id-city-picker-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-amber-100 text-amber-950 transition-colors cursor-pointer font-bold text-start text-xs border-t border-sky-100 mt-1 pt-1.5";
+        otherItem.setAttribute('data-name', otherVal);
+        otherItem.innerHTML = `
+          <span class="flex items-center gap-2 truncate">
+            <span class="text-xs">✏️</span>
+            <span class="truncate font-black text-amber-950">${otherVal}</span>
+          </span>
+        `;
+        otherItem.onclick = (e) => {
+          e.stopPropagation();
+          selectIdCityPickerItem(clientId, otherVal);
+        };
+        scrollContainer.appendChild(otherItem);
+        return;
+      }
+
+      // الحالة 2: توجد مدن خاصة بالمحافظة المختارة
+      if (displaySpan && (!hiddenInput || !hiddenInput.value)) {
         displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${isOutside ? (isEn ? 'Select City / State...' : 'اختر المدينة / الولاية...') : (isEn ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...')}</span>`;
       }
-      if (hiddenInput) hiddenInput.value = '';
+
+      const govHeading = document.createElement('div');
+      govHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-1 flex items-center justify-between";
+      govHeading.innerHTML = `<span>${isEn ? '📍 Cities of selected governorate:' : '📍 مدن ومراكز المحافظة المحددة:'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">${cities.length} مدينة</span>`;
+      scrollContainer.appendChild(govHeading);
 
       cities.forEach(city => {
         const item = document.createElement('button');
@@ -6517,9 +6968,18 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       scrollContainer.appendChild(otherItem);
     }
 
-    function selectIdCityPickerItem(clientId, cityName) {
+    function selectIdCityPickerItem(clientId, cityName, associatedGov = null) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
+
+      // إذا تم اختيار مدينة ذات محافظة مرتبطة ولم تكن المحافظة مختارة بعد
+      if (associatedGov) {
+        const curGov = card.querySelector('.client-gov-select')?.value;
+        if (!curGov || curGov !== associatedGov) {
+          selectRegionPickerItem(clientId, { nameAr: associatedGov, nameEn: associatedGov, flag: '📍' }, false);
+        }
+      }
+
       const picker = card.querySelector(`#idCityPicker_${clientId}`) || card.querySelector('.searchable-id-city-picker');
       const hiddenInput = card.querySelector('.client-city-select');
       const displaySpan = picker?.querySelector('.id-city-picker-display');
@@ -6544,14 +7004,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     }
 
     function filterIdCityPicker(clientId, searchInput) {
-      const q = searchInput.value.trim().toLowerCase();
+      handleSearchInputWithClear(searchInput);
+      const q = normalizeArabic(searchInput.value);
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
+
       const items = card.querySelectorAll(`#idCityPicker_${clientId} .id-city-picker-item, .searchable-id-city-picker .id-city-picker-item`);
+      let matchCount = 0;
       items.forEach(item => {
-        const name = (item.getAttribute('data-name') || '').toLowerCase();
-        item.style.display = name.includes(q) ? 'flex' : 'none';
+        const name = normalizeArabic(item.getAttribute('data-name') || '');
+        const gov = normalizeArabic(item.getAttribute('data-gov') || '');
+        const match = name.includes(q) || gov.includes(q);
+        item.style.display = match ? 'flex' : 'none';
+        if (match) matchCount++;
       });
+
+      const hint = card.querySelector(`#idCityPicker_${clientId} .search-hint-text`);
+      if (hint) {
+        hint.textContent = q ? `النتائج المطابقة: ${matchCount}` : 'اكتب للبحث الفوري';
+      }
     }
 
     function toggleIdCityPickerDropdown(clientId, btn) {
@@ -6569,7 +7040,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (searchInput) {
           searchInput.value = '';
           filterIdCityPicker(clientId, searchInput);
-          setTimeout(() => searchInput.focus(), 50);
+          setTimeout(() => searchInput.focus(), 60);
         }
       }
     }
@@ -6669,16 +7140,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     }
 
     function filterCorrCountryPicker(clientId, searchInput) {
-      const q = searchInput.value.trim().toLowerCase();
+      handleSearchInputWithClear(searchInput);
+      const q = normalizeArabic(searchInput.value);
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
+
       const items = card.querySelectorAll(`#corrCountryPicker_${clientId} .corr-country-picker-item, .searchable-corr-country-picker .corr-country-picker-item`);
+      let matchCount = 0;
       items.forEach(item => {
-        const ar = (item.getAttribute('data-name-ar') || '').toLowerCase();
+        const ar = normalizeArabic(item.getAttribute('data-name-ar') || '');
         const en = (item.getAttribute('data-name-en') || '').toLowerCase();
         const match = ar.includes(q) || en.includes(q);
         item.style.display = match ? 'flex' : 'none';
+        if (match) matchCount++;
       });
+
+      const hint = card.querySelector(`#corrCountryPicker_${clientId} .search-hint-text`);
+      if (hint) {
+        hint.textContent = q ? `النتائج المطابقة: ${matchCount}` : 'اكتب للبحث الفوري';
+      }
     }
 
     function toggleCorrCountryPickerDropdown(clientId, btn) {
@@ -6696,7 +7176,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (searchInput) {
           searchInput.value = '';
           filterCorrCountryPicker(clientId, searchInput);
-          setTimeout(() => searchInput.focus(), 50);
+          setTimeout(() => searchInput.focus(), 60);
         }
       }
     }
@@ -6718,25 +7198,16 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       scrollContainer.innerHTML = '';
 
       if (!countryVal) {
-        if (btn) {
-          btn.disabled = true;
-          btn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-        if (displaySpan) {
-          displaySpan.innerHTML = `<span class="truncate font-black text-slate-500">${isEn ? 'Select Country first...' : 'اختر الدولة أولاً...'}</span>`;
-        }
-        if (hiddenInput) hiddenInput.value = '';
-        return;
+        countryVal = 'مصر';
       }
 
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
-      if (displaySpan) {
+      if (displaySpan && (!hiddenInput || !hiddenInput.value)) {
         displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${isEn ? 'Select Governorate / City...' : 'اختر المحافظة / المدينة...'}</span>`;
       }
-      if (hiddenInput) hiddenInput.value = '';
 
       // Cities based on country
       let cities = [];
@@ -6811,14 +7282,24 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     }
 
     function filterCorrCityPicker(clientId, searchInput) {
-      const q = searchInput.value.trim().toLowerCase();
+      handleSearchInputWithClear(searchInput);
+      const q = normalizeArabic(searchInput.value);
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
+
       const items = card.querySelectorAll(`#corrCityPicker_${clientId} .corr-city-picker-item, .searchable-corr-city-picker .corr-city-picker-item`);
+      let matchCount = 0;
       items.forEach(item => {
-        const name = (item.getAttribute('data-name') || '').toLowerCase();
-        item.style.display = name.includes(q) ? 'flex' : 'none';
+        const name = normalizeArabic(item.getAttribute('data-name') || '');
+        const match = name.includes(q);
+        item.style.display = match ? 'flex' : 'none';
+        if (match) matchCount++;
       });
+
+      const hint = card.querySelector(`#corrCityPicker_${clientId} .search-hint-text`);
+      if (hint) {
+        hint.textContent = q ? `النتائج المطابقة: ${matchCount}` : 'اكتب للبحث الفوري';
+      }
     }
 
     function toggleCorrCityPickerDropdown(clientId, btn) {
@@ -6836,8 +7317,75 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (searchInput) {
           searchInput.value = '';
           filterCorrCityPicker(clientId, searchInput);
-          setTimeout(() => searchInput.focus(), 50);
+          setTimeout(() => searchInput.focus(), 60);
         }
+      }
+    }
+
+    // ── Searchable Picker: Contract Signing Location (المكان الأقرب لتوقيع العقد مع سيرش بار) ──
+    function toggleContractLocationDropdown(btn) {
+      const container = document.getElementById('contractLocationPicker');
+      if (!container) return;
+      const dropdown = container.querySelector('.contract-location-dropdown');
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+      closeAllRegionPickerDropdowns();
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = dropdown.querySelector('.contract-location-search');
+        if (searchInput) {
+          searchInput.value = '';
+          filterContractLocationPicker(searchInput);
+          setTimeout(() => searchInput.focus(), 60);
+        }
+      }
+    }
+
+    function filterContractLocationPicker(searchInput) {
+      handleSearchInputWithClear(searchInput);
+      const q = normalizeArabic(searchInput.value);
+      const container = document.getElementById('contractLocationPicker');
+      if (!container) return;
+
+      const items = container.querySelectorAll('.contract-loc-item');
+      let matchCount = 0;
+      items.forEach(item => {
+        const name = normalizeArabic(item.getAttribute('data-name') || item.innerText);
+        const match = name.includes(q);
+        item.style.display = match ? 'flex' : 'none';
+        if (match) matchCount++;
+      });
+
+      const hint = container.querySelector('.search-hint-text');
+      if (hint) {
+        hint.textContent = q ? `النتائج المطابقة: ${matchCount}` : 'اكتب للبحث الفوري';
+      }
+    }
+
+    function selectContractLocationItem(locVal) {
+      const hiddenInput = document.getElementById('contractLocation');
+      const textEl = document.getElementById('contractLocationDisplayText');
+      const container = document.getElementById('contractLocationPicker');
+      const errEl = document.getElementById('errLocation');
+      const btn = container?.querySelector('.contract-location-btn');
+
+      if (hiddenInput) {
+        hiddenInput.value = locVal;
+        hiddenInput.classList.remove('invalid');
+      }
+      if (textEl) {
+        textEl.textContent = locVal;
+      }
+      if (btn) {
+        btn.classList.remove('invalid');
+      }
+      if (errEl) {
+        errEl.classList.add('hidden');
+      }
+      if (container) {
+        container.querySelector('.contract-location-dropdown')?.classList.add('hidden');
       }
     }
 
@@ -6847,8 +7395,12 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           !e.target.closest('.searchable-id-city-picker') && 
           !e.target.closest('.searchable-corr-country-picker') && 
           !e.target.closest('.searchable-corr-city-picker') &&
-          !e.target.closest('.country-picker')) {
+          !e.target.closest('.searchable-contract-location-picker') &&
+          !e.target.closest('.country-picker') &&
+          !e.target.closest('.unit-picker')) {
         closeAllRegionPickerDropdowns();
+        document.querySelectorAll('.country-dropdown').forEach(d => d.classList.add('hidden'));
+        if (typeof closeAllUnitDropdowns === 'function') closeAllUnitDropdowns();
       }
     });
 
@@ -6858,6 +7410,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       updateClientAddressLabels(clientId);
       renderRegionPickerItems(clientId);
+      renderIdCityPickerItems(clientId, null);
       renderCorrCountryPickerItems(clientId);
       renderCorrCityPickerItems(clientId, 'مصر');
     }
@@ -7243,13 +7796,34 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         const isPrimary = (i === 0);
         const nameInput = card.querySelector('.client-name-input');
-        const nameVal = nameInput ? nameInput.value.trim() : '';
-        const isNameValid = nameInput ? handleClientNameInput(nameInput) : false;
-        if (!isNameValid) {
+        const primNameVal = nameInput ? nameInput.value.trim() : '';
+        const isPrimValid = nameInput ? handleClientNameInput(nameInput) : false;
+
+        if (!isPrimValid || primNameVal.length < 2) {
           nameInput?.classList.add('invalid');
           nameInput?.parentElement?.querySelector('.error-msg')?.classList.remove('hidden');
           hasError = true;
         }
+
+        // تجميع بيانات الشركاء من كونتينرات الشركاء الموضحة قبل بيانات الوحدة
+        const partnerRows = document.querySelectorAll('.partner-container-row');
+        const partnerVals = [];
+        const partnerNids = [];
+        partnerRows.forEach(pRow => {
+          const pInp = pRow.querySelector('.partner-name-input');
+          const pNidInp = pRow.querySelector('.partner-nid-input');
+          const pv = pInp ? pInp.value.trim() : '';
+          const pNid = pNidInp ? pNidInp.value.trim() : '';
+          if (pv.length >= 2) {
+            partnerVals.push(pv);
+            if (pNid.length > 0) {
+              partnerNids.push(pNid);
+            }
+          }
+        });
+
+        const allCardNames = [primNameVal, ...partnerVals].filter(v => v.length > 0);
+        const nameVal = allCardNames.join(' ، ');
 
         // التحقق من أرقام الهواتف لهذه البطاقة
         const phoneRows = card.querySelectorAll('.phone-row');
@@ -7472,6 +8046,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           id: cId,
           isPrimary: isPrimary,
           fullName: nameVal,
+          names: allCardNames,
+          partnerNames: partnerVals,
+          partnerNids: partnerNids,
           phones: clientPhones,
           emails: clientEmails,
           idType: idType,
@@ -7494,7 +8071,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       const includedCards = Array.from(allUnitCards).filter(card => {
         const cb = card.querySelector('.unit-include-cb');
-        return cb && cb.checked;
+        return cb ? cb.checked : true;
       });
 
       if (allUnitCards.length > 0 && includedCards.length === 0) {
@@ -7586,7 +8163,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       // تمرير كافة الوحدات في مصفوفات موحدة للـ backend
       allUnitCards.forEach(card => {
-        const isIncluded = card.querySelector('.unit-include-cb')?.checked ? true : false;
+        const cb = card.querySelector('.unit-include-cb');
+        const isIncluded = cb ? cb.checked : true;
         const uCode = card.getAttribute('data-unit-code') || card.querySelector('.unit-code-input')?.value.trim() || '';
         const uPaid = card.querySelector('input[type="radio"]:checked')?.value || 'نعم';
         const uDate = card.querySelector('.unit-payment-date-input')?.value || '';

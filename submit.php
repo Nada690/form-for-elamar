@@ -97,8 +97,21 @@ $idType = cleanInput($data['id_type'] ?? 'national_id');
 
 if (!empty($clientsParsed)) {
     foreach ($clientsParsed as $cIdx => $c) {
-        $cName = cleanInput($c['fullName'] ?? $c['name'] ?? '');
-        if (!empty($cName)) $namesArr[] = $cName;
+        if (!empty($c['names']) && is_array($c['names'])) {
+            foreach ($c['names'] as $n) {
+                $cn = cleanInput($n);
+                if (!empty($cn)) $namesArr[] = $cn;
+            }
+        } else {
+            $cName = cleanInput($c['fullName'] ?? $c['name'] ?? '');
+            if (!empty($cName)) {
+                $parts = explode(' ، ', $cName);
+                foreach ($parts as $p) {
+                    $cp = cleanInput($p);
+                    if (!empty($cp)) $namesArr[] = $cp;
+                }
+            }
+        }
 
         // Phones
         if (!empty($c['phones']) && is_array($c['phones'])) {
@@ -126,6 +139,17 @@ if (!empty($clientsParsed)) {
         // ID Number & Type
         $cIdNum = cleanInput($c['nationalId'] ?? $c['idNumber'] ?? $c['id_number'] ?? '');
         if (!empty($cIdNum)) $idNumbersArr[] = $cIdNum;
+
+        // Partner National IDs if present
+        if (!empty($c['partnerNids']) && is_array($c['partnerNids'])) {
+            foreach ($c['partnerNids'] as $pnid) {
+                $cleanPnid = cleanInput($pnid);
+                if (!empty($cleanPnid) && !in_array($cleanPnid, $idNumbersArr)) {
+                    $idNumbersArr[] = $cleanPnid;
+                    $idTypesArr[] = 'national_id';
+                }
+            }
+        }
 
         $cType = cleanInput($c['idType'] ?? 'national_id');
         $idTypesArr[] = $cType;
