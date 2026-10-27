@@ -5440,17 +5440,6 @@
         }
       });
     }
-        countBadge.classList.remove('hidden');
-      }
-
-      rows.forEach((r, idx) => {
-        const textEl = r.querySelector('.partner-role-text');
-        const partnerNum = idx + 2;
-        if (textEl) {
-          textEl.textContent = isEn ? `Partner (${partnerNum})` : `الشريك (${partnerNum})`;
-        }
-      });
-    }
 
     // ── Phone Rows Repeater per Client ──
     let phoneRowCounter = 0;
@@ -6319,7 +6308,6 @@
           if (partnersContainer) partnersContainer.innerHTML = '';
           if (partnersSection) partnersSection.classList.add('hidden');
         }
-      }
       }
 
       if (!val) {
