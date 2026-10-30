@@ -973,8 +973,8 @@ try {
     if ($existingClient) {
         http_response_code(409);
         $dupMsg = ($lang === 'en')
-            ? "This client (ID: {$id_number}) is already registered for unit ({$existingClient['eoi_number']}). Duplicate submissions are not allowed."
-            : "عفواً، تم تسجيل واستيفاء بيانات هذا العميل (الرقم القومي: {$id_number}) مسبقاً للوحدة ({$existingClient['eoi_number']}). لا يُسمح بإعادة التسجيل مرة أخرى منعاً للتكرار.";
+            ? "Sorry, this form has already been registered and submitted previously. Duplicate submissions are not allowed."
+            : "عفواً، تم تسجيل وإرسال هذا النموذج مسبقاً ولا يمكن تكرار الإرسال.";
         echo json_encode([
             'status'  => 'error',
             'field'   => 'idNumber',

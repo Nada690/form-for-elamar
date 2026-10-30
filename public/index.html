@@ -325,7 +325,171 @@
   <div class="fixed bottom-10 left-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
   <!-- ═══════════════ HEADER ═══════════════ -->
-  <header class="border-b-2 border-sky-200 bg-white/95 backdrop-blur-xl shadow-sm sticky top-0 z-50">
+    <!-- ═══════════════ KYC VERIFICATION & WELCOME SCREEN OVERLAY ═══════════════ -->
+  <div id="kycWelcomeModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md overflow-y-auto transition-all">
+    <div class="glass-card max-w-xl w-full p-5 sm:p-8 rounded-3xl border-2 border-sky-400 shadow-2xl relative my-6 bg-white text-slate-950">
+      
+      <!-- Welcome Header -->
+      <div class="text-center space-y-2 mb-5">
+        <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-sky-100 border-2 border-sky-300 text-3xl shadow-xs">
+          🏖️
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-950 tracking-tight" id="kycWelcomeTitle">
+          أهلاً بكم في مجموعة شركات العمار
+        </h2>
+        <p class="text-xs sm:text-sm font-bold text-slate-700 max-w-md mx-auto" id="kycWelcomeSubtitle">
+          يرجى التحقق من وثيقة إثبات الهوية للبدء في استيفاء بيانات التعاقد لمشروع Shores الساحل الشمالي
+        </p>
+      </div>
+
+      <!-- Step 1: Residency Selection -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-black text-slate-950 mb-2">
+            يرجى تحديد مكان الإقامة لنوع مستند الهوية:
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button 
+              type="button" 
+              id="kycResInsideBtn" 
+              onclick="setKycResidency('inside')" 
+              class="p-3 rounded-2xl border-2 border-sky-500 bg-sky-50 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 transition-all shadow-xs cursor-pointer text-right"
+            >
+              <span class="text-xl flex-shrink-0">🇪🇬</span>
+              <div>
+                <div class="font-black text-slate-950">عميل داخل مصر</div>
+                <div class="text-[10px] text-slate-600 font-bold">بطاقة الرقم القومي (وجهين)</div>
+              </div>
+            </button>
+
+            <button 
+              type="button" 
+              id="kycResOutsideBtn" 
+              onclick="setKycResidency('outside')" 
+              class="p-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2.5 transition-all shadow-xs cursor-pointer text-right hover:border-sky-300"
+            >
+              <span class="text-xl flex-shrink-0">🌍</span>
+              <div>
+                <div class="font-black text-slate-950">عميل خارج مصر</div>
+                <div class="text-[10px] text-slate-600 font-bold">جواز السفر + الإقامة السارية</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Upload & Scan Controls -->
+        <div class="space-y-3 pt-1">
+          <!-- Inside Egypt Upload (National ID Front & Back) -->
+          <div id="kycInsideUploadBox" class="space-y-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div 
+                class="p-3 rounded-2xl border-2 border-dashed border-sky-300 hover:border-sky-500 bg-sky-50/50 hover:bg-sky-50 text-center cursor-pointer transition-all shadow-2xs"
+                onclick="document.getElementById('kycFrontInput').click()"
+              >
+                <input type="file" id="kycFrontInput" accept="image/*,.pdf" class="hidden" onchange="handleKycFileUpload('front', this.files)">
+                <span class="text-2xl block mb-1">🪪</span>
+                <span class="text-xs font-black text-slate-950 block">الوجه الأمامي للبطاقة</span>
+                <span class="text-[10px] text-sky-800 font-bold block mt-0.5" id="kycFrontStatus">اضغط لرفع الصورة أو المسح</span>
+              </div>
+
+              <div 
+                class="p-3 rounded-2xl border-2 border-dashed border-sky-300 hover:border-sky-500 bg-sky-50/50 hover:bg-sky-50 text-center cursor-pointer transition-all shadow-2xs"
+                onclick="document.getElementById('kycBackInput').click()"
+              >
+                <input type="file" id="kycBackInput" accept="image/*,.pdf" class="hidden" onchange="handleKycFileUpload('back', this.files)">
+                <span class="text-2xl block mb-1">🔄</span>
+                <span class="text-xs font-black text-slate-950 block">الوجه الخلفي للبطاقة</span>
+                <span class="text-[10px] text-sky-800 font-bold block mt-0.5" id="kycBackStatus">اضغط لرفع الصورة أو المسح</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Outside Egypt Upload (Passport & Residence) -->
+          <div id="kycOutsideUploadBox" class="space-y-2.5 hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div 
+                class="p-3 rounded-2xl border-2 border-dashed border-sky-300 hover:border-sky-500 bg-sky-50/50 hover:bg-sky-50 text-center cursor-pointer transition-all shadow-2xs"
+                onclick="document.getElementById('kycPassportInput').click()"
+              >
+                <input type="file" id="kycPassportInput" accept="image/*,.pdf" class="hidden" onchange="handleKycFileUpload('passport', this.files)">
+                <span class="text-2xl block mb-1">🛂</span>
+                <span class="text-xs font-black text-slate-950 block">صورة جواز السفر</span>
+                <span class="text-[10px] text-sky-800 font-bold block mt-0.5" id="kycPassportStatus">اضغط لرفع صورة الجواز</span>
+              </div>
+
+              <div 
+                class="p-3 rounded-2xl border-2 border-dashed border-sky-300 hover:border-sky-500 bg-sky-50/50 hover:bg-sky-50 text-center cursor-pointer transition-all shadow-2xs"
+                onclick="document.getElementById('kycResidenceInput').click()"
+              >
+                <input type="file" id="kycResidenceInput" accept="image/*,.pdf" class="hidden" onchange="handleKycFileUpload('residence', this.files)">
+                <span class="text-2xl block mb-1">📜</span>
+                <span class="text-xs font-black text-slate-950 block">صورة الإقامة السارية</span>
+                <span class="text-[10px] text-sky-800 font-bold block mt-0.5" id="kycResidenceStatus">اضغط لرفع صورة الإقامة</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smart OCR Scanning Animation Indicator -->
+          <div id="kycScanningIndicator" class="hidden p-3.5 rounded-2xl bg-sky-100 border-2 border-sky-400 space-y-2 text-center">
+            <div class="flex items-center justify-center gap-2 text-xs font-black text-sky-950">
+              <span class="animate-spin text-sm">⚙️</span>
+              <span>جارٍ المسح الضوئي الذكي (Smart OCR) واستخراج بيانات الهوية...</span>
+            </div>
+            <div class="w-full bg-white rounded-full h-2 overflow-hidden border border-sky-300">
+              <div class="bg-sky-600 h-2 rounded-full w-3/4 animate-pulse"></div>
+            </div>
+          </div>
+
+          <!-- Extracted OCR Results Card -->
+          <div id="kycExtractedCard" class="hidden p-3.5 rounded-2xl bg-emerald-50 border-2 border-emerald-400 space-y-2.5">
+            <div class="flex items-center gap-1.5 text-emerald-900 font-black text-xs">
+              <span>✓</span>
+              <span>تم التحقق واستخراج بيانات الهوية بنجاح:</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div class="p-2 rounded-xl bg-white border border-emerald-200">
+                <span class="text-[10px] text-slate-500 font-bold block">اسم العميل المستخرج:</span>
+                <span class="font-black text-slate-950" id="kycExtractedName">-</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white border border-emerald-200">
+                <span class="text-[10px] text-slate-500 font-bold block" id="kycExtractedIdLabel">الرقم القومي:</span>
+                <span class="font-mono font-black text-slate-950" id="kycExtractedIdNum">-</span>
+              </div>
+              <div class="sm:col-span-2 p-2 rounded-xl bg-white border border-emerald-200">
+                <span class="text-[10px] text-slate-500 font-bold block">عنوان الهوية:</span>
+                <span class="font-black text-slate-950" id="kycExtractedAddress">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons Footer -->
+        <div class="pt-3 border-t border-sky-100 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <button 
+            type="button" 
+            onclick="proceedWithManualForm()" 
+            class="text-xs font-black text-slate-600 hover:text-slate-950 hover:underline cursor-pointer"
+          >
+            الدخول المباشر (تعبئة يدوية)
+          </button>
+
+          <button 
+            type="button" 
+            id="kycContinueBtn" 
+            onclick="applyKycDataAndOpenForm()" 
+            class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-black text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>المتابعة إلى استمارة العقد (تعبئة تلقائية)</span>
+            <span>←</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+<header class="border-b-2 border-sky-200 bg-white/95 backdrop-blur-xl shadow-sm sticky top-0 z-50">
     <div class="max-w-4xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2 sm:gap-3">
 
       <!-- Logo + Brand -->
@@ -415,10 +579,10 @@
               <div id="alreadyRegisteredBanner" class="hidden p-4 sm:p-5 rounded-2xl bg-red-50 border-2 border-red-500 text-red-950 space-y-2.5 shadow-md transition-all">
                 <div class="flex items-center gap-2.5">
                   <span class="text-2xl sm:text-3xl">🚫</span>
-                  <h4 class="text-sm sm:text-base font-black text-red-700">تم استيفاء وتسجيل بيانات هذا العقد مسبقاً في النظام!</h4>
+                  <h4 class="text-sm sm:text-base font-black text-red-700">عفواً، تم تسجيل وإرسال هذا النموذج مسبقاً ولا يمكن تكرار الإرسال</h4>
                 </div>
                 <p class="text-xs sm:text-sm font-bold text-red-950 leading-relaxed" id="alreadyRegDesc">
-                  عفواً، بيانات العميل والوحدة لهذا الرقم القومي مسجلة ومستوفاة بالفعل مسبقاً في قاعدة البيانات. <strong>لا يُسمح بإعادة تسجيل البيانات على الفورم مرة أخرى منعاً لتكرار التعاقد.</strong>
+                  عفواً، تم تسجيل وإرسال هذا النموذج مسبقاً ولا يمكن تكرار الإرسال. لا يُسمح بإعادة تقديم الفورم مرة أخرى لنفس العميل.
                 </p>
                 <div class="p-2.5 rounded-xl bg-white/90 border border-red-300 text-xs font-black text-red-800 flex items-center gap-2">
                   <span>📞</span>
@@ -583,6 +747,13 @@
                 oninput="validateClientIdNumber(this, 1)"
               />
               <p class="error-msg text-red-600 font-black text-xs mt-1 hidden client-id-error"></p>
+              <!-- تنبيه الشريك في العقد -->
+              <div class="partner-form-notice mt-2.5 p-3 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 flex items-center gap-2.5 shadow-2xs">
+                <span class="text-xl flex-shrink-0">⚠️</span>
+                <span class="text-xs font-black text-amber-900 leading-tight">
+                  يرجى من الشريك في العقد استكمال فورم مستقل به
+                </span>
+              </div>
             </div>
 
             <!-- الحقل الثاني: يظهر عند اختيار كلاهما (جواز السفر) -->
@@ -2392,6 +2563,42 @@
               </div>
             </div>
 
+            <!-- مربع رفع المستندات الدالة على الدفع (يظهر ديناميكياً تحت سؤال حالة الدفع) -->
+            <div id="unitPaymentProofContainer_${idx}" class="p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-sky-300 shadow-xs space-y-3 transition-all my-3">
+              <div class="flex items-center justify-between pb-2 border-b border-sky-100">
+                <div class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm">
+                  <span>🧾</span>
+                  <span>${isEn ? 'Please upload proof of payment documents' : 'برجاء رفع المستندات الدالة على الدفع'}</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </div>
+                <span class="text-[10px] text-slate-600 font-mono font-bold">PDF / JPG / PNG</span>
+              </div>
+              <p class="text-[11px] text-slate-600 font-bold">
+                ${isEn ? '(Bank transfer receipt, cash deposit receipt, cheques, or financial proof of payment)' : '(إيصال التحويل البنكي، إيداع الخزينة، الشيكات البنكية، أو إيصال السداد المالي)'}
+              </p>
+
+              <div 
+                class="payment-proof-dropzone border-2 border-dashed border-sky-300 hover:border-sky-500 rounded-2xl p-4 text-center transition-all bg-sky-50/50 hover:bg-sky-100/50 cursor-pointer shadow-xs"
+                onclick="document.getElementById('paymentProofInput_${idx}').click()"
+              >
+                <input 
+                  type="file" 
+                  id="paymentProofInput_${idx}" 
+                  multiple 
+                  accept="image/*,.pdf" 
+                  class="hidden payment-proof-input" 
+                  onchange="handlePaymentProofFiles(${idx}, this.files)"
+                >
+                <div class="text-2xl mb-1 pointer-events-none">📁</div>
+                <div class="font-black text-xs sm:text-sm text-slate-950 pointer-events-none">
+                  ${isEn ? 'Click to select payment receipt or drag & drop files here' : 'اضغط لاختيار إيصال الدفع أو اسحب الملفات وأفلتها هنا'}
+                </div>
+              </div>
+
+              <!-- قائمة إيصالات الدفع المرفوعة -->
+              <div id="paymentProofList_${idx}" class="payment-proof-list grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold pt-1"></div>
+            </div>
+
             <!-- رسالة التوقف عند اختيار لا للمقدم -->
             <div id="unitAdvanceNoticeNo_${idx}" class="hidden p-3 rounded-2xl bg-amber-50 border-2 border-amber-400 text-center space-y-1 my-2">
               <div class="text-xl">⚠️</div>
@@ -2723,17 +2930,20 @@
       const boxYes = document.getElementById(`unitBoxYes_${idx}`);
       const boxNo = document.getElementById(`unitBoxNo_${idx}`);
       const dateCont = document.getElementById(`unitPaymentDateContainer_${idx}`);
+      const proofCont = document.getElementById(`unitPaymentProofContainer_${idx}`);
       const noticeNo = document.getElementById(`unitAdvanceNoticeNo_${idx}`);
 
       if (radioEl.value === 'نعم') {
         if (boxYes) boxYes.classList.add('active');
         if (boxNo) boxNo.classList.remove('active');
         if (dateCont) dateCont.classList.remove('hidden');
+        if (proofCont) proofCont.classList.remove('hidden');
         if (noticeNo) noticeNo.classList.add('hidden');
       } else {
         if (boxYes) boxYes.classList.remove('active');
         if (boxNo) boxNo.classList.add('active');
         if (dateCont) dateCont.classList.add('hidden');
+        if (proofCont) proofCont.classList.add('hidden');
         if (noticeNo) noticeNo.classList.remove('hidden');
       }
     }
@@ -6975,7 +7185,7 @@
           submitBtn.disabled = true;
           submitBtn.dataset.blocked = 'true';
           submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-          submitBtn.innerHTML = `<span>🚫</span> <span>${currentLang === 'en' ? 'Contract Already Registered (Re-registration Disabled)' : 'تم استيفاء وتسجيل هذا العقد مسبقاً (غير مسموح بإعادة التسجيل)'}</span>`;
+          submitBtn.innerHTML = `<span>🚫</span> <span>${currentLang === 'en' ? 'Contract Already Registered (Re-registration Disabled)' : 'عفواً، تم تسجيل وإرسال هذا النموذج مسبقاً ولا يمكن تكرار الإرسال'}</span>`;
         }
       } else {
         if (regBanner) regBanner.classList.add('hidden');
