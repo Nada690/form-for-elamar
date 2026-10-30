@@ -139,13 +139,25 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       background-attachment: fixed !important;
     }
 
-    /* All text bold and black */
-    h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div {
-      font-weight: 700;
+    /* Crisp High-Contrast Bold Typography (الكلام الرئيسي Bold) */
+    h1, h2, h3, h4, h5, h6, .page-title, .section-title {
+      font-weight: 900 !important;
+      color: #020617 !important;
+      letter-spacing: -0.01em;
     }
-    label {
+    label, .form-label {
       color: #000000 !important;
       font-weight: 800 !important;
+    }
+    .card-title {
+      font-weight: 900 !important;
+      color: #020617 !important;
+    }
+    .badge, .card-badge {
+      font-weight: 800 !important;
+    }
+    p, span, div {
+      font-weight: 700;
     }
 
     .glass-card {
@@ -189,8 +201,50 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     .glass-input.valid {
       border-color: #10b981 !important;
     }
-    .glass-input.invalid {
-      border-color: #ef4444 !important;
+
+    /* اللون الأحمر في أي خطأ يكون واضح جداً (Prominent Bold Red Errors) */
+    .glass-input.invalid,
+    input.invalid,
+    select.invalid,
+    textarea.invalid,
+    .border-red-500 {
+      border-color: #dc2626 !important;
+      border-width: 2.5px !important;
+      background-color: #fef2f2 !important;
+      box-shadow: 0 0 0 3.5px rgba(220, 38, 38, 0.25) !important;
+      color: #991b1b !important;
+    }
+    .error-msg,
+    p.error-msg,
+    .text-red-500,
+    .text-red-600,
+    .client-id-error,
+    .phone-error,
+    .email-error {
+      color: #dc2626 !important;
+      font-weight: 800 !important;
+      font-size: 0.8125rem !important;
+    }
+
+    /* وضع لون Gray على الخانات التي لا يُسمح بالتعديل فيها (Disabled & Readonly Gray Theme) */
+    input[readonly],
+    input:disabled,
+    select:disabled,
+    textarea[readonly],
+    .is-readonly {
+      background-color: #e2e8f0 !important; /* Clear Slate Gray */
+      border-color: #94a3b8 !important;
+      color: #1e293b !important;
+      cursor: not-allowed !important;
+      font-weight: 800 !important;
+    }
+    input[readonly]:focus,
+    input:disabled:focus,
+    select:disabled:focus,
+    textarea[readonly]:focus {
+      outline: none !important;
+      border-color: #94a3b8 !important;
+      box-shadow: none !important;
     }
 
     select.glass-input {
@@ -375,6 +429,21 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                   <span data-i18n="sec1Title">بيانات أطراف العقد والشركاء (بيانات العملاء)</span>
                 </div>
                 <span class="text-[11px] text-slate-950 font-black bg-white px-2.5 py-1 rounded-lg border-2 border-sky-300 shadow-sm" id="clientsCountBadge">الطرف الأول (الأساسي)</span>
+              </div>
+
+              <!-- ── بنر تنبيه منع تكرار التسجيل إذا كان العقد مسجلاً مسبقاً ── -->
+              <div id="alreadyRegisteredBanner" class="hidden p-4 sm:p-5 rounded-2xl bg-red-50 border-2 border-red-500 text-red-950 space-y-2.5 shadow-md transition-all">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-2xl sm:text-3xl">🚫</span>
+                  <h4 class="text-sm sm:text-base font-black text-red-700">تم استيفاء وتسجيل بيانات هذا العقد مسبقاً في النظام!</h4>
+                </div>
+                <p class="text-xs sm:text-sm font-bold text-red-950 leading-relaxed" id="alreadyRegDesc">
+                  عفواً، بيانات العميل والوحدة لهذا الرقم القومي مسجلة ومستوفاة بالفعل مسبقاً في قاعدة البيانات. <strong>لا يُسمح بإعادة تسجيل البيانات على الفورم مرة أخرى منعاً لتكرار التعاقد.</strong>
+                </p>
+                <div class="p-2.5 rounded-xl bg-white/90 border border-red-300 text-xs font-black text-red-800 flex items-center gap-2">
+                  <span>📞</span>
+                  <span>لمزيد من الاستفسارات أو طلب أي تعديل، يُرجى التواصل مباشرة مع إدارة المبيعات وخدمة العملاء.</span>
+                </div>
               </div>
 
               <!-- حاوية بطاقات العملاء والشركاء المجمعة -->
@@ -580,6 +649,14 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           <span class="text-slate-700 font-bold" data-i18n="lblUnitRef">كود الوحدة:</span>
           <span class="font-mono text-slate-950 font-black uppercase" id="modalUnitCode">-</span>
         </div>
+        <div id="modalPriceRow" class="flex justify-between border-t border-sky-200 pt-1.5 hidden">
+          <span class="text-slate-700 font-bold" data-i18n="lblTotalPriceModal">إجمالي سعر الوحدة (توتال اليونت):</span>
+          <span class="font-mono text-slate-950 font-black" id="modalUnitPrice">-</span>
+        </div>
+        <div id="modalMaintRow" class="flex justify-between border-t border-sky-200 pt-1.5 hidden">
+          <span class="text-slate-700 font-bold" data-i18n="lblMaintModal">وديعة الصيانة:</span>
+          <span class="font-mono text-emerald-800 font-black" id="modalMaintenance">-</span>
+        </div>
         <?php if ($salesInfo): ?>
           <div class="flex justify-between border-t border-sky-200 pt-1.5">
             <span class="text-slate-700 font-bold" data-i18n="lblAdvisor">المستشار العقاري:</span>
@@ -592,14 +669,26 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         </div>
       </div>
 
-      <button
-        type="button"
-        onclick="location.reload()"
-        class="w-full py-3.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-slate-950 font-black rounded-xl text-sm shadow-lg cursor-pointer border-2 border-sky-400"
-        data-i18n="btnAnotherForm"
-      >
-        حسناً، تسجيل استمارة أخرى
-      </button>
+      <!-- أزرار الإشعار بعد التسجيل (إلغاء إعادة التسجيل وتوفير طباعة إشعار الحفظ) -->
+      <div class="flex flex-col sm:flex-row gap-2.5 w-full">
+        <button
+          type="button"
+          onclick="window.print()"
+          class="flex-1 py-3 px-4 bg-sky-50 hover:bg-sky-100 text-sky-950 font-black rounded-xl text-xs sm:text-sm border-2 border-sky-300 shadow-sm cursor-pointer flex items-center justify-center gap-1.5 transition-all"
+        >
+          <span>🖨️</span>
+          <span data-i18n="btnPrintConfirmation">طباعة إشعار التسجيل</span>
+        </button>
+        <button
+          type="button"
+          onclick="document.getElementById('successModal').classList.add('hidden')"
+          class="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black rounded-xl text-xs sm:text-sm shadow-md cursor-pointer border-2 border-emerald-500 flex items-center justify-center gap-1.5 transition-all"
+          data-i18n="btnCloseConfirmation"
+        >
+          <span>✓</span>
+          <span data-i18n="btnCloseConfirmationText">تم، إغلاق الإشعار</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -773,7 +862,12 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         lblAdvisor: "المستشار العقاري:",
         lblStatus: "حالة الطلب:",
         valApproved: "معتمد وموثق",
-        btnAnotherForm: "حسناً، تسجيل استمارة أخرى"
+        lblTotalPriceModal: "إجمالي سعر الوحدة (توتال اليونت):",
+        lblMaintModal: "وديعة الصيانة:",
+        btnPrintConfirmation: "طباعة إشعار التسجيل",
+        btnCloseConfirmation: "تم، إغلاق الإشعار",
+        btnCloseConfirmationText: "تم، إغلاق الإشعار",
+        btnAnotherForm: "تم حفظ وتوثيق العقد"
       },
       en: {
         brandName: "Al Amar Real Estate Development",
@@ -892,7 +986,12 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         lblAdvisor: "Property Consultant:",
         lblStatus: "Application Status:",
         valApproved: "Certified & Logged",
-        btnAnotherForm: "Done, register another form"
+        lblTotalPriceModal: "Total Unit Price:",
+        lblMaintModal: "Maintenance Deposit:",
+        btnPrintConfirmation: "Print Registration Receipt",
+        btnCloseConfirmation: "Done, Close Receipt",
+        btnCloseConfirmationText: "Done, Close Receipt",
+        btnAnotherForm: "Contract Saved & Certified"
       }
     };
 
@@ -1753,6 +1852,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               <span class="font-mono font-black text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300 text-xs sm:text-sm tracking-wider uppercase">${uCode}</span>
               <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 hidden sm:inline-flex">${uFloor}</span>
               <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 hidden sm:inline-flex">${uArea}</span>
+              <!-- شارات توتال اليونت والصيانة المباشرة في رأس الكارت -->
+              <span id="unitPriceHeaderBadge_${idx}" class="hidden font-mono font-black text-[11px] text-emerald-950 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-lg shadow-2xs"></span>
+              <span id="unitMaintHeaderBadge_${idx}" class="hidden font-mono font-black text-[11px] text-sky-950 bg-sky-100 border border-sky-300 px-2.5 py-0.5 rounded-lg shadow-2xs"></span>
               <span id="unitChevron_${idx}" class="text-xs text-sky-700 transition-transform transform rotate-0 mr-1">▼</span>
             </button>
 
@@ -1848,6 +1950,46 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 />
               </div>
 
+              <!-- 💰 إجمالي سعر الوحدة (توتال الوحدة) -->
+              <div class="sm:col-span-6 form-group">
+                <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitPrice_${idx}">
+                  <span>💰 ${isEn ? 'Total Unit Price (EGP)' : 'إجمالي سعر الوحدة (توتال الوحدة)'}</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    id="unitPrice_${idx}"
+                    placeholder="${isEn ? 'e.g. 4,500,000' : 'مثال: 4,500,000'}"
+                    class="unit-price-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500 bg-white shadow-xs"
+                    oninput="handleUnitPriceInput(${idx}, this)"
+                  />
+                  <span class="absolute inset-y-0 ${isEn ? 'right-3' : 'left-3'} flex items-center text-xs font-black text-slate-500 pointer-events-none">EGP</span>
+                </div>
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden unit-price-error">${isEn ? 'Total unit price is required' : 'إجمالي سعر الوحدة مطلوب'}</p>
+              </div>
+
+              <!-- 🛠️ وديعة الصيانة (الصيانة) -->
+              <div class="sm:col-span-6 form-group">
+                <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitMaintenance_${idx}">
+                  <span>🛠️ ${isEn ? 'Maintenance Deposit (10% or custom) - EGP' : 'وديعة الصيانة (10% تلقائياً أو أدخل القيمة)'}</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    id="unitMaintenance_${idx}"
+                    placeholder="${isEn ? 'e.g. 450,000' : 'مثال: 450,000'}"
+                    class="unit-maintenance-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs sm:text-sm font-mono font-black border-2 border-sky-300 focus:border-sky-500 bg-white shadow-xs"
+                    oninput="handleUnitMaintenanceInput(${idx}, this)"
+                  />
+                  <span class="absolute inset-y-0 ${isEn ? 'right-3' : 'left-3'} flex items-center text-xs font-black text-slate-500 pointer-events-none">EGP</span>
+                </div>
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden unit-maintenance-error">${isEn ? 'Maintenance deposit is required' : 'وديعة الصيانة مطلوبة'}</p>
+              </div>
+
               <!-- فترة السداد -->
               <div class="sm:col-span-6 form-group">
                 <label class="block text-xs font-black text-slate-950 mb-1.5" for="unitPeriod_${idx}">
@@ -1914,6 +2056,79 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         container.appendChild(div);
       });
+    }
+
+    function updateUnitHeaderBadges(idx) {
+      const priceInput = document.getElementById(`unitPrice_${idx}`);
+      const maintInput = document.getElementById(`unitMaintenance_${idx}`);
+      const pBadge = document.getElementById(`unitPriceHeaderBadge_${idx}`);
+      const mBadge = document.getElementById(`unitMaintHeaderBadge_${idx}`);
+
+      if (pBadge && priceInput) {
+        const val = priceInput.value.trim();
+        if (val) {
+          pBadge.innerText = `💰 ${val} EGP`;
+          pBadge.classList.remove('hidden');
+        } else {
+          pBadge.classList.add('hidden');
+        }
+      }
+
+      if (mBadge && maintInput) {
+        const val = maintInput.value.trim();
+        if (val) {
+          mBadge.innerText = `🛠️ صيانة: ${val} EGP`;
+          mBadge.classList.remove('hidden');
+        } else {
+          mBadge.classList.add('hidden');
+        }
+      }
+    }
+
+    function handleUnitPriceInput(idx, input) {
+      let raw = (input.value || '').replace(/[^\d]/g, '');
+      if (!raw) {
+        input.value = '';
+        input.classList.remove('valid', 'invalid');
+        updateUnitHeaderBadges(idx);
+        return;
+      }
+      const num = parseInt(raw, 10);
+      input.value = num.toLocaleString('en-US');
+      input.classList.remove('invalid');
+      input.classList.add('valid');
+      const err = input.closest('.form-group')?.querySelector('.unit-price-error');
+      if (err) err.classList.add('hidden');
+
+      // حساب 10% تلقائياً لوديعة الصيانة
+      const maintInput = document.getElementById(`unitMaintenance_${idx}`);
+      if (maintInput && (!maintInput.dataset.userEdited || maintInput.value === '')) {
+        const maintVal = Math.round(num * 0.10);
+        maintInput.value = maintVal.toLocaleString('en-US');
+        maintInput.classList.remove('invalid');
+        maintInput.classList.add('valid');
+        const mErr = maintInput.closest('.form-group')?.querySelector('.unit-maintenance-error');
+        if (mErr) mErr.classList.add('hidden');
+      }
+      updateUnitHeaderBadges(idx);
+    }
+
+    function handleUnitMaintenanceInput(idx, input) {
+      input.dataset.userEdited = 'true';
+      let raw = (input.value || '').replace(/[^\d]/g, '');
+      if (!raw) {
+        input.value = '';
+        input.classList.remove('valid', 'invalid');
+        updateUnitHeaderBadges(idx);
+        return;
+      }
+      const num = parseInt(raw, 10);
+      input.value = num.toLocaleString('en-US');
+      input.classList.remove('invalid');
+      input.classList.add('valid');
+      const err = input.closest('.form-group')?.querySelector('.unit-maintenance-error');
+      if (err) err.classList.add('hidden');
+      updateUnitHeaderBadges(idx);
     }
 
     function handleUnitInclusionToggle(idx, isChecked) {
@@ -5257,8 +5472,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             <div class="client-custom-corr-container space-y-2.5 p-3 rounded-2xl bg-sky-50/60 border-2 border-sky-200">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
-                  <label class="block text-[11px] font-black text-slate-700 mb-1">
-                    <span>الدولة</span> <span class="text-red-500 font-bold">*</span>
+                  <label class="block text-xs font-black text-slate-950 mb-1.5">
+                    <span class="client-corr-lbl-country-text">المحافظة</span> <span class="text-red-500 font-bold">*</span>
                   </label>
                   <!-- Searchable Correspondence Country Picker with Search Bar -->
                   <div class="searchable-picker searchable-corr-country-picker relative w-full" id="corrCountryPicker_${clientId}">
@@ -5269,19 +5484,19 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                     >
                       <span class="corr-country-picker-display flex items-center gap-2 truncate">
                         <span class="corr-country-flag text-base flex-shrink-0">🇪🇬</span>
-                        <span class="corr-country-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Egypt' : 'مصر'}</span>
+                        <span class="corr-country-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Cairo' : 'القاهرة'}</span>
                       </span>
                       <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
                     </button>
 
-                    <input type="hidden" class="client-corr-country-select" value="مصر" />
+                    <input type="hidden" class="client-corr-country-select" value="القاهرة" />
 
                     <div class="corr-country-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[280px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
                       <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
                         <div class="relative">
                           <input 
                             type="text" 
-                            placeholder="${currentLang === 'en' ? '🔍 Search country (e.g. Egypt, Kuwait, UAE)...' : '🔍 ابحث عن الدولة (مثال: مصر، السعودية، الكويت، فرنسا)...'}" 
+                            placeholder="${currentLang === 'en' ? '🔍 Search governorate or country...' : '🔍 ابحث عن المحافظة أو الدولة...'}" 
                             oninput="filterCorrCountryPicker(${clientId}, this)" 
                             class="corr-country-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
                           />
@@ -5298,8 +5513,8 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 </div>
 
                 <div>
-                  <label class="block text-[11px] font-black text-slate-700 mb-1">
-                    <span class="client-corr-lbl-city-text">المحافظة / المدينة</span> <span class="text-red-500 font-bold">*</span>
+                  <label class="block text-xs font-black text-slate-950 mb-1.5">
+                    <span class="client-corr-lbl-city-text">المدينة / الحي / المركز</span> <span class="text-red-500 font-bold">*</span>
                   </label>
                   <!-- Searchable Correspondence City / Gov Picker with Search Bar -->
                   <div class="searchable-picker searchable-corr-city-picker relative w-full" id="corrCityPicker_${clientId}">
@@ -5307,6 +5522,12 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                       type="button"
                       onclick="toggleCorrCityPickerDropdown(${clientId}, this)"
                       class="corr-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                    >
+                      <span class="corr-city-picker-display flex items-center gap-2 truncate">
+                        <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...'}</span>
+                      </span>
+                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                    </button>
                     >
                       <span class="corr-city-picker-display flex items-center gap-2 truncate">
                         <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select Governorate / City...' : 'اختر المحافظة / المدينة...'}</span>
@@ -6146,6 +6367,17 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (pSec) pSec.classList.add('hidden');
         currentClientUnits = [];
         window.currentClientUnits = [];
+
+        // إخفاء بنر التكرار وإعادة تفعيل زر الإرسال إن كان معطلاً
+        const regBanner = document.getElementById('alreadyRegisteredBanner');
+        if (regBanner) regBanner.classList.add('hidden');
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn && submitBtn.dataset.blocked === 'true') {
+          submitBtn.disabled = false;
+          delete submitBtn.dataset.blocked;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          submitBtn.innerHTML = `<span>${currentLang === 'en' ? 'Confirm and Submit Contract' : 'تأكيد واستيفاء بيانات العقد'}</span> <span>←</span>`;
+        }
         return;
       }
 
@@ -6232,6 +6464,42 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
 
       if (loadingIndicator) loadingIndicator.classList.add('hidden');
+
+      // ── فحص منع إعادة التسجيل للعميل (هل العقد مسجل مسبقاً؟) ──
+      const localRegs = JSON.parse(localStorage.getItem('elamar_registered_nids') || '[]');
+      const isLocallyReg = localRegs.includes(normId);
+
+      const regBanner = document.getElementById('alreadyRegisteredBanner');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (data && (data.already_registered || isLocallyReg)) {
+        if (regBanner) {
+          regBanner.classList.remove('hidden');
+          const regDesc = document.getElementById('alreadyRegDesc');
+          if (regDesc && data.registered_info) {
+            const rInfo = data.registered_info;
+            const rDate = rInfo.created_at ? rInfo.created_at.split(' ')[0] : '';
+            regDesc.innerHTML = (currentLang === 'en')
+              ? `Contract data for this National ID is already registered for Unit (<strong class="font-mono">${rInfo.unit_code || ''}</strong>) under client (<strong class="text-red-950">${rInfo.name || ''}</strong>)${rDate ? ' on ' + rDate : ''}. Re-submitting data is strictly not permitted.`
+              : `عفواً، بيانات العميل والوحدة لهذا الرقم القومي مسجلة ومستوفاة بالفعل مسبقاً في النظام للوحدة (<strong class="font-mono text-base">${rInfo.unit_code || ''}</strong>) باسم (<strong class="text-red-950 text-sm">${rInfo.name || ''}</strong>)${rDate ? ' بتاريخ ' + rDate : ''}. <strong>لا يُسمح بإعادة تسجيل البيانات على الفورم مرة أخرى منعاً لتكرار التعاقد.</strong>`;
+          }
+          regBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.dataset.blocked = 'true';
+          submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          submitBtn.innerHTML = `<span>🚫</span> <span>${currentLang === 'en' ? 'Contract Already Registered (Re-registration Disabled)' : 'تم استيفاء وتسجيل هذا العقد مسبقاً (غير مسموح بإعادة التسجيل)'}</span>`;
+        }
+      } else {
+        if (regBanner) regBanner.classList.add('hidden');
+        if (submitBtn && submitBtn.dataset.blocked === 'true') {
+          submitBtn.disabled = false;
+          delete submitBtn.dataset.blocked;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          submitBtn.innerHTML = `<span>${currentLang === 'en' ? 'Confirm and Submit Contract' : 'تأكيد واستيفاء بيانات العقد'}</span> <span>←</span>`;
+        }
+      }
 
       if (data && data.found && ((data.units_info && data.units_info.length > 0) || (data.units && data.units.length > 0))) {
         const unitsList = (data.units_info && data.units_info.length > 0) ? data.units_info : data.units;
@@ -6528,12 +6796,20 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       const lblCity = card.querySelector('.client-lbl-city-text');
       if (lblCity) lblCity.innerText = cityLabelText;
 
-      // Note: Correspondence address labels always remain Governorate & City
-      const corrLblGov = card.querySelector('.client-corr-lbl-gov-text');
-      if (corrLblGov) corrLblGov.innerText = t.lblGovernorate || (isEn ? 'Governorate' : 'المحافظة');
+      // ── تحديث مسميات حقول المراسلات بناءً على الإقامة (جوه مصر: المحافظة / خارج مصر: الدولة) ──
+      const corrLblCountry = card.querySelector('.client-corr-lbl-country-text') || card.querySelector('.client-corr-lbl-gov-text');
+      if (corrLblCountry) {
+        corrLblCountry.innerText = isOutside
+          ? (t.lblCountry || (isEn ? 'Country' : 'الدولة'))
+          : (t.lblGovernorate || (isEn ? 'Governorate' : 'المحافظة'));
+      }
 
       const corrLblCity = card.querySelector('.client-corr-lbl-city-text');
-      if (corrLblCity) corrLblCity.innerText = t.lblCity || (isEn ? 'City / District / Area' : 'المدينة / الحي / المركز');
+      if (corrLblCity) {
+        corrLblCity.innerText = isOutside
+          ? (t.lblCityAbroad || (isEn ? 'City / State / Province' : 'المدينة / الولاية / المقاطعة'))
+          : (t.lblCity || (isEn ? 'City / District / Area' : 'المدينة / الحي / المركز'));
+      }
     }
 
     function updateContractLocationVisibility() {
@@ -8265,6 +8541,45 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         if (data.status === 'success') {
           document.getElementById('modalUnitCode').innerText = data.unit_codes || unitCode;
+
+          // عرض إجمالي سعر الوحدة ووديعة الصيانة في إشعار النجاح
+          const firstPriceInput = document.querySelector('.unit-price-input');
+          const firstMaintInput = document.querySelector('.unit-maintenance-input');
+          const priceRow = document.getElementById('modalPriceRow');
+          const maintRow = document.getElementById('modalMaintRow');
+          const priceSpan = document.getElementById('modalUnitPrice');
+          const maintSpan = document.getElementById('modalMaintenance');
+
+          if (firstPriceInput && firstPriceInput.value.trim() && priceRow && priceSpan) {
+            priceSpan.innerText = `${firstPriceInput.value.trim()} EGP`;
+            priceRow.classList.remove('hidden');
+          }
+          if (firstMaintInput && firstMaintInput.value.trim() && maintRow && maintSpan) {
+            maintSpan.innerText = `${firstMaintInput.value.trim()} EGP`;
+            maintRow.classList.remove('hidden');
+          }
+
+          // تسجيل الرقم القومي محلياً لمنع العميل من إعادة تسجيل بياناته مجدداً
+          const primCard = document.getElementById('clientCard_1');
+          const primIdInput = primCard ? primCard.querySelector('.client-id-input') : null;
+          if (primIdInput && primIdInput.value.trim()) {
+            const cleanNid = normalizeIdForLookup(primIdInput.value.trim());
+            const registeredNids = JSON.parse(localStorage.getItem('elamar_registered_nids') || '[]');
+            if (!registeredNids.includes(cleanNid)) {
+              registeredNids.push(cleanNid);
+              localStorage.setItem('elamar_registered_nids', JSON.stringify(registeredNids));
+            }
+          }
+
+          // قفل زر الإرسال نهائياً لمنع أي تكرار
+          const submitBtn = document.getElementById('submitBtn');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.dataset.blocked = 'true';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            submitBtn.innerHTML = `<span>✓</span> <span>${currentLang === 'en' ? 'Contract Registered Successfully' : 'تم استيفاء وتسجيل العقد بنجاح'}</span>`;
+          }
+
           document.getElementById('successModal').classList.remove('hidden');
 
           if (typeof confetti === 'function') {

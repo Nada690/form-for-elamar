@@ -70,6 +70,7 @@ try {
         'correspondence_address' => "TEXT NULL AFTER id_address",
         'payment_date' => "VARCHAR(50) NULL AFTER paid_5_percent",
         'unit_price' => "DECIMAL(15,2) NULL AFTER payment_period",
+        'maintenance_deposit' => "DECIMAL(15,2) NULL AFTER unit_price",
         'period' => "VARCHAR(50) NULL AFTER payment_period",
         'final_rate' => "VARCHAR(50) NULL AFTER period",
         'general_notes' => "TEXT NULL AFTER notes"

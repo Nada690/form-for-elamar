@@ -332,6 +332,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
         $editResidence     = trim($_POST['edit_residence_country'] ?? 'داخل جمهورية مصر العربية');
         $editUnitCode      = trim($_POST['edit_unit_code'] ?? '');
         $editUnitPrice     = !empty($_POST['edit_unit_price']) ? floatval(str_replace(',', '', $_POST['edit_unit_price'])) : null;
+        $editMaintenance   = !empty($_POST['edit_maintenance_deposit']) ? floatval(str_replace(',', '', $_POST['edit_maintenance_deposit'])) : null;
         $editLocation      = trim($_POST['edit_contract_location'] ?? 'القاهرة');
         $editPayment       = trim($_POST['edit_payment_period'] ?? '7 Years');
         $editFinalRate     = trim($_POST['edit_final_rate'] ?? '');
@@ -413,6 +414,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
                         contract_location = :contract_location, 
                         eoi_number = :unit_code, 
                         unit_price = :unit_price,
+                        maintenance_deposit = :maintenance_deposit,
                         payment_period = :payment_period, 
                         period = :period,
                         final_rate = :final_rate,
@@ -438,6 +440,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit' && !empty($_POST['cli
                 ':contract_location'      => $editLocation,
                 ':unit_code'              => $editUnitCode,
                 ':unit_price'             => $editUnitPrice,
+                ':maintenance_deposit'    => $editMaintenance,
                 ':payment_period'         => $editPayment,
                 ':period'                 => $editPayment,
                 ':final_rate'             => $editFinalRate,
@@ -554,6 +557,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         'رقم العقد (ID)', 
         'كود الوحدة', 
         'قيمة الوحدة (EGP)',
+        'وديعة الصيانة (EGP)',
         'موظف المبيعات (Sales)', 
         'اسم العميل في البطاقة / الشركاء', 
         'مكان الإقامة الحالي',
@@ -586,6 +590,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         c.id, 
         c.eoi_number, 
         IFNULL(c.unit_price, '-') as unit_price,
+        IFNULL(c.maintenance_deposit, '-') as maintenance_deposit,
         IFNULL(u.name, 'مباشر (بدون وسيط)') as sales_rep_name, 
         c.name, 
         IFNULL(c.residence_country, 'داخل جمهورية مصر العربية') as residence_country,
@@ -643,6 +648,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                 $idLabel,
                 $row['eoi_number'],
                 $row['unit_price'],
+                $row['maintenance_deposit'],
                 $row['sales_rep_name'],
                 $pName,
                 $row['residence_country'],
@@ -1442,11 +1448,18 @@ try {
                     >
                       <?= htmlspecialchars($client['eoi_number']) ?>
                     </button>
-                    <?php if (!empty($client['unit_price'])): ?>
-                      <div class="text-[11px] text-slate-950 font-black mt-1 font-mono">
-                        <?= number_format($client['unit_price']) ?> EGP
-                      </div>
-                    <?php endif; ?>
+                    <div class="mt-1 space-y-0.5">
+                      <?php if (!empty($client['unit_price'])): ?>
+                        <div class="text-[11px] text-slate-950 font-black font-mono">
+                          💰 <?= number_format($client['unit_price']) ?> EGP
+                        </div>
+                      <?php endif; ?>
+                      <?php if (!empty($client['maintenance_deposit'])): ?>
+                        <div class="text-[10px] text-emerald-800 font-black font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block">
+                          🛠️ صيانة: <?= number_format($client['maintenance_deposit']) ?> EGP
+                        </div>
+                      <?php endif; ?>
+                    </div>
                   </td>
 
                   <!-- مكان الإقامة الحالي -->
@@ -1761,8 +1774,8 @@ try {
           </div>
         </div>
 
-        <!-- الهوية وسعر الوحدة -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- الهوية وسعر الوحدة والصيانة -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
             <label class="block text-xs font-black text-slate-950 mb-1" data-i18n="lblDocType">نوع الوثيقة:</label>
             <select name="edit_id_type" id="edit_id_type" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 text-xs font-bold shadow-xs focus:border-sky-500">
@@ -1775,8 +1788,12 @@ try {
             <input type="text" name="edit_id_number" id="edit_id_number" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-950 mb-1">سعر الوحدة (EGP):</label>
+            <label class="block text-xs font-black text-slate-950 mb-1">إجمالي الوحدة (EGP):</label>
             <input type="number" step="any" name="edit_unit_price" id="edit_unit_price" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-950 mb-1">وديعة الصيانة (EGP):</label>
+            <input type="number" step="any" name="edit_maintenance_deposit" id="edit_maintenance_deposit" class="w-full px-3 py-2.5 rounded-xl bg-white border-2 border-sky-300 text-slate-950 font-mono text-sm focus:border-sky-500 focus:outline-none font-bold shadow-xs">
           </div>
         </div>
 
@@ -2239,6 +2256,7 @@ try {
       document.getElementById('edit_residence_country').value = client.residence_country || 'داخل جمهورية مصر العربية';
       document.getElementById('edit_contract_location').value = client.contract_location || 'القاهرة';
       document.getElementById('edit_unit_price').value = client.unit_price || '';
+      document.getElementById('edit_maintenance_deposit').value = client.maintenance_deposit || '';
 
       const rawPeriod = client.period || client.payment_period || '7 Years';
       const periodKey = normalizePeriodKey(rawPeriod);

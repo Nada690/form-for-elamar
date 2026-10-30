@@ -669,6 +669,8 @@ if (!empty($data['unit_codes']) && is_array($data['unit_codes'])) {
     $unitRates     = $data['unit_final_rates'] ?? [];
     $unitCheques   = $data['unit_cheques_counts'] ?? [];
     $unitNotes     = $data['unit_notes'] ?? [];
+    $unitPrices    = $data['unit_prices'] ?? [];
+    $unitMaints    = $data['unit_maintenances'] ?? [];
 
     foreach ($rawUnitCodes as $idx => $rawCode) {
         $cCode = cleanInput($rawCode);
@@ -709,6 +711,16 @@ if (!empty($data['unit_codes']) && is_array($data['unit_codes'])) {
         $uCheque = cleanInput($unitCheques[$idx] ?? '');
         $uNote = cleanInput($unitNotes[$idx] ?? '');
 
+        // استخراج إجمالي سعر الوحدة ووديعة الصيانة (توتال اليونت والصيانة)
+        $uPriceRaw = cleanInput($unitPrices[$idx] ?? $data['unit_price'] ?? '');
+        $uPrice = !empty($uPriceRaw) ? floatval(str_replace(',', '', $uPriceRaw)) : null;
+
+        $uMaintRaw = cleanInput($unitMaints[$idx] ?? $data['maintenance_deposit'] ?? '');
+        $uMaint = !empty($uMaintRaw) ? floatval(str_replace(',', '', $uMaintRaw)) : null;
+        if ($uMaint === null && $uPrice !== null && $uPrice > 0) {
+            $uMaint = round($uPrice * 0.10, 2);
+        }
+
         if ($uPaid === 'لا') {
             http_response_code(422);
             echo json_encode([
@@ -743,16 +755,17 @@ if (!empty($data['unit_codes']) && is_array($data['unit_codes'])) {
         }
 
         $unitsList[] = [
-            'code'          => $cCode,
-            'period'        => $uPeriod,
-            'price'         => null,
-            'rate'          => $uRate,
-            'paid'          => $uPaid,
-            'payment_date'  => ($uPaid === 'نعم') ? $uDate : null,
-            'notes'         => !empty($uNote) ? $uNote : $notes,
-            'area'          => $officialArea,
-            'floor'         => $officialFloor,
-            'cheques_count' => $uCheque
+            'code'                => $cCode,
+            'period'              => $uPeriod,
+            'price'               => $uPrice,
+            'maintenance_deposit' => $uMaint,
+            'rate'                => $uRate,
+            'paid'                => $uPaid,
+            'payment_date'        => ($uPaid === 'نعم') ? $uDate : null,
+            'notes'               => !empty($uNote) ? $uNote : $notes,
+            'area'                => $officialArea,
+            'floor'               => $officialFloor,
+            'cheques_count'       => $uCheque
         ];
     }
 }
@@ -953,6 +966,23 @@ try {
         $seenCodes[$uUpper] = true;
     }
 
+    // 1. التحقق من منع إعادة تسجيل العميل لنفس الرقم القومي منعاً للتكرار
+    $checkIdStmt = $pdo->prepare("SELECT id, name, eoi_number, created_at FROM clients WHERE id_number = :id_number LIMIT 1");
+    $checkIdStmt->execute([':id_number' => $id_number]);
+    $existingClient = $checkIdStmt->fetch(PDO::FETCH_ASSOC);
+    if ($existingClient) {
+        http_response_code(409);
+        $dupMsg = ($lang === 'en')
+            ? "This client (ID: {$id_number}) is already registered for unit ({$existingClient['eoi_number']}). Duplicate submissions are not allowed."
+            : "عفواً، تم تسجيل واستيفاء بيانات هذا العميل (الرقم القومي: {$id_number}) مسبقاً للوحدة ({$existingClient['eoi_number']}). لا يُسمح بإعادة التسجيل مرة أخرى منعاً للتكرار.";
+        echo json_encode([
+            'status'  => 'error',
+            'field'   => 'idNumber',
+            'message' => $dupMsg
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     // 2. التحقق من عدم تكرار أي كود وحدة مسجل مسبقاً في قاعدة البيانات
     $checkStmt = $pdo->prepare("SELECT id FROM clients WHERE eoi_number = :eoi_number LIMIT 1");
     foreach ($unitsList as $u) {
@@ -975,9 +1005,9 @@ try {
     $pdo->beginTransaction();
 
     $sql = "INSERT INTO clients 
-            (name, phone, email, id_type, id_number, residence_country, governorate, source, project, contract_location, preferred_signing_location, unit_type, eoi_number, unit_area, unit_floor, unit_price, payment_period, period, final_rate, cheques_count, paid_5_percent, payment_date, id_address, correspondence_address, correspondence_country, correspondence_city, addresses, general_notes, notes, attachments, lang, sales_id) 
+            (name, phone, email, id_type, id_number, residence_country, governorate, source, project, contract_location, preferred_signing_location, unit_type, eoi_number, unit_area, unit_floor, unit_price, maintenance_deposit, payment_period, period, final_rate, cheques_count, paid_5_percent, payment_date, id_address, correspondence_address, correspondence_country, correspondence_city, addresses, general_notes, notes, attachments, lang, sales_id) 
             VALUES 
-            (:name, :phone, :email, :id_type, :id_number, :residence_country, :governorate, :source, :project, :contract_location, :preferred_signing_location, :unit_type, :eoi_number, :unit_area, :unit_floor, :unit_price, :payment_period, :period, :final_rate, :cheques_count, :paid_5_percent, :payment_date, :id_address, :correspondence_address, :correspondence_country, :correspondence_city, :addresses, :general_notes, :notes, :attachments, :lang, :sales_id)";
+            (:name, :phone, :email, :id_type, :id_number, :residence_country, :governorate, :source, :project, :contract_location, :preferred_signing_location, :unit_type, :eoi_number, :unit_area, :unit_floor, :unit_price, :maintenance_deposit, :payment_period, :period, :final_rate, :cheques_count, :paid_5_percent, :payment_date, :id_address, :correspondence_address, :correspondence_country, :correspondence_city, :addresses, :general_notes, :notes, :attachments, :lang, :sales_id)";
             
     $stmt = $pdo->prepare($sql);
     $insertedIds = [];
@@ -992,6 +1022,12 @@ try {
         $uArea        = $u['area'] ?? $unit_area;
         $uFloor       = $u['floor'] ?? $unit_floor;
         $uCheques     = $u['cheques_count'] ?? $cheques_count;
+        $uPrice       = $u['price'] ?? null;
+        $uMaint       = $u['maintenance_deposit'] ?? null;
+
+        if (!empty($uMaint) && strpos($uNotes, 'وديعة الصيانة') === false) {
+            $uNotes = trim($uNotes . "\nوديعة الصيانة: " . number_format($uMaint) . ' EGP');
+        }
 
         $stmt->execute([
             ':name'                       => $nameCombined,
@@ -1009,7 +1045,8 @@ try {
             ':eoi_number'                 => $u['code'],
             ':unit_area'                  => $uArea,
             ':unit_floor'                 => $uFloor,
-            ':unit_price'                 => $u['price'],
+            ':unit_price'                 => $uPrice,
+            ':maintenance_deposit'        => $uMaint,
             ':payment_period'             => $uPeriod,
             ':period'                     => $uPeriod,
             ':final_rate'                 => $uRate,

@@ -477,8 +477,41 @@ if (empty($primaryClientName)) {
 
 $partnerNamesOnly = array_values(array_filter($allExtractedNames, fn($n) => $n !== $primaryClientName));
 
+// ── فحص منع إعادة التسجيل: هل تم تسجيل واستيفاء بيانات هذا العقد مسبقاً؟ ──
+$alreadyRegistered = false;
+$registeredClientInfo = null;
+
+if (!empty($pdo)) {
+    try {
+        // 1. فحص بجدول clients بواسطة الرقم القومي
+        $checkStmt = $pdo->prepare("SELECT id, name, eoi_number, created_at FROM clients WHERE id_number = :nid ORDER BY id DESC LIMIT 1");
+        $checkStmt->execute([':nid' => $cleanId]);
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        // 2. إذا لم يعثر عليه بالرقم القومي، فحص بأكواد الوحدات التابعة له
+        if (!$existing && !empty($unitCodes)) {
+            $inClause = implode(',', array_fill(0, count($unitCodes), '?'));
+            $checkUnitStmt = $pdo->prepare("SELECT id, name, eoi_number, created_at FROM clients WHERE eoi_number IN ($inClause) ORDER BY id DESC LIMIT 1");
+            $checkUnitStmt->execute($unitCodes);
+            $existing = $checkUnitStmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        if ($existing) {
+            $alreadyRegistered = true;
+            $registeredClientInfo = [
+                'id'         => $existing['id'],
+                'name'       => $existing['name'],
+                'unit_code'  => $existing['eoi_number'],
+                'created_at' => $existing['created_at']
+            ];
+        }
+    } catch (Exception $e) {}
+}
+
 echo json_encode([
     'found'              => true,
+    'already_registered' => $alreadyRegistered,
+    'registered_info'    => $registeredClientInfo,
     'unit_code'          => $unitsList[0]['code'] ?? '',
     'unit'               => $unitsList[0]['code'] ?? '',
     'name'               => $clientName,
