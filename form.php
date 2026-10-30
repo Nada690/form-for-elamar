@@ -145,16 +145,66 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       color: #020617 !important;
       letter-spacing: -0.01em;
     }
-    label, .form-label {
+
+    /* ── Super Bold, Ultra-High-Contrast Form Field Labels (الكلام اللي فوق المربعات Bold وواضح جداً) ── */
+    label,
+    .form-label,
+    .field-label,
+    label span,
+    .form-label span,
+    .field-label span,
+    label strong,
+    label b,
+    .form-group > label,
+    .form-group > label span,
+    .form-group > div > label,
+    .form-group > div > label span,
+    [data-i18n^="label"],
+    [data-i18n^="lbl"],
+    .client-id-label-text,
+    .partner-role-text {
       color: #000000 !important;
+      font-weight: 900 !important;
+      font-size: 0.875rem !important; /* 14px */
+      letter-spacing: -0.01em !important;
+      line-height: 1.5 !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* الحفاظ على لون النجمة الحمراء الإلزامية واضحة وبولد */
+    label .text-red-500,
+    label .text-red-600,
+    label span.text-red-500,
+    label span.text-red-600 {
+      color: #dc2626 !important;
+      font-weight: 900 !important;
+      font-size: 0.95rem !important;
+    }
+
+    /* نص اختياري بجانب السؤال */
+    [data-i18n="optOptional"],
+    .opt-optional-badge {
+      font-size: 0.75rem !important;
+      color: #475569 !important;
       font-weight: 800 !important;
     }
+
+    /* أزرار إضافة هاتف وإضافة بريد إلكتروني تحت المربعات */
+    #btnAddPhone_1,
+    [id^="btnAddPhone_"],
+    [id^="btnAddEmail_"] {
+      font-weight: 900 !important;
+      color: #000000 !important;
+      font-size: 0.8125rem !important;
+    }
+
     .card-title {
       font-weight: 900 !important;
       color: #020617 !important;
     }
     .badge, .card-badge {
-      font-weight: 800 !important;
+      font-weight: 900 !important;
     }
     p, span, div {
       font-weight: 700;
@@ -666,7 +716,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             <!-- صف الاختيار: المحافظة/الدولة والمدينة -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <label class="block text-xs font-black text-slate-950 mb-1">
                   <span class="client-lbl-gov-text" data-i18n="lblGovernorate">المحافظة</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <!-- Searchable Region/Country Picker with Search Bar -->
@@ -707,7 +757,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               </div>
 
               <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <label class="block text-xs font-black text-slate-950 mb-1">
                   <span class="client-lbl-city-text" data-i18n="lblCity">المدينة / الحي / المركز</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <!-- Searchable City / District Picker with Search Bar -->
@@ -749,7 +799,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
             <!-- حقل كتابة باقي تفاصيل العنوان (الشارع، رقم العقار، الشقة) -->
             <div>
-              <label class="block text-[11px] font-black text-slate-700 mb-1">
+              <label class="block text-xs font-black text-slate-950 mb-1">
                 <span data-i18n="lblStreetDetails">باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)</span> <span class="text-red-500 font-bold">*</span>
               </label>
               <input
@@ -870,7 +920,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               <input type="hidden" class="client-corr-gov-select" value="مصر" />
 
               <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <label class="block text-xs font-black text-slate-950 mb-1">
                   <span data-i18n="lblCorrStreetDetails">باقي تفاصيل العنوان للمراسلات</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <input
@@ -5879,7 +5929,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             <!-- صف الاختيار: المحافظة/الدولة والمدينة -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <label class="block text-xs font-black text-slate-950 mb-1">
                   <span class="client-lbl-gov-text" data-i18n="lblGovernorate">${currentLang === 'en' ? 'Governorate' : 'المحافظة'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <!-- Searchable Region/Country Picker with Search Bar -->
@@ -5920,7 +5970,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               </div>
 
               <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <label class="block text-xs font-black text-slate-950 mb-1">
                   <span class="client-lbl-city-text" data-i18n="lblCity">${currentLang === 'en' ? 'City / District / Area' : 'المدينة / الحي / المركز'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <!-- Searchable City / District Picker with Search Bar -->
@@ -5962,7 +6012,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
             <!-- حقل كتابة باقي تفاصيل العنوان (الشارع، رقم العقار، الشقة) -->
             <div>
-              <label class="block text-[11px] font-black text-slate-700 mb-1">
+              <label class="block text-xs font-black text-slate-950 mb-1">
                 <span data-i18n="lblStreetDetails">${currentLang === 'en' ? 'Street, Building & Apt No. Details' : 'باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)'}</span> <span class="text-red-500 font-bold">*</span>
               </label>
               <input
@@ -6083,7 +6133,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
               <input type="hidden" class="client-corr-gov-select" value="مصر" />
 
               <div>
-                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <label class="block text-xs font-black text-slate-950 mb-1">
                   <span data-i18n="lblCorrStreetDetails">${currentLang === 'en' ? 'Street, Building & Apt No. Details' : 'باقي تفاصيل العنوان للمراسلات'}</span> <span class="text-red-500 font-bold">*</span>
                 </label>
                 <input
@@ -6199,7 +6249,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         <div class="grid grid-cols-1 ${hasNid ? 'sm:grid-cols-2' : ''} gap-3">
           <div>
-            <label class="block text-[11px] font-black text-slate-700 mb-1">
+            <label class="block text-xs font-black text-slate-950 mb-1">
               <span>${isEn ? 'Partner Name' : 'اسم الشريك'}</span>
             </label>
             <input
@@ -6212,7 +6262,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
           ${hasNid ? `
           <div>
-            <label class="block text-[11px] font-black text-slate-700 mb-1">
+            <label class="block text-xs font-black text-slate-950 mb-1">
               <span>${isEn ? 'Partner National ID' : 'الرقم القومي للشريك'}</span>
             </label>
             <input
