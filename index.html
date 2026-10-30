@@ -770,8 +770,8 @@
                       class="corr-country-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
                     >
                       <span class="corr-country-picker-display flex items-center gap-2 truncate">
-                        <span class="corr-country-flag text-base flex-shrink-0">🇪🇬</span>
-                        <span class="corr-country-name font-black truncate text-slate-950">القاهرة</span>
+                        <span class="corr-country-flag text-base flex-shrink-0">📍</span>
+                        <span class="corr-country-name font-black truncate text-slate-950">اختر المحافظة...</span>
                       </span>
                       <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
                     </button>
@@ -812,12 +812,6 @@
                     >
                       <span class="corr-city-picker-display flex items-center gap-2 truncate">
                         <span class="truncate font-black text-slate-950">اختر المدينة / الحي / المركز...</span>
-                      </span>
-                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
-                    </button>
-                    >
-                      <span class="corr-city-picker-display flex items-center gap-2 truncate">
-                        <span class="truncate font-black text-slate-950">اختر المحافظة / المدينة...</span>
                       </span>
                       <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
                     </button>
@@ -6026,12 +6020,6 @@
                       </span>
                       <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
                     </button>
-                    >
-                      <span class="corr-city-picker-display flex items-center gap-2 truncate">
-                        <span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select Governorate / City...' : 'اختر المحافظة / المدينة...'}</span>
-                      </span>
-                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
-                    </button>
 
                     <input type="hidden" class="client-corr-city-select" value="" />
 
@@ -7259,8 +7247,40 @@
       // Reset ID city select
       handleClientRegionChange(clientId, '', 'id');
 
-      // The correspondence address is NEVER touched or modified!
-      // "الجزء الخاص بعنوان المرسالات لا يتاثر بشي"
+      // تحديث مسميات وقوائم عنوان المراسلات بحسب الإقامة (داخل مصر: محافظات مصر ومدنها / خارج مصر: دول العالم ومدنها)
+      renderCorrCountryPickerItems(clientId);
+
+      const corrCountryPicker = card.querySelector(`#corrCountryPicker_${clientId}`) || card.querySelector('.searchable-corr-country-picker');
+      const corrCountryDisplay = corrCountryPicker?.querySelector('.corr-country-picker-display');
+      const corrCountryHidden = card.querySelector('.client-corr-country-select');
+
+      const corrCityPicker = card.querySelector(`#corrCityPicker_${clientId}`) || card.querySelector('.searchable-corr-city-picker');
+      const corrCityDisplay = corrCityPicker?.querySelector('.corr-city-picker-display');
+      const corrCityHidden = card.querySelector('.client-corr-city-select');
+
+      if (!isOutside) {
+        // داخل مصر: عرض محافظات مصر في القائمة الأولى، ومدن المحافظة في القائمة الثانية
+        if (corrCountryDisplay) {
+          corrCountryDisplay.innerHTML = `<span class="corr-country-flag text-base flex-shrink-0">📍</span><span class="corr-country-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Select Governorate...' : 'اختر المحافظة...'}</span>`;
+        }
+        if (corrCountryHidden) corrCountryHidden.value = '';
+        if (corrCityDisplay) {
+          corrCityDisplay.innerHTML = `<span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select City / District...' : 'اختر المدينة / الحي / المركز...'}</span>`;
+        }
+        if (corrCityHidden) corrCityHidden.value = '';
+        renderCorrCityPickerItems(clientId, '');
+      } else {
+        // خارج مصر: عرض دول العالم في القائمة الأولى، ومدن الدولة في القائمة الثانية
+        if (corrCountryDisplay) {
+          corrCountryDisplay.innerHTML = `<span class="corr-country-flag text-base flex-shrink-0">🌍</span><span class="corr-country-name font-black truncate text-slate-950">${currentLang === 'en' ? 'Select Country...' : 'اختر الدولة...'}</span>`;
+        }
+        if (corrCountryHidden) corrCountryHidden.value = '';
+        if (corrCityDisplay) {
+          corrCityDisplay.innerHTML = `<span class="truncate font-black text-slate-950">${currentLang === 'en' ? 'Select City / State / Province...' : 'اختر المدينة / الولاية / المقاطعة...'}</span>`;
+        }
+        if (corrCityHidden) corrCityHidden.value = '';
+        renderCorrCityPickerItems(clientId, '');
+      }
 
       updateContractLocationVisibility();
     }
@@ -7819,7 +7839,7 @@
       }
     }
 
-    // ── Searchable Pickers: Correspondence Country Picker (Search Bar + World Countries) ──
+    // ── Searchable Pickers: Correspondence Governorate / Country Picker ──
     function renderCorrCountryPickerItems(clientId) {
       const card = document.getElementById(`clientCard_${clientId}`);
       if (!card) return;
@@ -7827,33 +7847,70 @@
       if (!scrollContainer) return;
       scrollContainer.innerHTML = '';
 
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
       const isEn = (currentLang === 'en');
 
-      // Group 1: Pinned / Popular Countries
-      const pinnedHeading = document.createElement('div');
-      pinnedHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start flex items-center justify-between";
-      pinnedHeading.innerHTML = `<span>${isEn ? '⭐ Egypt & Popular Countries' : '⭐ مصر والدول الأكثر استخداماً'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">194 دولة</span>`;
-      scrollContainer.appendChild(pinnedHeading);
+      if (isOutside) {
+        // في حال الإقامة خارج مصر: عرض دول العالم
+        const pinnedHeading = document.createElement('div');
+        pinnedHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start flex items-center justify-between";
+        pinnedHeading.innerHTML = `<span>${isEn ? '⭐ Egypt & Popular Countries' : '⭐ مصر والدول الأكثر استخداماً'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">194 دولة</span>`;
+        scrollContainer.appendChild(pinnedHeading);
 
-      const pinned = worldCountriesData.filter(c => c.pinned);
-      pinned.forEach(c => {
-        scrollContainer.appendChild(createCorrCountryPickerItemEl(c, clientId));
-      });
+        const pinned = worldCountriesData.filter(c => c.pinned);
+        pinned.forEach(c => {
+          scrollContainer.appendChild(createCorrCountryPickerItemEl(c, clientId));
+        });
 
-      const divider = document.createElement('div');
-      divider.className = "border-t-2 border-sky-100 my-1.5";
-      scrollContainer.appendChild(divider);
+        const divider = document.createElement('div');
+        divider.className = "border-t-2 border-sky-100 my-1.5";
+        scrollContainer.appendChild(divider);
 
-      // Group 2: All other countries
-      const allHeading = document.createElement('div');
-      allHeading.className = "text-[10px] font-black text-slate-700 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start";
-      allHeading.innerText = isEn ? '🌍 All World Countries' : '🌍 باقي دول العالم (كافة القارات)';
-      scrollContainer.appendChild(allHeading);
+        const allHeading = document.createElement('div');
+        allHeading.className = "text-[10px] font-black text-slate-700 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start";
+        allHeading.innerText = isEn ? '🌍 All World Countries' : '🌍 باقي دول العالم (كافة القارات)';
+        scrollContainer.appendChild(allHeading);
 
-      const others = worldCountriesData.filter(c => !c.pinned);
-      others.forEach(c => {
-        scrollContainer.appendChild(createCorrCountryPickerItemEl(c, clientId));
-      });
+        const others = worldCountriesData.filter(c => !c.pinned);
+        others.forEach(c => {
+          scrollContainer.appendChild(createCorrCountryPickerItemEl(c, clientId));
+        });
+      } else {
+        // في حال الإقامة داخل مصر: عرض محافظات جمهورية مصر العربية الـ 27 لعنوان المراسلات
+        const govHeading = document.createElement('div');
+        govHeading.className = "text-[10px] font-black text-sky-950 px-2 pt-1 pb-0.5 uppercase tracking-wider text-start flex items-center justify-between";
+        govHeading.innerHTML = `<span>${isEn ? '🇪🇬 Egyptian Governorates' : '🇪🇬 محافظات جمهورية مصر العربية'}</span><span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-mono">27 محافظة</span>`;
+        scrollContainer.appendChild(govHeading);
+
+        Object.keys(egyptGovernoratesAndCities).forEach(gov => {
+          if (gov.includes('خارج')) return;
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = "corr-country-picker-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-sky-100 text-slate-950 transition-colors cursor-pointer font-bold text-start text-xs";
+          item.setAttribute('data-name-ar', gov);
+          item.setAttribute('data-name-en', (typeof egyptGovernoratesEn !== 'undefined' && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov);
+          item.setAttribute('data-continent-ar', 'مصر');
+          item.setAttribute('data-continent-en', 'Egypt');
+
+          const displayName = isEn ? ((typeof egyptGovernoratesEn !== 'undefined' && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov) : gov;
+          item.innerHTML = `
+            <span class="flex items-center gap-2 truncate">
+              <span class="text-sm">📍</span>
+              <span class="truncate font-black text-xs text-slate-950">${displayName}</span>
+            </span>
+          `;
+
+          item.onclick = (e) => {
+            e.stopPropagation();
+            selectCorrCountryPickerItem(clientId, { 
+              nameAr: gov, 
+              nameEn: (typeof egyptGovernoratesEn !== 'undefined' && egyptGovernoratesEn[gov]) ? egyptGovernoratesEn[gov] : gov, 
+              flag: '📍' 
+            });
+          };
+          scrollContainer.appendChild(item);
+        });
+      }
     }
 
     function createCorrCountryPickerItemEl(c, clientId) {
@@ -7966,27 +8023,29 @@
       const displaySpan = picker.querySelector('.corr-city-picker-display');
       const scrollContainer = picker.querySelector('.corr-city-picker-scroll');
       const hiddenInput = card.querySelector('.client-corr-city-select');
+      const isOutside = (clientResidenceMap[clientId] || '').includes('خارج');
       const isEn = (currentLang === 'en');
 
       if (!scrollContainer) return;
       scrollContainer.innerHTML = '';
 
       if (!countryVal) {
-        countryVal = 'مصر';
+        if (displaySpan && (!hiddenInput || !hiddenInput.value)) {
+          displaySpan.innerHTML = `<span class="truncate font-black text-slate-400">${isOutside ? (isEn ? 'Select Country first...' : 'اختر الدولة أولاً...') : (isEn ? 'Select Governorate first...' : 'اختر المحافظة أولاً...')}</span>`;
+        }
+        scrollContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500 font-bold">${isOutside ? (isEn ? 'Please select a country first' : 'يرجى اختيار الدولة أولاً') : (isEn ? 'Please select a governorate first' : 'يرجى اختيار المحافظة أولاً لعرض المدن والمراكز التابعة لها')}</div>`;
+        return;
       }
 
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
-      if (displaySpan && (!hiddenInput || !hiddenInput.value)) {
-        displaySpan.innerHTML = `<span class="truncate font-black text-slate-950">${isEn ? 'Select Governorate / City...' : 'اختر المحافظة / المدينة...'}</span>`;
-      }
 
-      // Cities based on country
+      // تحديد قائمة المدن: داخل مصر -> مدن المحافظة المصرية المختارة / خارج مصر -> مدن الدولة المختارة
       let cities = [];
-      if (countryVal === 'مصر') {
-        cities = Object.keys(egyptGovernoratesAndCities).filter(g => !g.includes('خارج'));
+      if (!isOutside) {
+        cities = (typeof egyptGovernoratesAndCities !== 'undefined' && egyptGovernoratesAndCities[countryVal]) ? egyptGovernoratesAndCities[countryVal] : [];
       } else {
         const cObj = worldCountriesData.find(c => c.nameAr === countryVal);
         cities = (cObj && cObj.cities) ? cObj.cities : [];
@@ -8010,7 +8069,7 @@
         scrollContainer.appendChild(item);
       });
 
-      // خيار "أخرى"
+      // خيار "أخرى / مدينة أخرى"
       const otherVal = isEn ? 'Other city / area' : 'أخرى / مدينة أخرى';
       const otherItem = document.createElement('button');
       otherItem.type = 'button';
@@ -8186,7 +8245,7 @@
       renderRegionPickerItems(clientId);
       renderIdCityPickerItems(clientId, null);
       renderCorrCountryPickerItems(clientId);
-      renderCorrCityPickerItems(clientId, 'مصر');
+      renderCorrCityPickerItems(clientId, '');
     }
 
     function handleClientCorrCountryChange(clientId, countryVal) {
