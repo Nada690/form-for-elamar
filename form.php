@@ -446,9 +446,494 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
                 </div>
               </div>
 
-              <!-- حاوية بطاقات العملاء والشركاء المجمعة -->
+              <!-- حاوية بطاقات العملاء والشركاء المجمعة (مُجهّزة ببطاقة الطرف الأول الأساسي فورياً) -->
               <div id="clientsContainer" class="space-y-6 w-full">
-                <!-- سيتم بناء البطاقات هنا عبر Repeater Component JS -->
+                <div class="client-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border-2 border-sky-200 space-y-5 relative shadow-md transition-all duration-300" id="clientCard_1" data-client-id="1">
+        <!-- رأس بطاقة العميل / الشريك -->
+        <div class="flex items-center justify-between pb-3 border-b border-sky-100">
+          <div class="flex items-center gap-2.5">
+            <span class="text-lg">👤</span>
+            <h4 class="card-title text-slate-950 font-black text-sm sm:text-base">بيانات العميل / الطرف الأول (الأساسي)</h4>
+            <span class="card-badge px-2.5 py-0.5 rounded-lg bg-sky-100 text-sky-950 border border-sky-300 text-[11px] font-black" data-i18n="badgePrimaryParty">الطرف الأساسي</span>
+          </div>
+          
+        </div>
+
+        <!-- 1. اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط) -->
+        <div class="form-group w-full">
+          <label class="block text-xs font-black text-slate-950 mb-1.5">
+            <span data-i18n="labelPrimaryName">اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط)</span>
+            <span class="text-red-500 font-bold">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="(الاسم كاملاً باللغة العربية مطابقاً للهوية)"
+            data-i18n-placeholder="phPrimaryName"
+            class="client-name-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 bg-white"
+            oninput="handleClientNameInput(this)"
+          />
+          <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" data-i18n="errPrimaryName">اسم العميل مطلوب ويجب أن يكون باللغة العربية فقط</p>
+        </div>
+
+        <!-- 2. أرقام الهواتف والتواصل (Dynamic Array / List) -->
+        <div class="space-y-2.5 pt-2 border-t border-sky-100">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-black text-slate-950">
+              <span data-i18n="labelPrimaryPhone">أرقام الهواتف والتواصل (يدعم الأرقام المحلية والدولية)</span>
+              <span class="text-red-500 font-bold">*</span>
+            </label>
+          </div>
+          <div id="phonesList_1" class="space-y-2.5">
+            <div class="phone-row flex gap-2 dir-ltr w-full relative items-start" id="phoneRow_1">
+              <!-- Searchable Country Dropdown Trigger -->
+              <div class="country-picker relative w-28 sm:w-36 flex-shrink-0">
+                <button 
+                  type="button" 
+                  onclick="toggleCountryDropdown(this)" 
+                  class="country-btn glass-input w-full px-2 sm:px-2.5 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs font-black flex items-center justify-between cursor-pointer border-2 border-sky-300 hover:border-sky-500 transition-all bg-white"
+                >
+                  <span class="country-display flex items-center gap-1 sm:gap-1.5 truncate">
+                    <span class="text-sm sm:text-base">🇪🇬</span>
+                    <span class="font-mono text-xs font-black">+20</span>
+                  </span>
+                  <span class="text-[9px] text-slate-600 font-bold">▼</span>
+                </button>
+                
+                <input type="hidden" name="phone_codes[]" value="+20" class="country-code-val">
+
+                <!-- Dropdown Menu -->
+                <div class="country-dropdown hidden absolute top-full mt-1.5 start-0 z-50 w-72 max-w-[85vw] sm:w-80 bg-white border-2 border-sky-300 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                  <div class="relative mb-2">
+                    <input 
+                      type="text" 
+                      data-i18n-placeholder="phSearchCountry"
+                      placeholder="بحث عن الدولة أو الكود..." 
+                      oninput="filterCountryList(this)" 
+                      class="country-search-input w-full px-3 py-2 text-xs bg-sky-50 border border-sky-200 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold"
+                    >
+                    <span class="absolute end-2.5 top-2.5 text-xs text-slate-500">🔍</span>
+                  </div>
+                  <div class="country-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                </div>
+              </div>
+
+              <!-- Phone Number Input & Error Container -->
+              <div class="flex-1 min-w-0">
+                <input
+                  type="tel"
+                  name="phone_numbers[]"
+                  placeholder="10xxxxxxxx (10 أرقام مباشرة بدون صفر)"
+                  maxlength="10"
+                  value=""
+                  class="phone-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-mono font-black tracking-wider text-left border-2 border-sky-300 focus:border-sky-500 bg-white"
+                  oninput="handlePhoneInput(this)"
+                />
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden"></p>
+              </div>
+            </div>
+</div>
+          <button 
+            type="button" 
+            id="btnAddPhone_1"
+            onclick="addPhoneRow(1)" 
+            class="text-xs font-black text-slate-950 hover:bg-sky-100 bg-white border-2 border-sky-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
+          >
+            <span>📞</span>
+            <span data-i18n="btnAddPhone">+ إضافة رقم هاتف إضافي</span>
+          </button>
+        </div>
+
+        <!-- 3. البريد الإلكتروني للمراسلات الرسمية (Dynamic Array / List) -->
+        <div class="space-y-2.5 pt-2 border-t border-sky-100">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-black text-slate-950">
+              <span data-i18n="labelEmail">البريد الإلكتروني (متاح للتواصل والمراسلات الرسمية)</span>
+              <span class="text-red-500 font-bold">*</span>
+            </label>
+          </div>
+          <div id="emailsList_1" class="space-y-2.5">
+            <div class="email-row flex gap-2 w-full relative items-start" id="emailRow_1">
+              <div class="flex-1 min-w-0">
+                <input
+                  type="email"
+                  name="emails[]"
+                  placeholder="example@domain.com"
+                  value=""
+                  class="email-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-mono font-black dir-ltr text-right border-2 border-sky-300 focus:border-sky-500 bg-white"
+                  oninput="validateGeneralEmail(this)"
+                />
+                <p class="error-msg text-red-600 font-black text-xs mt-1 hidden" data-i18n="errEmail">يرجى إدخال بريد إلكتروني صحيح ومتاح للمراسلات الرسمية (example@domain.com)</p>
+              </div>
+            </div>
+</div>
+          <button 
+            type="button" 
+            id="btnAddEmail_1"
+            onclick="addEmailRow(1)" 
+            class="text-xs font-black text-slate-950 hover:bg-sky-100 bg-white border-2 border-sky-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
+          >
+            <span>✉️</span>
+            <span data-i18n="btnAddEmail">+ إضافة بريد إلكتروني إضافي</span>
+          </button>
+        </div>
+
+        <!-- 4. إثبات الهوية والرقم القومي / جواز السفر (يدعم الرقم القومي أو جواز السفر أو كلاهما معاً) -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-sky-100">
+          <div class="sm:col-span-5">
+            <label class="block text-xs font-black text-slate-950 mb-1.5" data-i18n="labelIdType">نوع الوثيقة</label>
+            <select onchange="handleClientIdTypeChange(1, this.value)" class="client-id-type glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 text-xs font-black border-2 border-sky-300 focus:border-sky-500 bg-white">
+              <option value="national_id" data-i18n="optNatId">بطاقة الرقم القومي (14 رقم)</option>
+              <option value="passport" data-i18n="optPassport">جواز السفر (Passport)</option>
+              <option value="both" data-i18n="optBothId">كلاهما (بطاقة الرقم القومي + جواز السفر)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-7 space-y-2.5">
+            <!-- الحقل الأول: بطاقة الرقم القومي أو الحقل الفردي -->
+            <div class="form-group client-single-id-group">
+              <label class="block text-xs font-black text-slate-950 mb-1.5">
+                <span class="client-id-label-text" data-i18n="labelIdNumber">رقم بطاقة الرقم القومي أو جواز السفر</span>
+                <span class="text-red-500 font-bold">*</span>
+              </label>
+              <input
+                type="text"
+                id="national_id"
+                maxlength="15"
+                placeholder="أدخل 14 رقماً للبطاقة أو رقم جواز السفر"
+                class="client-id-number glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-mono font-black tracking-wider border-2 border-sky-300 focus:border-sky-500 bg-white"
+                oninput="validateClientIdNumber(this, 1)"
+              />
+              <p class="error-msg text-red-600 font-black text-xs mt-1 hidden client-id-error"></p>
+            </div>
+
+            <!-- الحقل الثاني: يظهر عند اختيار كلاهما (جواز السفر) -->
+            <div class="form-group client-passport-both-group hidden">
+              <label class="block text-xs font-black text-slate-950 mb-1.5">
+                <span>رقم جواز السفر</span>
+                <span class="text-red-500 font-bold">*</span>
+              </label>
+              <input
+                type="text"
+                maxlength="15"
+                placeholder="أدخل رقم جواز السفر (مثال: A1234567)"
+                class="client-passport-both-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-mono font-black tracking-wider uppercase border-2 border-sky-300 focus:border-sky-500 bg-white"
+                oninput="validateClientBothPassport(this, 1)"
+              />
+              <p class="error-msg text-red-600 font-black text-xs mt-1 hidden client-passport-both-error"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. مكان الإقامة الحالي (داخل مصر / خارج مصر) -->
+        <div class="form-group pt-2 border-t border-sky-100">
+          <label class="block text-xs font-black text-slate-950 mb-2">
+            <span data-i18n="labelResidenceCountry">مكان الإقامة الحالي:</span>
+            <span class="text-red-500 font-bold">*</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            <label class="residence-box-egypt custom-check-box active rounded-2xl py-3 px-3 sm:px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-black text-slate-950 shadow-sm" onclick="setClientResidence(1, 'داخل جمهورية مصر العربية')">
+              <input type="radio" name="client_residence_1" value="داخل جمهورية مصر العربية" checked class="hidden">
+              <span class="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-xs border border-slate-300 flex-shrink-0">
+                <svg viewBox="0 0 3 2" class="w-full h-full">
+                  <rect width="3" height="0.67" y="0" fill="#ce1126"/>
+                  <rect width="3" height="0.67" y="0.67" fill="#ffffff"/>
+                  <rect width="3" height="0.67" y="1.34" fill="#000000"/>
+                  <circle cx="1.5" cy="1" r="0.22" fill="#c6a664"/>
+                </svg>
+              </span>
+              <span data-i18n="optInsideEgypt">داخل جمهورية مصر العربية</span>
+            </label>
+            <label class="residence-box-abroad custom-check-box rounded-2xl py-3 px-3 sm:px-4 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm font-black text-slate-950 shadow-sm" onclick="setClientResidence(1, 'خارج جمهورية مصر العربية')">
+              <input type="radio" name="client_residence_1" value="خارج جمهورية مصر العربية" class="hidden">
+              <span class="text-base flex-shrink-0">🌍</span>
+              <span data-i18n="optOutsideEgypt">خارج جمهورية مصر العربية</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 6. العناوين (المحافظة والمدينة وباقي تفاصيل العنوان) -->
+        <div class="space-y-4 pt-3 border-t border-sky-100">
+          
+          <!-- العنوان كما هو في إثبات الهوية الشخصية -->
+          <div class="client-id-address-group space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-black text-slate-950">
+                <span>📍 <span data-i18n="labelIdAddress">العنوان كما هو مسجل في إثبات الهوية الشخصية</span></span>
+                <span class="text-red-500 font-bold">*</span>
+              </label>
+              <span class="client-sub-id-addr text-[10px] text-slate-700 font-bold font-mono" data-i18n="subIdAddress">اختر المحافظة والمدينة واكتب باقي التفاصيل</span>
+            </div>
+
+            <!-- صف الاختيار: المحافظة/الدولة والمدينة -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+              <div>
+                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                  <span class="client-lbl-gov-text" data-i18n="lblGovernorate">المحافظة</span> <span class="text-red-500 font-bold">*</span>
+                </label>
+                <!-- Searchable Region/Country Picker with Search Bar -->
+                <div class="searchable-region-picker relative w-full" id="regionPicker_1">
+                  <button
+                    type="button"
+                    onclick="toggleRegionPickerDropdown(1, this)"
+                    class="region-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                  >
+                    <span class="region-picker-display flex items-center gap-2 truncate">
+                      <span class="region-flag text-base flex-shrink-0">🇪🇬</span>
+                      <span class="region-name font-black truncate text-slate-950">اختر المحافظة...</span>
+                    </span>
+                    <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                  </button>
+
+                  <input type="hidden" class="client-gov-select" value="" />
+
+                  <div class="region-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[280px] sm:min-w-[320px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                      <div class="relative">
+                        <input 
+                          type="text" 
+                          placeholder="🔍 ابحث عن المحافظة أو الدولة (مثال: القاهرة، الجيزة، فرنسا)..." 
+                          oninput="filterRegionPicker(1, this)" 
+                          class="region-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                        />
+                        <button type="button" onclick="clearPickerSearch(this, () => filterRegionPicker(1, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                      </div>
+                      <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                        <span class="search-hint-text">اكتب للبحث الفوري</span>
+                        <span class="text-sky-600 font-mono">🔍 بحث</span>
+                      </div>
+                    </div>
+                    <div class="region-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                  <span class="client-lbl-city-text" data-i18n="lblCity">المدينة / الحي / المركز</span> <span class="text-red-500 font-bold">*</span>
+                </label>
+                <!-- Searchable City / District Picker with Search Bar -->
+                <div class="searchable-picker searchable-id-city-picker relative w-full" id="idCityPicker_1">
+                  <button
+                    type="button"
+                    onclick="toggleIdCityPickerDropdown(1, this)"
+                    class="id-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                  >
+                    <span class="id-city-picker-display flex items-center gap-2 truncate">
+                      <span class="truncate font-black text-slate-950">اختر المدينة / الحي / المركز...</span>
+                    </span>
+                    <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                  </button>
+
+                  <input type="hidden" class="client-city-select" value="" />
+
+                  <div class="id-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[260px] sm:min-w-[300px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                    <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                      <div class="relative">
+                        <input 
+                          type="text" 
+                          placeholder="🔍 ابحث عن المدينة أو الحي أو المركز (مثال: الشيخ زايد، المعادي)..." 
+                          oninput="filterIdCityPicker(1, this)" 
+                          class="id-city-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                        />
+                        <button type="button" onclick="clearPickerSearch(this, () => filterIdCityPicker(1, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                      </div>
+                      <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                        <span class="search-hint-text">اكتب للبحث الفوري</span>
+                        <span class="text-sky-600 font-mono">🔍 بحث</span>
+                      </div>
+                    </div>
+                    <div class="id-city-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- حقل كتابة باقي تفاصيل العنوان (الشارع، رقم العقار، الشقة) -->
+            <div>
+              <label class="block text-[11px] font-black text-slate-700 mb-1">
+                <span data-i18n="lblStreetDetails">باقي تفاصيل العنوان (اسم الشارع، رقم العقار، رقم الشقة)</span> <span class="text-red-500 font-bold">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="اسم الشارع، رقم العمارة، رقم الشقة، علامة مميزة..."
+                data-i18n-placeholder="phStreetDetails"
+                class="client-street-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 bg-white"
+                oninput="handleClientStreetInput(1, 'id')"
+              />
+            </div>
+
+            <!-- الحقل المدمج النهائي للعنوان بالهوية (hidden) -->
+            <input type="hidden" class="client-id-address" value="" />
+            <p class="error-msg client-id-address-error text-red-600 font-black text-xs mt-1 hidden" data-i18n="errIdAddressSelect">يرجى اختيار المحافظة والمدينة وكتابة باقي تفاصيل العنوان</p>
+          </div>
+
+          <!-- عنوان المراسلات الرسمي -->
+          <div class="client-corr-address-group space-y-2.5 pt-3 border-t border-sky-100">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <label class="block text-xs font-black text-slate-950">
+                <span>📬 <span data-i18n="labelCorrespondenceAddress">العنوان المعتمد بالتفصيل للمراسلات</span></span>
+                <span class="text-red-500 font-bold">*</span>
+              </label>
+            </div>
+
+            <!-- حاوية حقول المراسلات المخصصة (الدولة + المحافظة/المدينة + تفاصيل العنوان) -->
+            <div class="client-custom-corr-container space-y-2.5 p-3 rounded-2xl bg-sky-50/60 border-2 border-sky-200">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                <div>
+                  <label class="block text-xs font-black text-slate-950 mb-1.5">
+                    <span class="client-corr-lbl-country-text">المحافظة</span> <span class="text-red-500 font-bold">*</span>
+                  </label>
+                  <!-- Searchable Correspondence Country Picker with Search Bar -->
+                  <div class="searchable-picker searchable-corr-country-picker relative w-full" id="corrCountryPicker_1">
+                    <button
+                      type="button"
+                      onclick="toggleCorrCountryPickerDropdown(1, this)"
+                      class="corr-country-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                    >
+                      <span class="corr-country-picker-display flex items-center gap-2 truncate">
+                        <span class="corr-country-flag text-base flex-shrink-0">🇪🇬</span>
+                        <span class="corr-country-name font-black truncate text-slate-950">القاهرة</span>
+                      </span>
+                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                    </button>
+
+                    <input type="hidden" class="client-corr-country-select" value="القاهرة" />
+
+                    <div class="corr-country-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[280px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                      <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                        <div class="relative">
+                          <input 
+                            type="text" 
+                            placeholder="🔍 ابحث عن المحافظة أو الدولة..." 
+                            oninput="filterCorrCountryPicker(1, this)" 
+                            class="corr-country-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                          />
+                          <button type="button" onclick="clearPickerSearch(this, () => filterCorrCountryPicker(1, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                        </div>
+                        <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                          <span class="search-hint-text">اكتب للبحث الفوري</span>
+                          <span class="text-sky-600 font-mono">🔍 بحث</span>
+                        </div>
+                      </div>
+                      <div class="corr-country-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black text-slate-950 mb-1.5">
+                    <span class="client-corr-lbl-city-text">المدينة / الحي / المركز</span> <span class="text-red-500 font-bold">*</span>
+                  </label>
+                  <!-- Searchable Correspondence City / Gov Picker with Search Bar -->
+                  <div class="searchable-picker searchable-corr-city-picker relative w-full" id="corrCityPicker_1">
+                    <button
+                      type="button"
+                      onclick="toggleCorrCityPickerDropdown(1, this)"
+                      class="corr-city-picker-btn glass-input w-full px-3 py-2.5 sm:py-3 rounded-xl text-slate-950 bg-white border-2 border-sky-300 hover:border-sky-500 focus:border-sky-500 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-bold shadow-xs transition-all"
+                    >
+                      <span class="corr-city-picker-display flex items-center gap-2 truncate">
+                        <span class="truncate font-black text-slate-950">اختر المدينة / الحي / المركز...</span>
+                      </span>
+                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                    </button>
+                    >
+                      <span class="corr-city-picker-display flex items-center gap-2 truncate">
+                        <span class="truncate font-black text-slate-950">اختر المحافظة / المدينة...</span>
+                      </span>
+                      <span class="text-[9px] text-slate-600 font-bold flex-shrink-0">▼</span>
+                    </button>
+
+                    <input type="hidden" class="client-corr-city-select" value="" />
+
+                    <div class="corr-city-picker-dropdown hidden absolute top-full mt-1.5 start-0 z-[100] w-full min-w-[260px] bg-white border-2 border-sky-400 rounded-2xl shadow-2xl p-2.5 backdrop-blur-2xl">
+                      <div class="sticky top-0 bg-white z-20 pb-2 mb-1.5 border-b border-sky-100">
+                        <div class="relative">
+                          <input 
+                            type="text" 
+                            placeholder="🔍 ابحث عن المحافظة أو المدينة (مثال: القاهرة، الجيزة، الإسكندرية)..." 
+                            oninput="filterCorrCityPicker(1, this)" 
+                            class="corr-city-picker-search w-full px-3 py-2 pe-8 text-xs bg-sky-50/90 border-2 border-sky-300 rounded-xl text-slate-950 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-bold transition-all shadow-inner"
+                          />
+                          <button type="button" onclick="clearPickerSearch(this, () => filterCorrCityPicker(1, this.previousElementSibling))" class="search-clear-btn hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-black text-xs">✕</button>
+                        </div>
+                        <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-500 font-bold">
+                          <span class="search-hint-text">اكتب للبحث الفوري</span>
+                          <span class="text-sky-600 font-mono">🔍 بحث</span>
+                        </div>
+                      </div>
+                      <div class="corr-city-picker-scroll max-h-56 overflow-y-auto space-y-1 text-xs pr-1"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- حقل مخفي للتوافقية -->
+              <input type="hidden" class="client-corr-gov-select" value="مصر" />
+
+              <div>
+                <label class="block text-[11px] font-black text-slate-700 mb-1">
+                  <span data-i18n="lblCorrStreetDetails">باقي تفاصيل العنوان للمراسلات</span> <span class="text-red-500 font-bold">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="اسم الشارع، رقم المبنى والشقة للمراسلات الرسمية"
+                  data-i18n-placeholder="phCorrStreetDetails"
+                  class="client-corr-street-input glass-input w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-slate-950 placeholder-slate-500 text-xs sm:text-sm font-bold border-2 border-sky-300 focus:border-sky-500 bg-white"
+                  oninput="handleClientStreetInput(1, 'corr')"
+                />
+              </div>
+            </div>
+
+            <!-- الحقل المدمج النهائي لعنوان المراسلات (hidden) -->
+            <input type="hidden" class="client-corr-address" value="" />
+            <p class="error-msg client-corr-address-error text-red-600 font-black text-xs mt-1 hidden" data-i18n="errCorrespondenceAddress">العنوان المعتمد للمراسلات مطلوب</p>
+          </div>
+        </div>
+
+        <!-- 7. المستندات والمرفقات المطلوبة لهذا الطرف -->
+        <div class="pt-3 border-t border-sky-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm">
+              <span>📎</span>
+              <span data-i18n="secAttachmentsTitle">المستندات والمرفقات المطلوبة</span>
+              <span class="text-red-500 font-bold">*</span>
+            </div>
+            <span class="text-[10px] text-slate-600 font-mono font-bold">PDF / JPG / PNG</span>
+          </div>
+
+          <div class="client-doc-notice p-3 rounded-2xl bg-sky-50 border-2 border-sky-300 text-slate-950 text-xs font-bold flex items-start gap-2">
+            <span class="text-base flex-shrink-0">⚠️</span>
+            <div class="client-doc-notice-text">
+              للعملاء المقيمين داخل مصر: يُشترط رفع صورة واضحة لبطاقة الرقم القومي (الوجهين: الأمامي والخلفي).
+            </div>
+          </div>
+
+          <div 
+            class="client-drop-zone border-2 border-dashed border-sky-300 hover:border-sky-500 rounded-2xl p-4 sm:p-5 text-center transition-all bg-sky-50/50 hover:bg-sky-100/50 cursor-pointer shadow-sm"
+          >
+            <input 
+              type="file" 
+              multiple 
+              accept="image/*,.pdf" 
+              class="hidden client-file-input" 
+              onchange="handleClientFilesSelected(1, this.files)"
+            >
+            <div class="text-2xl mb-1 pointer-events-none">📁</div>
+            <div class="font-black text-xs sm:text-sm text-slate-950 pointer-events-none" data-i18n="dropTitle">
+              اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا
+            </div>
+            <div class="text-[11px] text-slate-700 mt-1 client-drop-subtitle pointer-events-none font-bold">
+              (مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)
+            </div>
+          </div>
+
+          <!-- قائمة الملفات المرفقة لهذا العميل -->
+          <div class="client-files-container space-y-2 hidden">
+            <div class="text-xs font-black text-slate-950" data-i18n="selectedFilesHeading">المعاينات المرفقة لهذا الطرف:</div>
+            <div class="client-files-list grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+          </div>
+          <p class="error-msg text-red-600 font-black text-xs mt-1 hidden client-files-error" data-i18n="errAttachments">المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه</p>
+        </div>
+      </div>
               </div>
 
               <!-- ── قسم الشركاء في التعاقد والوحدة (يظهر تلقائياً قبل بيانات الوحدة عند وجود شركاء مسجلين للوحدة) ── -->
@@ -995,14 +1480,49 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
     };
 
+    // ── Client Card Repeater State & Logic ──
+    let clientCardSequence = 0;
+    const activeClientIds = [];
+    const clientFilesState = {};
+    const clientResidenceMap = {};
+
     let currentLang = localStorage.getItem('elamar_lang') || 'ar';
     let currentResidence = 'داخل جمهورية مصر العربية';
     let selectedFiles = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-      addNewClientCard(true);
+    function initPrimaryClientCard() {
+      const container = document.getElementById('clientsContainer');
+      if (!container) return;
+
+      const card1 = document.getElementById('clientCard_1');
+      if (card1) {
+        if (!activeClientIds.includes(1)) {
+          activeClientIds.push(1);
+          clientCardSequence = Math.max(clientCardSequence, 1);
+          clientResidenceMap[1] = 'داخل جمهورية مصر العربية';
+          clientFilesState[1] = [];
+
+          if (typeof setupClientDropzone === 'function') setupClientDropzone(1);
+          if (typeof initClientAddressFields === 'function') initClientAddressFields(1);
+
+          const pickerEl = card1.querySelector('.country-picker');
+          if (pickerEl && typeof buildCountryList === 'function') {
+            buildCountryList(pickerEl);
+          }
+
+          if (typeof updateClientsCountBadge === 'function') updateClientsCountBadge();
+        }
+      } else {
+        if (typeof addNewClientCard === 'function') addNewClientCard(true);
+      }
+    }
+
+    function initApp() {
+      initPrimaryClientCard();
       setLanguage(currentLang);
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initApp);
 
     function toggleLanguage() {
       const nextLang = (currentLang === 'ar') ? 'en' : 'ar';
@@ -5087,13 +5607,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       worldCountriesEn[c.nameAr] = c.nameEn;
     });
 
-    // ── Client Card Repeater State & Logic ──
-    let clientCardSequence = 0;
-    const activeClientIds = [];
-    const clientFilesState = {};
-    const clientResidenceMap = {};
+    // ── Client Card Repeater State & Logic (State declared at top) ──
 
     function addNewClientCard(isPrimary = false) {
+      if (isPrimary && document.getElementById('clientCard_1') && !activeClientIds.includes(1)) {
+        initPrimaryClientCard();
+        return;
+      }
       clientCardSequence++;
       const clientId = clientCardSequence;
       activeClientIds.push(clientId);
@@ -7857,12 +8377,13 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       if (!card) return;
       const dropZone = card.querySelector('.client-drop-zone');
       const fileInput = card.querySelector('.client-file-input');
+      if (!dropZone || !fileInput) return;
 
-      dropZone.addEventListener('click', (e) => {
+      dropZone.onclick = (e) => {
         if (e.target !== fileInput) {
           fileInput.click();
         }
-      });
+      };
 
       ['dragenter', 'dragover'].forEach(name => {
         dropZone.addEventListener(name, (e) => {
@@ -8641,6 +9162,14 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         }
       })
       .catch(() => {});
+    // Fallback if DOMContentLoaded already fired before script finished
+    if (document.readyState !== 'loading') {
+      try {
+        initApp();
+      } catch (e) {
+        console.error('initApp fallback error:', e);
+      }
+    }
   </script>
 
 </body>
