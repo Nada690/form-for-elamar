@@ -1098,50 +1098,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           </div>
         </div>
 
-        <!-- 7. المستندات والمرفقات المطلوبة لهذا الطرف -->
-        <div class="pt-3 border-t border-sky-100 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm">
-              <span>📎</span>
-              <span data-i18n="secAttachmentsTitle">المستندات والمرفقات المطلوبة</span>
-              <span class="text-red-500 font-bold">*</span>
-            </div>
-            <span class="text-[10px] text-slate-600 font-mono font-bold">PDF / JPG / PNG</span>
-          </div>
-
-          <div class="client-doc-notice p-3 rounded-2xl bg-sky-50 border-2 border-sky-300 text-slate-950 text-xs font-bold flex items-start gap-2">
-            <span class="text-base flex-shrink-0">⚠️</span>
-            <div class="client-doc-notice-text">
-              للعملاء المقيمين داخل مصر: يُشترط رفع صورة واضحة لبطاقة الرقم القومي (الوجهين: الأمامي والخلفي).
-            </div>
-          </div>
-
-          <div 
-            class="client-drop-zone border-2 border-dashed border-sky-300 hover:border-sky-500 rounded-2xl p-4 sm:p-5 text-center transition-all bg-sky-50/50 hover:bg-sky-100/50 cursor-pointer shadow-sm"
-          >
-            <input 
-              type="file" 
-              multiple 
-              accept="image/*,.pdf" 
-              class="hidden client-file-input" 
-              onchange="handleClientFilesSelected(1, this.files)"
-            >
-            <div class="text-2xl mb-1 pointer-events-none">📁</div>
-            <div class="font-black text-xs sm:text-sm text-slate-950 pointer-events-none" data-i18n="dropTitle">
-              اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا
-            </div>
-            <div class="text-[11px] text-slate-700 mt-1 client-drop-subtitle pointer-events-none font-bold">
-              (مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)
-            </div>
-          </div>
-
-          <!-- قائمة الملفات المرفقة لهذا العميل -->
-          <div class="client-files-container space-y-2 hidden">
-            <div class="text-xs font-black text-slate-950" data-i18n="selectedFilesHeading">المعاينات المرفقة لهذا الطرف:</div>
-            <div class="client-files-list grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-          </div>
-          <p class="error-msg text-red-600 font-black text-xs mt-1 hidden client-files-error" data-i18n="errAttachments">المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه</p>
-        </div>
+        
       </div>
               </div>
 
@@ -6344,50 +6301,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           </div>
         </div>
 
-        <!-- 7. المستندات والمرفقات المطلوبة لهذا الطرف -->
-        <div class="pt-3 border-t border-sky-100 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm">
-              <span>📎</span>
-              <span data-i18n="secAttachmentsTitle">${currentLang === 'en' ? 'Required Documents & Attachments' : 'المستندات والمرفقات المطلوبة'}</span>
-              <span class="text-red-500 font-bold">*</span>
-            </div>
-            <span class="text-[10px] text-slate-600 font-mono font-bold">PDF / JPG / PNG</span>
-          </div>
-
-          <div class="client-doc-notice p-3 rounded-2xl bg-sky-50 border-2 border-sky-300 text-slate-950 text-xs font-bold flex items-start gap-2">
-            <span class="text-base flex-shrink-0">⚠️</span>
-            <div class="client-doc-notice-text">
-              ${currentLang === 'en' ? 'For clients residing inside Egypt: Uploading both sides of the National ID is mandatory.' : 'للعملاء المقيمين داخل مصر: يُشترط رفع صورة واضحة لبطاقة الرقم القومي (الوجهين: الأمامي والخلفي).'}
-            </div>
-          </div>
-
-          <div 
-            class="client-drop-zone border-2 border-dashed border-sky-300 hover:border-sky-500 rounded-2xl p-4 sm:p-5 text-center transition-all bg-sky-50/50 hover:bg-sky-100/50 cursor-pointer shadow-sm"
-          >
-            <input 
-              type="file" 
-              multiple 
-              accept="image/*,.pdf" 
-              class="hidden client-file-input" 
-              onchange="handleClientFilesSelected(${clientId}, this.files)"
-            >
-            <div class="text-2xl mb-1 pointer-events-none">📁</div>
-            <div class="font-black text-xs sm:text-sm text-slate-950 pointer-events-none" data-i18n="dropTitle">
-              ${currentLang === 'en' ? 'Click to select documents or drag & drop files here' : 'اضغط لاختيار المستندات أو اسحب الملفات وأفلتها هنا'}
-            </div>
-            <div class="text-[11px] text-slate-700 mt-1 client-drop-subtitle pointer-events-none font-bold">
-              ${currentLang === 'en' ? '(Mandatory: National ID card both sides)' : '(مطلوب إجباري: صورة بطاقة الرقم القومي وجهين)'}
-            </div>
-          </div>
-
-          <!-- قائمة الملفات المرفقة لهذا العميل -->
-          <div class="client-files-container space-y-2 hidden">
-            <div class="text-xs font-black text-slate-950" data-i18n="selectedFilesHeading">${currentLang === 'en' ? 'Attached Files Preview:' : 'المعاينات المرفقة لهذا الطرف:'}</div>
-            <div class="client-files-list grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-          </div>
-          <p class="error-msg text-red-600 font-black text-xs mt-1 hidden client-files-error" data-i18n="errAttachments">${currentLang === 'en' ? 'Required documents are mandatory. Please attach the required files.' : 'المستندات المطلوبة إلزامية، يرجى رفع الملفات المحددة أعلاه'}</p>
-        </div>
+        
       `;
 
       return card;
@@ -9135,19 +9049,20 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         const idAddrInput = idAddrHidden;
         const corrAddrInput = corrAddrHidden;
 
-        // التحقق من المرفقات لهذا العميل
-        const files = clientFilesState[cId] || [];
-        if (files.length === 0) {
-          const fileErr = card.querySelector('.client-files-error');
-          if (fileErr) fileErr.classList.remove('hidden');
-          const dropZone = card.querySelector('.client-drop-zone');
-          if (dropZone) dropZone.classList.add('invalid');
-          hasError = true;
-        } else {
-          const fileErr = card.querySelector('.client-files-error');
-          if (fileErr) fileErr.classList.add('hidden');
-          const dropZone = card.querySelector('.client-drop-zone');
-          if (dropZone) dropZone.classList.remove('invalid');
+        // التحقق من المرفقات لهذا العميل (فقط في حال وجود منطقة رفع ملفات بالبطاقة)
+        const dropZone = card.querySelector('.client-drop-zone');
+        if (dropZone) {
+          const files = clientFilesState[cId] || [];
+          if (files.length === 0) {
+            const fileErr = card.querySelector('.client-files-error');
+            if (fileErr) fileErr.classList.remove('hidden');
+            dropZone.classList.add('invalid');
+            hasError = true;
+          } else {
+            const fileErr = card.querySelector('.client-files-error');
+            if (fileErr) fileErr.classList.add('hidden');
+            dropZone.classList.remove('invalid');
+          }
         }
 
         let finalIdNumber = idInput ? idInput.value.trim() : '';
@@ -9351,6 +9266,14 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           formData.append('emails[]', em);
         });
       });
+
+      // إضافة مستندات الفحص والتحقق KYC المرفوعة مسبقاً إن وجدت
+      if (typeof kycUploadedFiles !== 'undefined' && kycUploadedFiles) {
+        if (kycUploadedFiles.front) formData.append('attachments[]', kycUploadedFiles.front, kycUploadedFiles.front.name);
+        if (kycUploadedFiles.back) formData.append('attachments[]', kycUploadedFiles.back, kycUploadedFiles.back.name);
+        if (kycUploadedFiles.passport) formData.append('attachments[]', kycUploadedFiles.passport, kycUploadedFiles.passport.name);
+        if (kycUploadedFiles.residence) formData.append('attachments[]', kycUploadedFiles.residence, kycUploadedFiles.residence.name);
+      }
 
       // إضافة جميع المرفقات الخاصة بكافة الأطراف
       Object.keys(clientFilesState).forEach(cId => {
