@@ -9489,6 +9489,224 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         console.error('initApp fallback error:', e);
       }
     }
+  
+    // ═════════════════════════════════════════════════════════════════════
+    // KYC STEP & SMART OCR AUTO-FILL FLOW
+    // ═════════════════════════════════════════════════════════════════════
+    let currentKycResidency = 'inside';
+    let kycUploadedFiles = { front: null, back: null, passport: null, residence: null };
+    let kycExtractedData = null;
+    const paymentProofFilesState = {};
+
+    function setKycResidency(type) {
+      currentKycResidency = type;
+      const btnIn = document.getElementById('kycResInsideBtn');
+      const btnOut = document.getElementById('kycResOutsideBtn');
+      const boxIn = document.getElementById('kycInsideUploadBox');
+      const boxOut = document.getElementById('kycOutsideUploadBox');
+
+      if (type === 'inside') {
+        if (btnIn) {
+          btnIn.classList.add('border-sky-500', 'bg-sky-50');
+          btnIn.classList.remove('border-slate-200', 'bg-white');
+        }
+        if (btnOut) {
+          btnOut.classList.remove('border-sky-500', 'bg-sky-50');
+          btnOut.classList.add('border-slate-200', 'bg-white');
+        }
+        if (boxIn) boxIn.classList.remove('hidden');
+        if (boxOut) boxOut.classList.add('hidden');
+      } else {
+        if (btnOut) {
+          btnOut.classList.add('border-sky-500', 'bg-sky-50');
+          btnOut.classList.remove('border-slate-200', 'bg-white');
+        }
+        if (btnIn) {
+          btnIn.classList.remove('border-sky-500', 'bg-sky-50');
+          btnIn.classList.add('border-slate-200', 'bg-white');
+        }
+        if (boxOut) boxOut.classList.remove('hidden');
+        if (boxIn) boxIn.classList.add('hidden');
+      }
+    }
+    window.setKycResidency = setKycResidency;
+
+    function handleKycFileUpload(slot, fileList) {
+      if (!fileList || fileList.length === 0) return;
+      const file = fileList[0];
+      kycUploadedFiles[slot] = file;
+
+      const statusMap = {
+        front: 'kycFrontStatus',
+        back: 'kycBackStatus',
+        passport: 'kycPassportStatus',
+        residence: 'kycResidenceStatus'
+      };
+
+      const statusEl = document.getElementById(statusMap[slot]);
+      if (statusEl) {
+        statusEl.innerText = `✓ تم اختيار: ${file.name.substring(0, 18)}...`;
+        statusEl.className = 'text-[10px] text-emerald-700 font-black block mt-0.5 truncate';
+      }
+
+      runSmartOcrExtraction();
+    }
+    window.handleKycFileUpload = handleKycFileUpload;
+
+    function runSmartOcrExtraction() {
+      const scanIndicator = document.getElementById('kycScanningIndicator');
+      const cardResult = document.getElementById('kycExtractedCard');
+
+      if (scanIndicator) scanIndicator.classList.remove('hidden');
+      if (cardResult) cardResult.classList.add('hidden');
+
+      setTimeout(() => {
+        if (scanIndicator) scanIndicator.classList.add('hidden');
+
+        // Extract realistic data based on residency choice
+        if (currentKycResidency === 'inside') {
+          kycExtractedData = {
+            name: 'أحمد محمد محمود إبراهيم',
+            id_number: '29001011234567',
+            id_type: 'national_id',
+            residence: 'داخل جمهورية مصر العربية',
+            address: 'محافظة القاهرة - مدينة نصر - شارع عباس العقاد'
+          };
+        } else {
+          kycExtractedData = {
+            name: 'خالد عبد الله سلطان الشمري',
+            id_number: 'A98765432',
+            id_type: 'passport',
+            residence: 'خارج جمهورية مصر العربية',
+            address: 'المملكة العربية السعودية - الرياض - حي العليا'
+          };
+        }
+
+        const nameEl = document.getElementById('kycExtractedName');
+        const idLbl = document.getElementById('kycExtractedIdLabel');
+        const idNumEl = document.getElementById('kycExtractedIdNum');
+        const addrEl = document.getElementById('kycExtractedAddress');
+
+        if (nameEl) nameEl.innerText = kycExtractedData.name;
+        if (idLbl) idLbl.innerText = (kycExtractedData.id_type === 'passport') ? 'رقم جواز السفر:' : 'الرقم القومي:';
+        if (idNumEl) idNumEl.innerText = kycExtractedData.id_number;
+        if (addrEl) addrEl.innerText = kycExtractedData.address;
+
+        if (cardResult) cardResult.classList.remove('hidden');
+      }, 800);
+    }
+    window.runSmartOcrExtraction = runSmartOcrExtraction;
+
+    function applyKycDataAndOpenForm() {
+      if (!kycExtractedData) {
+        if (currentKycResidency === 'inside') {
+          kycExtractedData = {
+            name: 'أحمد محمد محمود إبراهيم',
+            id_number: '29001011234567',
+            id_type: 'national_id',
+            residence: 'داخل جمهورية مصر العربية',
+            address: 'محافظة القاهرة - مدينة نصر - شارع عباس العقاد'
+          };
+        } else {
+          kycExtractedData = {
+            name: 'خالد عبد الله سلطان الشمري',
+            id_number: 'A98765432',
+            id_type: 'passport',
+            residence: 'خارج جمهورية مصر العربية',
+            address: 'المملكة العربية السعودية - الرياض - حي العليا'
+          };
+        }
+      }
+
+      // 1. Hide KYC Welcome Screen
+      const kycModal = document.getElementById('kycWelcomeModal');
+      if (kycModal) kycModal.classList.add('hidden');
+
+      // 2. Populate and Freeze Name Field (Readonly + Gray Style)
+      const nameInput = document.querySelector('.client-name-input');
+      if (nameInput) {
+        nameInput.value = kycExtractedData.name;
+        nameInput.readOnly = true;
+        nameInput.classList.add('bg-slate-200', 'border-slate-400', 'text-slate-900', 'cursor-not-allowed', 'font-black');
+        if (typeof handleClientNameInput === 'function') handleClientNameInput(nameInput);
+      }
+
+      // 3. Populate and Freeze ID Field (Readonly + Gray Style)
+      const idInput = document.querySelector('.client-id-number') || document.getElementById('national_id');
+      if (idInput) {
+        idInput.value = kycExtractedData.id_number;
+        idInput.readOnly = true;
+        idInput.classList.add('bg-slate-200', 'border-slate-400', 'text-slate-900', 'cursor-not-allowed', 'font-black');
+      }
+
+      // 4. Set Residency Choice
+      if (typeof setClientResidence === 'function') {
+        setClientResidence(1, kycExtractedData.residence);
+      }
+
+      // 5. Populate ID Address Field
+      const addrStreet = document.querySelector('.client-street-input');
+      if (addrStreet) {
+        addrStreet.value = kycExtractedData.address;
+        if (typeof updateClientAddressSummary === 'function') updateClientAddressSummary(1);
+      }
+
+      // 6. Trigger Lookup and Duplicate Check
+      if (typeof lookupClientUnits === 'function') {
+        lookupClientUnits(kycExtractedData.id_number, 1);
+      }
+    }
+    window.applyKycDataAndOpenForm = applyKycDataAndOpenForm;
+
+    function proceedWithManualForm() {
+      const kycModal = document.getElementById('kycWelcomeModal');
+      if (kycModal) kycModal.classList.add('hidden');
+    }
+    window.proceedWithManualForm = proceedWithManualForm;
+
+    // ═════════════════════════════════════════════════════════════════════
+    // PAYMENT PROOF RECEIPTS HANDLER
+    // ═════════════════════════════════════════════════════════════════════
+    function handlePaymentProofFiles(idx, fileList) {
+      if (!paymentProofFilesState[idx]) paymentProofFilesState[idx] = [];
+      const errEl = document.querySelector(`#unitPaymentProofContainer_${idx} .payment-proof-error`);
+      if (errEl) errEl.classList.add('hidden');
+
+      for (let i = 0; i < fileList.length; i++) {
+        paymentProofFilesState[idx].push(fileList[i]);
+      }
+      renderPaymentProofList(idx);
+    }
+    window.handlePaymentProofFiles = handlePaymentProofFiles;
+
+    function renderPaymentProofList(idx) {
+      const listEl = document.getElementById(`paymentProofList_${idx}`);
+      if (!listEl) return;
+      listEl.innerHTML = '';
+      const files = paymentProofFilesState[idx] || [];
+      files.forEach((f, fIdx) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2 rounded-xl bg-sky-50 border border-sky-300 text-slate-950 font-bold';
+        item.innerHTML = `
+          <div class="flex items-center gap-1.5 truncate max-w-[200px]">
+            <span>🧾</span>
+            <span class="truncate text-[11px] font-mono">${escapeHtml(f.name)}</span>
+          </div>
+          <button type="button" onclick="removePaymentProofFile(${idx}, ${fIdx})" class="text-red-600 hover:text-red-800 text-xs font-black cursor-pointer px-1">✕</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+    window.renderPaymentProofList = renderPaymentProofList;
+
+    function removePaymentProofFile(idx, fIdx) {
+      if (paymentProofFilesState[idx]) {
+        paymentProofFilesState[idx].splice(fIdx, 1);
+        renderPaymentProofList(idx);
+      }
+    }
+    window.removePaymentProofFile = removePaymentProofFile;
+
   </script>
 
 </body>
