@@ -437,6 +437,8 @@ if (isset($_GET['customer'])) {
     <?php if (!$c): ?>
       <p class="text-center text-slate-300 font-bold py-10">العميل غير موجود.</p>
     <?php else:
+        $attachments = json_decode($c['attachments'] ?? '[]', true);
+        if (!is_array($attachments)) $attachments = [];
         unset($c['attachments']);
         $labels = [
             'name' => 'الاسم', 'phone' => 'الهاتف', 'email' => 'البريد الإلكتروني', 'id_type' => 'نوع الهوية',
@@ -458,6 +460,31 @@ if (isset($_GET['customer'])) {
           </div>
         <?php endforeach; ?>
       </dl>
+
+      <?php if (!empty($attachments)): ?>
+        <div class="mt-6 pt-5 border-t-2 border-sky-200">
+          <h3 class="text-sm font-black text-slate-950 mb-3 flex items-center gap-2">
+            <span>📎</span>
+            <span>المستندات وإيصالات الدفع المرفوعة (<?= count($attachments) ?>)</span>
+          </h3>
+          <div class="flex flex-wrap gap-2.5">
+            <?php foreach ($attachments as $aIdx => $att): 
+              $ext = strtolower(pathinfo($att, PATHINFO_EXTENSION));
+            ?>
+              <a 
+                href="<?= h($att) ?>" 
+                target="_blank" 
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-100 hover:bg-sky-200 border-2 border-sky-300 text-xs font-black text-slate-950 shadow-xs transition-all hover:scale-105"
+              >
+                <span><?= ($ext === 'pdf') ? '📄' : '🖼️' ?></span>
+                <span>إيصال / مستند #<?= $aIdx + 1 ?></span>
+                <span class="text-[10px] text-sky-800 font-mono">↗</span>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      <?php endif; ?>
+
     <?php endif; ?>
     </div>
   </div>
@@ -495,8 +522,10 @@ if ($view === 'customers') {
     $page  = min($page, $pages);
     $offset = ($page - 1) * PORTAL_PAGE_SIZE;
 
-    $ls = $pdo->prepare("SELECT c.id, c.name, c.phone, c.project, c.contract_location, c.eoi_number,
-                                c.created_at, c.sales_id, u.name AS sales_name
+    $ls = $pdo->prepare("SELECT c.id, c.name, c.phone, c.email, c.project, c.contract_location, c.eoi_number,
+                                c.residence_country, c.period, c.payment_period, c.final_rate,
+                                c.paid_5_percent, c.payment_date, c.unit_price, c.maintenance_deposit,
+                                c.attachments, c.created_at, c.sales_id, u.name AS sales_name
                          FROM clients c LEFT JOIN users u ON u.id = c.sales_id
                          WHERE {$whereSql} ORDER BY c.id DESC
                          LIMIT " . PORTAL_PAGE_SIZE . " OFFSET " . (int)$offset);
@@ -633,23 +662,30 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
   <!-- جدول العملاء -->
   <div class="glass rounded-3xl overflow-hidden shadow-2xl">
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-right">
-        <thead class="bg-sky-200/95 text-slate-950 text-xs font-black border-b-2 border-sky-300">
+      <table class="w-full text-xs sm:text-sm text-right border-collapse">
+        <thead class="sticky top-0 z-20 bg-sky-200/95 text-slate-950 text-xs font-black border-b-2 border-sky-400 backdrop-blur-md">
           <tr>
             <th class="p-3.5 w-12 text-center">#</th>
-            <th class="p-3.5 w-16">ID</th>
-            <th class="p-3.5">الاسم</th><th class="p-3.5">الهاتف</th>
-            <th class="p-3.5">المشروع</th><th class="p-3.5">مكان التعاقد</th><th class="p-3.5">كود الوحدة</th>
-            <?php if ($role !== 'Sales'): ?><th class="p-3.5">السيلز</th><?php endif; ?>
-            <th class="p-3.5">التاريخ</th><th class="p-3.5 text-center">إجراءات</th>
+            <th class="p-3.5 min-w-[180px] text-right">اسم العميل</th>
+            <th class="p-3.5 text-center min-w-[130px]">كود الوحدة (اليونت)</th>
+            <th class="p-3.5 text-center min-w-[120px]">مكان التعاقد</th>
+            <th class="p-3.5 text-center min-w-[110px]">فترة السداد</th>
+            <th class="p-3.5 text-center min-w-[160px]">حالة السداد (تم السداد؟)</th>
+            <th class="p-3.5 text-center min-w-[130px]">بلد الإقامة</th>
+            <th class="p-3.5 text-center min-w-[150px]">تاريخ ووقت التسجيل</th>
+            <th class="p-3.5 text-center min-w-[140px]">توتال اليونت</th>
+            <?php if ($role !== 'Sales'): ?><th class="p-3.5 text-center min-w-[120px]">السيلز</th><?php endif; ?>
+            <th class="p-3.5 text-center min-w-[90px]">الإجراءات</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-sky-100 text-slate-950 font-bold bg-white">
         <?php if (!$customers): ?>
-          <tr><td colspan="10" class="p-12 text-center text-slate-950 font-black text-sm">
-            <div class="text-3xl mb-2">🏖️</div>
-            لا يوجد عملاء لعرضهم.
-          </td></tr>
+          <tr>
+            <td colspan="<?= ($role !== 'Sales') ? 11 : 10 ?>" class="p-12 text-center text-slate-950 font-black text-sm">
+              <div class="text-3xl mb-2">🏖️</div>
+              لا يوجد عملاء لعرضهم.
+            </td>
+          </tr>
         <?php endif; ?>
         <?php 
         $seq = $offset + 1;
@@ -657,36 +693,146 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
           $cNames  = splitPartnerValues((string)$c['name']);
           $cPhones = splitPartnerValues((string)$c['phone']);
           $pCount  = max(count($cNames), count($cPhones), 1);
+          $resCountry = $c['residence_country'] ?? 'داخل جمهورية مصر العربية';
+          $isOutside = str_contains($resCountry, 'خارج');
+          $attachments = json_decode($c['attachments'] ?? '[]', true);
+          if (!is_array($attachments)) $attachments = [];
+          $isPaid = ($c['paid_5_percent'] === 'نعم');
+
           for ($i = 0; $i < $pCount; $i++):
             $pName  = $cNames[$i] ?? ($cNames[0] ?? $c['name']);
             $pPhone = $cPhones[$i] ?? ($cPhones[0] ?? $c['phone']);
         ?>
           <tr class="hover:bg-sky-50/90 transition-colors">
-            <td class="p-3 text-center font-black text-sky-950 font-mono bg-sky-50">
-              <?= $seq++ ?>
+            <!-- 1. # (الترقيم التسلسلي مع الـ ID) -->
+            <td class="p-3.5 text-center font-black text-slate-950 font-mono bg-sky-50/60">
+              <div class="text-xs sm:text-sm"><?= $seq++ ?></div>
+              <div class="text-[10px] text-slate-500 font-mono">#<?= (int)$c['id'] ?></div>
             </td>
-            <td class="p-3 font-mono text-slate-950 text-xs font-black whitespace-nowrap">
-              #<?= (int)$c['id'] ?>
-              <?php if ($pCount > 1): ?>
-                <div class="text-[10px] text-sky-800 font-black">(شريك <?= ($i + 1) ?> من <?= $pCount ?>)</div>
+
+            <!-- 2. اسم العميل مع شارة الشريك إن وجدت -->
+            <td class="p-3.5 font-black text-slate-950 min-w-[180px] whitespace-normal break-words text-right">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs sm:text-sm text-slate-950 font-black leading-snug"><?= h($pName) ?></span>
+                <?php if ($pCount > 1): ?>
+                  <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-amber-950 border border-amber-300 font-black whitespace-nowrap shadow-xs">
+                    شريك <?= ($i + 1) ?> من <?= $pCount ?>
+                  </span>
+                <?php endif; ?>
+              </div>
+            </td>
+
+            <!-- 3. كود الوحدة داخل بادج بارز -->
+            <td class="p-3.5 text-center font-mono font-black text-slate-950 min-w-[130px]">
+              <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sky-100 border-2 border-sky-300 text-slate-950 font-mono font-black text-xs shadow-2xs">
+                <span>🏢</span>
+                <span><?= h($c['eoi_number']) ?></span>
+              </span>
+            </td>
+
+            <!-- 4. مكان التعاقد -->
+            <td class="p-3.5 text-center font-black text-slate-950 min-w-[120px]">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black border-2 <?= ($c['contract_location'] === 'الإسكندرية') ? 'bg-sky-100 border-sky-300' : 'bg-amber-100 border-amber-300' ?> shadow-2xs">
+                <?= ($c['contract_location'] === 'الإسكندرية') ? '🌊 ' : '🏛️ ' ?>
+                <?= h($c['contract_location']) ?>
+              </span>
+            </td>
+
+            <!-- 5. فترة السداد -->
+            <td class="p-3.5 text-center font-black text-slate-950 min-w-[110px]">
+              <div class="inline-block px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border-2 border-purple-300 font-black text-xs shadow-2xs">
+                <?= h($c['period'] ?: $c['payment_period'] ?: '—') ?>
+              </div>
+              <?php if (!empty($c['final_rate'])): ?>
+                <div class="text-[10px] text-slate-800 font-mono font-black mt-0.5"><?= h($c['final_rate']) ?></div>
               <?php endif; ?>
             </td>
-            <td class="p-3 font-black text-slate-950">
-              <?= h($pName) ?>
-              <?php if ($pCount > 1): ?>
-                <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-sky-100 text-sky-950 border border-sky-300 mr-1 font-black whitespace-nowrap">شريك <?= ($i + 1) ?></span>
+
+            <!-- 6. حالة السداد (نعم / لا) + زر الإيصال -->
+            <td class="p-3.5 text-center font-black text-slate-950 min-w-[160px]">
+              <?php if ($isPaid): ?>
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-950 border-2 border-emerald-400 shadow-2xs mb-1">
+                  ✓ تم السداد
+                </span>
+                <?php if (!empty($c['payment_date'])): ?>
+                  <div class="text-[10px] text-slate-800 font-mono font-bold">
+                    📅 <?= h($c['payment_date']) ?>
+                  </div>
+                <?php endif; ?>
+                <?php if (!empty($attachments)): ?>
+                  <div class="mt-1 flex items-center justify-center gap-1 flex-wrap">
+                    <?php foreach ($attachments as $aIdx => $att): 
+                      $ext = strtolower(pathinfo($att, PATHINFO_EXTENSION));
+                    ?>
+                      <a 
+                        href="<?= h($att) ?>" 
+                        target="_blank" 
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 border border-sky-300 text-slate-950 text-[10px] font-black transition-colors shadow-2xs"
+                        title="معاينة إيصال الدفع"
+                      >
+                        <span><?= ($ext === 'pdf') ? '📄' : '🖼️' ?></span>
+                        <span>عرض الإيصال <?= count($attachments) > 1 ? '#' . ($aIdx + 1) : '' ?></span>
+                      </a>
+                    <?php endforeach; ?>
+                  </div>
+                <?php else: ?>
+                  <div class="text-[10px] text-amber-800 font-bold mt-0.5">لم يرفع إيصال</div>
+                <?php endif; ?>
+              <?php else: ?>
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-red-100 text-red-950 border-2 border-red-300 shadow-2xs">
+                  ✕ لم يسدد
+                </span>
+                <div class="text-[10px] text-slate-400 font-bold mt-0.5">لم يرفع</div>
               <?php endif; ?>
             </td>
-            <td class="p-3 font-mono font-black text-emerald-800 dir-ltr text-right"><?= h($pPhone) ?></td>
-            <td class="p-3 font-bold text-slate-950"><?= h($c['project']) ?></td>
-            <td class="p-3 font-bold text-slate-950"><?= h($c['contract_location']) ?></td>
-            <td class="p-3 font-mono font-black text-slate-950">
-              <span class="px-2 py-0.5 rounded-lg bg-sky-100 border border-sky-300"><?= h($c['eoi_number']) ?></span>
+
+            <!-- 7. بلد الإقامة -->
+            <td class="p-3.5 text-center font-black text-slate-950 min-w-[130px]">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300 text-blue-950' : 'bg-emerald-100 border-emerald-300 text-emerald-950' ?> shadow-2xs">
+                <?= $isOutside ? '🌍 ' . h($resCountry) : '🇪🇬 داخل مصر' ?>
+              </span>
             </td>
-            <?php if ($role !== 'Sales'): ?><td class="p-3 font-bold text-slate-950"><?= h($c['sales_name'] ?? '—') ?></td><?php endif; ?>
-            <td class="p-3 font-mono text-xs text-slate-800 font-bold"><?= h(substr((string)$c['created_at'], 0, 10)) ?></td>
-            <td class="p-3 text-center">
-              <a href="sales_portal.php?customer=<?= (int)$c['id'] ?>" class="px-3 py-1 bg-sky-100 hover:bg-sky-200 text-slate-950 font-black rounded-xl border border-sky-300 shadow-xs inline-block">عرض</a>
+
+            <!-- 8. تاريخ ووقت التسجيل (الوقت والتاريخ معاً) -->
+            <td class="p-3.5 text-center font-mono text-slate-950 min-w-[150px]">
+              <div class="bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-200 inline-block font-mono text-xs font-black text-slate-950 shadow-2xs whitespace-nowrap">
+                <?= date('Y-m-d h:i A', strtotime($c['created_at'])) ?>
+              </div>
+            </td>
+
+            <!-- 9. إجمالي سعر الوحدة (توتال اليونت) -->
+            <td class="p-3.5 text-center font-black text-slate-950 min-w-[140px]">
+              <?php if (!empty($c['unit_price'])): ?>
+                <div class="text-xs font-black font-mono text-slate-950 whitespace-nowrap">
+                  💰 <?= number_format((float)$c['unit_price']) ?> ج.م
+                </div>
+                <?php if (!empty($c['maintenance_deposit'])): ?>
+                  <div class="text-[10px] text-emerald-800 font-black font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block mt-0.5">
+                    🛠️ صيانة: <?= number_format((float)$c['maintenance_deposit']) ?> ج.م
+                  </div>
+                <?php endif; ?>
+              <?php else: ?>
+                <span class="text-slate-400 font-bold text-xs">—</span>
+              <?php endif; ?>
+            </td>
+
+            <!-- عمود السيلز للأدمن والمدير فقط -->
+            <?php if ($role !== 'Sales'): ?>
+              <td class="p-3.5 text-center font-bold text-slate-950 text-xs min-w-[120px]">
+                <?= h($c['sales_name'] ?? '—') ?>
+              </td>
+            <?php endif; ?>
+
+            <!-- 10. الإجراءات (زر عرض للتفاصيل الكاملة) -->
+            <td class="p-3.5 text-center min-w-[90px]">
+              <a 
+                href="sales_portal.php?customer=<?= (int)$c['id'] ?>" 
+                class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-black rounded-xl shadow-xs inline-flex items-center gap-1 text-xs transition-transform hover:scale-105 active:scale-95"
+                title="عرض التفاصيل الكاملة"
+              >
+                <span>👁️</span>
+                <span>عرض</span>
+              </a>
             </td>
           </tr>
         <?php endfor; endforeach; ?>
