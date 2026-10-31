@@ -1002,18 +1002,25 @@ try {
         border: 1.5px solid #0f172a !important;
       }
 
-      /* Precise column widths in landscape printing for the 12 columns */
-      #clientsTable th.col-seq          { width: 3.0% !important; text-align: center !important; }
-      #clientsTable th.col-name         { width: 14.0% !important; text-align: right !important; }
-      #clientsTable th.col-unit         { width: 7.5% !important; text-align: center !important; }
-      #clientsTable th.col-id-address   { width: 15.0% !important; text-align: right !important; }
-      #clientsTable th.col-corr-address { width: 15.0% !important; text-align: right !important; }
-      #clientsTable th.col-contract-loc { width: 8.5% !important; text-align: center !important; }
-      #clientsTable th.col-plan         { width: 7.5% !important; text-align: center !important; }
-      #clientsTable th.col-payment-status { width: 8.5% !important; text-align: center !important; }
-      #clientsTable th.col-residence    { width: 7.0% !important; text-align: center !important; }
-      #clientsTable th.col-date         { width: 7.0% !important; text-align: center !important; }
-      #clientsTable th.col-total-price  { width: 7.0% !important; text-align: center !important; }
+      /* Precise column widths in landscape printing for all 18 printable columns */
+      #clientsTable th.col-seq          { width: 2.5% !important; text-align: center !important; }
+      #clientsTable th.col-id           { width: 3.0% !important; text-align: center !important; }
+      #clientsTable th.col-sales        { width: 5.0% !important; text-align: center !important; }
+      #clientsTable th.col-unit         { width: 5.5% !important; text-align: center !important; }
+      #clientsTable th.col-residence    { width: 5.0% !important; text-align: center !important; }
+      #clientsTable th.col-branch       { width: 5.0% !important; text-align: center !important; }
+      #clientsTable th.col-signing-loc  { width: 5.5% !important; text-align: center !important; }
+      #clientsTable th.col-name         { width: 11.0% !important; text-align: right !important; }
+      #clientsTable th.col-phone        { width: 6.5% !important; text-align: center !important; }
+      #clientsTable th.col-email        { width: 6.5% !important; text-align: center !important; }
+      #clientsTable th.col-doc          { width: 6.5% !important; text-align: center !important; }
+      #clientsTable th.col-plan         { width: 4.5% !important; text-align: center !important; }
+      #clientsTable th.col-october      { width: 5.5% !important; text-align: center !important; }
+      #clientsTable th.col-id-address   { width: 9.0% !important; text-align: right !important; }
+      #clientsTable th.col-corr-address { width: 9.0% !important; text-align: right !important; }
+      #clientsTable th.col-notes        { width: 6.0% !important; text-align: right !important; }
+      #clientsTable th.col-files        { width: 3.5% !important; text-align: center !important; }
+      #clientsTable th.col-date         { width: 5.5% !important; text-align: center !important; }
 
       /* Remove badge backgrounds, borders, and shadows in print for crisp clean output */
       #clientsTable span,
@@ -1363,23 +1370,30 @@ try {
           <thead class="sticky top-0 z-20 bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-400 text-[11px] sm:text-xs uppercase tracking-wider backdrop-blur-md">
             <tr>
               <th class="p-3.5 w-12 text-center col-seq">#</th>
-              <th class="p-3.5 col-name min-w-[170px] text-right" data-i18n="thName">اسم العميل</th>
-              <th class="p-3.5 text-center col-unit min-w-[130px]" data-i18n="thUnit">كود الوحدة (اليونت)</th>
-              <th class="p-3.5 col-id-address min-w-[180px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
-              <th class="p-3.5 col-corr-address min-w-[180px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
-              <th class="p-3.5 text-center col-contract-loc min-w-[130px]" data-i18n="thContractLoc">مكان التعاقد</th>
+              <th class="p-3.5 w-16 text-center col-id">ID</th>
+              <th class="p-3.5 text-center col-sales min-w-[130px]" data-i18n="thSales">مسؤول المبيعات</th>
+              <th class="p-3.5 text-center col-unit min-w-[140px]" data-i18n="thUnit">كود الوحدة</th>
+              <th class="p-3.5 text-center col-residence min-w-[120px]" data-i18n="thResidence">مكان الإقامة</th>
+              <th class="p-3.5 text-center col-branch min-w-[120px]" data-i18n="thBranch">مكان التوثيق</th>
+              <th class="p-3.5 text-center col-signing-loc min-w-[130px]" data-i18n="thSigningLoc">المكان الأقرب للتوقيع</th>
+              <th class="p-3.5 col-name min-w-[210px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
+              <th class="p-3.5 text-center col-phone min-w-[150px]" data-i18n="thPhone">أرقام التواصل</th>
+              <th class="p-3.5 text-center col-email min-w-[160px]" data-i18n="thEmail">البريد الإلكتروني</th>
+              <th class="p-3.5 text-center col-doc min-w-[140px]" data-i18n="thIdDoc">إثبات الشخصية</th>
               <th class="p-3.5 text-center col-plan min-w-[110px]" data-i18n="thPlan">فترة السداد</th>
-              <th class="p-3.5 text-center col-payment-status min-w-[145px]" data-i18n="thPaymentStatus">حالة السداد (تم السداد؟)</th>
-              <th class="p-3.5 text-center col-residence min-w-[120px]" data-i18n="thResidence">بلد الإقامة</th>
-              <th class="p-3.5 text-center col-date min-w-[145px]" data-i18n="thDate">تاريخ ووقت التسجيل</th>
-              <th class="p-3.5 text-center col-total-price min-w-[140px]" data-i18n="thTotalPrice">إجمالي سعر الوحدة (توتال اليونت)</th>
-              <th class="p-3.5 text-center no-print col-actions min-w-[90px]" data-i18n="thActions">الإجراءات</th>
+              <th class="p-3.5 text-center col-october min-w-[135px]" data-i18n="th5Percent">مقدم أكتوبر</th>
+              <th class="p-3.5 col-id-address min-w-[200px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
+              <th class="p-3.5 col-corr-address min-w-[200px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
+              <th class="p-3.5 col-notes min-w-[190px] text-right" data-i18n="thNotes">الملاحظات والاستثناءات</th>
+              <th class="p-3.5 text-center col-files min-w-[110px]" data-i18n="thDocs">المستندات</th>
+              <th class="p-3.5 text-center col-date min-w-[135px]" data-i18n="thDate">التاريخ</th>
+              <th class="p-3.5 text-center no-print col-actions min-w-[110px]" data-i18n="thActions">إجراءات</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="clientsTableBody">
             <?php if (empty($clients)): ?>
               <tr>
-                <td colspan="12" class="p-14 text-center text-slate-950 font-black text-sm" data-i18n="noClientsFound">
+                <td colspan="19" class="p-14 text-center text-slate-950 font-black text-sm" data-i18n="noClientsFound">
                   <div class="text-4xl mb-2">🏖️</div>
                   لا توجد أي بيانات أو عقود مسجلة تطابق معايير البحث الحالية.
                 </td>
@@ -1426,10 +1440,11 @@ try {
                   $pPhone = $cPhones[$pIdx] ?? ($cPhones[0] ?? $client['phone']);
                   $pEmail = $cEmails[$pIdx] ?? ($cEmails[0] ?? $client['email']);
                   $pIdNum = $cIdNums[$pIdx] ?? ($cIdNums[0] ?? $client['id_number']);
+                  $rawPhone = preg_replace('/[^0-9]/', '', (string)$pPhone);
                   $rowSearchText = mb_strtolower($pName . ' ' . $pPhone . ' ' . $client['eoi_number'] . ' ' . ($client['sales_name'] ?? '') . ' ' . ($client['id_address'] ?? '') . ' ' . ($client['correspondence_address'] ?? '') . ' ' . $pIdNum . $otherSearchText);
               ?>
                 <tr 
-                  class="transition-colors client-row" 
+                  class="transition-colors client-row hover:bg-sky-50/80" 
                   data-search="<?= htmlspecialchars($rowSearchText, ENT_QUOTES, 'UTF-8') ?>"
                 >
                   
@@ -1438,23 +1453,34 @@ try {
                     <?= $seq++ ?>
                   </td>
 
-                  <!-- 2. اسم العميل (مع شارة الشريك إن وجدت) -->
-                  <td class="p-3.5 font-black text-slate-950 col-name min-w-[170px] whitespace-normal break-words text-right">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-slate-950 font-black text-xs sm:text-sm"><?= htmlspecialchars($pName, ENT_QUOTES, 'UTF-8') ?></span>
-                      <?php if ($partnerCount > 1): ?>
-                        <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-amber-950 border border-amber-300 font-black whitespace-nowrap shadow-xs">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></span>
-                      <?php endif; ?>
-                    </div>
-                    <?php if (!empty($otherUnitClients)): ?>
-                      <div class="mt-1.5 pt-1 border-t border-sky-100">
-                        <span class="text-[10px] font-bold text-sky-800">👥 عملاء آخرون بالوحدة: <?= count($otherUnitClients) ?></span>
-                      </div>
+                  <!-- 2. ID -->
+                  <td class="p-3.5 text-center text-slate-950 font-mono text-xs font-black whitespace-nowrap col-id">
+                    #<?= htmlspecialchars($client['id']) ?>
+                    <?php if ($partnerCount > 1): ?>
+                      <div class="text-[10px] text-amber-800 font-black mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
                     <?php endif; ?>
                   </td>
 
-                  <!-- 3. كود الوحدة (اليونت) داخل شارة بارزة مع زر النسخ -->
-                  <td class="p-3.5 text-center font-mono font-black text-slate-950 col-unit min-w-[130px]">
+                  <!-- 3. مسؤول المبيعات -->
+                  <td class="p-3.5 text-center col-sales min-w-[130px]">
+                    <?php if (!empty($client['sales_name'])): ?>
+                      <a 
+                        href="view_clients.php?sales_id=<?= $client['sales_id'] ?>" 
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-purple-100 text-purple-950 border-2 border-purple-300 hover:bg-purple-200 transition-colors shadow-2xs"
+                        title="فلترة وعرض عملاء هذا الموظف فقط"
+                      >
+                        <span>👤</span>
+                        <span class="text-slate-950 font-black"><?= htmlspecialchars($client['sales_name']) ?></span>
+                      </a>
+                    <?php else: ?>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black bg-sky-100 text-slate-950 border-2 border-sky-300 shadow-2xs" data-i18n="badgeDirect">
+                        🌐 مباشر
+                      </span>
+                    <?php endif; ?>
+                  </td>
+
+                  <!-- 4. كود الوحدة مع السعر إن وجد -->
+                  <td class="p-3.5 text-center font-mono font-black text-slate-950 col-unit min-w-[140px]">
                     <button 
                       type="button"
                       onclick="copyText('<?= htmlspecialchars($client['eoi_number']) ?>')" 
@@ -1464,60 +1490,133 @@ try {
                       <span>🏢</span>
                       <span><?= htmlspecialchars($client['eoi_number']) ?></span>
                     </button>
+                    <div class="mt-1 space-y-0.5">
+                      <?php if (!empty($client['unit_price'])): ?>
+                        <div class="text-[11px] text-slate-950 font-black font-mono">
+                          💰 <?= number_format($client['unit_price']) ?> ج.م
+                        </div>
+                      <?php endif; ?>
+                      <?php if (!empty($client['maintenance_deposit'])): ?>
+                        <div class="text-[10px] text-emerald-800 font-black font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block">
+                          🛠️ صيانة: <?= number_format($client['maintenance_deposit']) ?> ج.م
+                        </div>
+                      <?php endif; ?>
+                    </div>
                   </td>
 
-                  <!-- 4. عنوان الهوية (عمود منفصل بدون اقتطاع) -->
-                  <td class="p-3.5 text-right font-bold text-slate-950 col-id-address min-w-[180px] whitespace-normal break-words text-xs leading-relaxed">
-                    <?php 
-                      $idAddr = !empty($client['id_address']) ? $client['id_address'] : (!empty($client['governorate']) ? $client['governorate'] : '-');
-                    ?>
-                    <span class="text-slate-900 font-bold"><?= htmlspecialchars($idAddr, ENT_QUOTES, 'UTF-8') ?></span>
+                  <!-- 5. مكان الإقامة الحالي -->
+                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-residence min-w-[120px]">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300 text-blue-950' : 'bg-emerald-100 border-emerald-300 text-emerald-950' ?> shadow-2xs">
+                      <?= $isOutside ? '🌍 خارج مصر' : '🇪🇬 داخل مصر' ?>
+                    </span>
                   </td>
 
-                  <!-- 5. عنوان المراسلات (عمود منفصل بدون اقتطاع) -->
-                  <td class="p-3.5 text-right font-bold text-slate-950 col-corr-address min-w-[180px] whitespace-normal break-words text-xs leading-relaxed">
-                    <?php 
-                      $corrAddr = !empty($client['correspondence_address']) ? $client['correspondence_address'] : (!empty($client['addresses']) ? $client['addresses'] : '-');
-                    ?>
-                    <span class="text-slate-900 font-bold"><?= htmlspecialchars($corrAddr, ENT_QUOTES, 'UTF-8') ?></span>
-                  </td>
-
-                  <!-- 6. مكان التعاقد -->
-                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-contract-loc min-w-[130px]">
+                  <!-- 6. مكان توثيق العقد -->
+                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-branch min-w-[120px]">
                     <?php if ($isOutside): ?>
-                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-100 text-blue-950 border-2 border-blue-300 font-black shadow-xs">
-                        🌍 خارج مصر
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-50 text-slate-950 border-2 border-sky-200 font-black shadow-2xs">
+                        مستثنى (خارج مصر)
                       </span>
                     <?php else: ?>
-                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= ($loc === 'الإسكندرية') ? 'bg-sky-100 border-sky-300' : 'bg-amber-100 border-amber-300' ?> shadow-xs">
-                        <?= ($loc === 'الإسكندرية') ? '🌊' : '🏛️' ?>
-                        <span><?= htmlspecialchars($loc) ?></span>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= ($loc === 'الإسكندرية') ? 'bg-sky-100 border-sky-300' : 'bg-amber-100 border-amber-300' ?> shadow-2xs">
+                        <?= ($loc === 'الإسكندرية') ? '🌊 ' : '🏛️ ' ?>
+                        <?= htmlspecialchars($loc) ?>
                       </span>
                     <?php endif; ?>
-                    <?php if (!empty($client['preferred_signing_location']) && $client['preferred_signing_location'] !== $loc): ?>
-                      <div class="text-[10px] text-slate-700 font-bold mt-1">
-                        الأقرب: <?= htmlspecialchars($client['preferred_signing_location']) ?>
+                  </td>
+
+                  <!-- 7. المكان الأقرب لتوقيع العقد -->
+                  <td class="p-3.5 text-xs font-black text-slate-950 text-center col-signing-loc min-w-[130px]">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-50 border-2 border-sky-300 text-slate-950 font-black shadow-2xs">
+                      <?= htmlspecialchars($client['preferred_signing_location'] ?? '-') ?>
+                    </span>
+                  </td>
+
+                  <!-- 8. اسم العميل في البطاقة / الشركاء -->
+                  <td class="p-3.5 font-black text-slate-950 col-name min-w-[210px] whitespace-normal break-words text-right">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-slate-950 font-black text-xs sm:text-sm leading-tight"><?= htmlspecialchars($pName, ENT_QUOTES, 'UTF-8') ?></span>
+                      <?php if ($partnerCount > 1): ?>
+                        <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-amber-950 border border-amber-300 font-black whitespace-nowrap shadow-xs">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></span>
+                      <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($otherUnitClients)): ?>
+                      <div class="mt-2 pt-1.5 border-t border-sky-200">
+                        <div class="text-[11px] font-black text-blue-900 flex items-center gap-1 mb-1">
+                          <span>👥</span>
+                          <span>عملاء آخرون في نفس الوحدة</span>
+                        </div>
+                        <div class="space-y-1">
+                          <?php foreach ($otherUnitClients as $oc): 
+                            $ocNames = splitPartnerValues((string)$oc['name']);
+                            $ocIds   = splitPartnerValues((string)($oc['id_number'] ?? ''));
+                            $ocCount = max(count($ocNames), count($ocIds), 1);
+                            for ($k = 0; $k < $ocCount; $k++):
+                              $ocSingleName = trim($ocNames[$k] ?? ($ocNames[0] ?? $oc['name']));
+                              $ocSingleId   = trim($ocIds[$k] ?? ($ocIds[0] ?? ($oc['id_number'] ?? '')));
+                              if ($ocSingleName === '') continue;
+                          ?>
+                            <div class="text-[11px] bg-sky-100/90 p-1.5 px-2 rounded-xl border border-sky-300 text-slate-950 font-bold shadow-2xs">
+                              <div class="font-black text-slate-950"><?= htmlspecialchars($ocSingleName, ENT_QUOTES, 'UTF-8') ?></div>
+                              <?php if ($ocSingleId !== ''): ?>
+                                <div class="text-[10px] text-slate-800 font-mono font-bold mt-0.5">
+                                  <?= htmlspecialchars($ocSingleId, ENT_QUOTES, 'UTF-8') ?>
+                                </div>
+                              <?php endif; ?>
+                            </div>
+                          <?php 
+                            endfor;
+                          endforeach; 
+                          ?>
+                        </div>
                       </div>
                     <?php endif; ?>
                   </td>
 
-                  <!-- 7. فترة السداد -->
+                  <!-- 9. أرقام التواصل مع واتساب السريع -->
+                  <td class="p-3.5 text-center col-phone min-w-[150px]">
+                    <div class="flex items-center justify-center gap-1.5 dir-ltr">
+                      <?php if (!empty($rawPhone)): ?>
+                        <a 
+                          href="https://wa.me/<?= $rawPhone ?>" 
+                          target="_blank" 
+                          class="p-1 px-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-slate-950 border-2 border-emerald-300 shadow-2xs text-xs font-black"
+                          title="محادثة واتساب سريعة"
+                        >
+                          💬
+                        </a>
+                      <?php endif; ?>
+                      <span class="font-mono text-xs font-black text-slate-950"><?= htmlspecialchars($pPhone) ?></span>
+                    </div>
+                  </td>
+
+                  <!-- 10. البريد الإلكتروني للمراسلات -->
+                  <td class="p-3.5 font-mono text-xs text-slate-950 font-black text-center col-email min-w-[160px] dir-ltr">
+                    <span class="text-slate-950 font-black"><?= htmlspecialchars($pEmail ?: '-') ?></span>
+                  </td>
+
+                  <!-- 11. إثبات الشخصية -->
+                  <td class="p-3.5 text-center text-xs font-mono font-black text-slate-950 col-doc min-w-[140px]">
+                    <div class="text-slate-950 font-black font-mono"><?= htmlspecialchars($pIdNum ?: ($client['id_number'] ?: '-')) ?></div>
+                    <div class="text-[10px] text-slate-600 font-black mt-0.5"><?= ($client['id_type'] === 'passport') ? 'جواز سفر' : 'رقم قومي' ?></div>
+                  </td>
+
+                  <!-- 12. فترة السداد والنسبة -->
                   <td class="p-3.5 text-center text-xs font-black text-slate-950 col-plan min-w-[110px]">
-                    <div class="inline-block px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border-2 border-purple-300 font-black shadow-xs">
+                    <div class="inline-block px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border-2 border-purple-300 font-black shadow-2xs">
                       <?= htmlspecialchars($client['period'] ?: $client['payment_period'] ?: '-') ?>
                     </div>
                     <?php if (!empty($client['final_rate'])): ?>
-                      <div class="text-[11px] text-slate-800 font-mono font-bold mt-1">
-                        <?= htmlspecialchars($client['final_rate']) ?>
-                      </div>
+                      <div class="text-[11px] text-slate-800 font-mono font-black mt-0.5"><?= htmlspecialchars($client['final_rate']) ?></div>
                     <?php endif; ?>
                   </td>
 
-                  <!-- 8. حالة السداد (تم السداد؟) + إيصال الدفع -->
-                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-payment-status min-w-[145px]">
+                  <!-- 13. سداد مقدم أكتوبر + تاريخ الدفع -->
+                  <td class="p-3.5 text-center font-black text-slate-950 col-october min-w-[135px]">
                     <?php if ($client['paid_5_percent'] === 'نعم'): ?>
-                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-950 border-2 border-emerald-400 shadow-xs mb-1">
-                        ✓ نعم
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-950 border-2 border-emerald-400 shadow-2xs mb-1">
+                        ✓ تم الاستكمال
                       </span>
                       <?php if (!empty($client['payment_date'])): ?>
                         <div class="text-[10px] text-slate-800 font-mono font-bold">
@@ -1525,81 +1624,108 @@ try {
                         </div>
                       <?php endif; ?>
                     <?php else: ?>
-                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-red-100 text-red-950 border-2 border-red-300 shadow-xs mb-1">
-                        ✕ لا
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-red-100 text-red-950 border-2 border-red-300 shadow-2xs">
+                        ✕ لم يستكمل
                       </span>
                     <?php endif; ?>
-
-                    <!-- زر معاينة إيصال الدفع -->
-                    <div class="mt-1">
-                      <?php if (!empty($attachments)): 
-                        $firstReceipt = $attachments[0];
-                        $firstExt = strtolower(pathinfo($firstReceipt, PATHINFO_EXTENSION));
-                      ?>
-                        <button 
-                          type="button" 
-                          onclick="previewAttachment('<?= htmlspecialchars($firstReceipt) ?>', '<?= $firstExt ?>')"
-                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 border-2 border-sky-300 text-[11px] font-black text-sky-950 shadow-xs transition-colors cursor-pointer"
-                          title="معاينة إيصال الدفع المرفوع"
-                        >
-                          <span>🧾</span>
-                          <span>عرض الإيصال</span>
-                          <?php if (count($attachments) > 1): ?>
-                            <span class="text-[9px] bg-sky-300 text-slate-950 px-1 rounded-full font-mono">+<?= count($attachments)-1 ?></span>
-                          <?php endif; ?>
-                        </button>
-                      <?php else: ?>
-                        <span class="text-[11px] text-slate-400 font-bold">لم يرفع</span>
-                      <?php endif; ?>
-                    </div>
                   </td>
 
-                  <!-- 9. بلد الإقامة -->
-                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-residence min-w-[120px]">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300 text-blue-950' : 'bg-emerald-100 border-emerald-300 text-emerald-950' ?> shadow-xs">
-                      <?= $isOutside ? '🌍 خارج مصر' : '🇪🇬 داخل مصر' ?>
-                    </span>
-                    <?php if (!empty($client['correspondence_country']) && $client['correspondence_country'] !== 'مصر' && $client['correspondence_country'] !== 'EG'): ?>
-                      <div class="text-[10px] text-slate-700 font-bold mt-1">
-                        <?= htmlspecialchars($client['correspondence_country']) ?>
+                  <!-- 14. عنوان الهوية (عمود مستقل كامل بدون اقتطاع) -->
+                  <td class="p-3.5 text-right font-bold text-slate-950 col-id-address min-w-[200px] whitespace-normal break-words text-xs leading-relaxed">
+                    <?php 
+                      $idAddr = !empty($client['id_address']) ? $client['id_address'] : (!empty($client['governorate']) ? $client['governorate'] : (!empty($client['addresses']) ? $client['addresses'] : '-'));
+                    ?>
+                    <span class="text-slate-900 font-bold block"><?= htmlspecialchars($idAddr, ENT_QUOTES, 'UTF-8') ?></span>
+                  </td>
+
+                  <!-- 15. عنوان المراسلات (عمود مستقل كامل بدون اقتطاع) -->
+                  <td class="p-3.5 text-right font-bold text-slate-950 col-corr-address min-w-[200px] whitespace-normal break-words text-xs leading-relaxed">
+                    <?php 
+                      $corrAddr = !empty($client['correspondence_address']) ? $client['correspondence_address'] : (!empty($client['addresses']) ? $client['addresses'] : '-');
+                    ?>
+                    <span class="text-slate-900 font-bold block"><?= htmlspecialchars($corrAddr, ENT_QUOTES, 'UTF-8') ?></span>
+                  </td>
+
+                  <!-- 16. الملاحظات والاستثناءات (كاملة بدون اقتطاع) -->
+                  <td class="p-3.5 text-right text-xs font-bold text-slate-950 col-notes min-w-[190px] whitespace-normal break-words leading-relaxed">
+                    <?php if (!empty($client['general_notes'])): ?>
+                      <div class="text-slate-950 font-bold text-[11px] mb-1">
+                        <span class="font-black text-slate-900">عامة:</span> <?= htmlspecialchars($client['general_notes']) ?>
                       </div>
                     <?php endif; ?>
-                  </td>
-
-                  <!-- 10. تاريخ ووقت التسجيل -->
-                  <td class="p-3.5 text-center font-mono text-xs font-black text-slate-950 col-date min-w-[145px]">
-                    <div class="bg-sky-50 px-2 py-1 rounded-xl border border-sky-200 inline-block font-mono">
-                      <?= date('Y-m-d h:i A', strtotime($client['created_at'])) ?>
-                    </div>
-                  </td>
-
-                  <!-- 11. إجمالي سعر الوحدة (توتال اليونت) -->
-                  <td class="p-3.5 text-center font-mono text-xs font-black text-slate-950 col-total-price min-w-[140px]">
-                    <?php if (!empty($client['unit_price'])): ?>
-                      <div class="font-black text-slate-950 font-mono text-xs">
-                        💰 <?= number_format($client['unit_price']) ?> ج.م
+                    <?php if (!empty($client['notes'])): ?>
+                      <div class="text-slate-950 font-bold text-[11px]">
+                        <span class="font-black text-slate-900">خطة/بديلة:</span> <?= htmlspecialchars($client['notes']) ?>
                       </div>
-                    <?php else: ?>
+                    <?php endif; ?>
+                    <?php if (empty($client['general_notes']) && empty($client['notes'])): ?>
                       <span class="text-slate-400 font-bold">-</span>
                     <?php endif; ?>
-                    <?php if (!empty($client['maintenance_deposit'])): ?>
-                      <div class="text-[10px] text-emerald-800 font-black font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block mt-0.5">
-                        🛠️ صيانة: <?= number_format($client['maintenance_deposit']) ?> ج.م
+                  </td>
+
+                  <!-- 17. المستندات والمرفقات -->
+                  <td class="p-3.5 text-center col-files min-w-[110px]">
+                    <?php if (!empty($attachments)): ?>
+                      <div class="flex items-center justify-center flex-wrap gap-1">
+                        <?php foreach ($attachments as $fIdx => $f): 
+                          $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+                        ?>
+                          <button 
+                            type="button" 
+                            onclick="previewAttachment('<?= htmlspecialchars($f) ?>', '<?= $ext ?>')"
+                            class="px-2 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 border-2 border-sky-300 text-[11px] font-mono text-slate-950 font-black flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                            title="معاينة المرفق"
+                          >
+                            <span><?= ($ext === 'pdf') ? '📄' : '🖼️' ?></span>
+                            <span>#<?= $fIdx+1 ?></span>
+                          </button>
+                        <?php endforeach; ?>
                       </div>
+                    <?php else: ?>
+                      <span class="text-slate-400 font-bold text-xs" data-i18n="lblNoFiles">لا يوجد</span>
                     <?php endif; ?>
                   </td>
 
-                  <!-- 12. الإجراءات (زر عرض للتفاصيل الكاملة) -->
-                  <td class="p-3.5 text-center no-print col-actions min-w-[90px]">
-                    <button 
-                      type="button"
-                      onclick="openClientDetailsModal(<?= $clientJson ?>)"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-black transition-all shadow-md cursor-pointer hover:scale-105 active:scale-95"
-                      title="عرض كامل التفاصيل والمستندات"
-                    >
-                      <span>👁️</span>
-                      <span>عرض</span>
-                    </button>
+                  <!-- 18. التاريخ -->
+                  <td class="p-3.5 text-center font-mono text-xs font-black text-slate-950 col-date min-w-[135px]">
+                    <div class="bg-sky-50 px-2 py-1 rounded-xl border border-sky-200 inline-block font-mono">
+                      <?= date('Y-m-d H:i', strtotime($client['created_at'])) ?>
+                    </div>
+                  </td>
+
+                  <!-- 19. إجراءات -->
+                  <td class="p-3.5 text-center no-print col-actions min-w-[110px]">
+                    <div class="flex items-center justify-center gap-1">
+                      <!-- زر عرض التفاصيل الكاملة -->
+                      <button 
+                        type="button"
+                        onclick="openClientDetailsModal(<?= $clientJson ?>)"
+                        class="p-1.5 px-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs"
+                        title="عرض ملف العميل كاملاً"
+                      >
+                        👁️
+                      </button>
+
+                      <!-- زر التعديل -->
+                      <button 
+                        type="button"
+                        onclick="openEditModal(<?= $clientJson ?>)"
+                        class="p-1.5 px-2 bg-sky-100 hover:bg-sky-200 text-slate-950 border-2 border-sky-300 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs"
+                        title="تعديل بيانات العقد"
+                      >
+                        ✏️
+                      </button>
+
+                      <!-- زر الحذف -->
+                      <button 
+                        type="button"
+                        onclick="confirmDeleteClient(<?= $client['id'] ?>, '<?= htmlspecialchars(addslashes($client['name']), ENT_QUOTES) ?>')"
+                        class="p-1.5 px-2 bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-300 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs"
+                        title="حذف العقد"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </td>
 
                 </tr>
