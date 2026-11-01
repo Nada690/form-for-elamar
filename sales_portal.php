@@ -466,14 +466,10 @@ if (isset($_GET['customer'])) {
     $c = $st->fetch();
 
     if (!$c) http_response_code(404);
-    pageHead('ملف العميل والوحدة #' . $cid);
+    pageHead('تفاصيل العقد والوحدة #' . $cid);
     
-    $cNames   = splitPartnerValues((string)$c['name']);
-    $cPhones  = splitPartnerValues((string)$c['phone']);
-    $cEmails  = splitPartnerValues((string)$c['email']);
-    $cIdNums  = splitPartnerValues((string)$c['id_number']);
-    $cIdTypes = splitPartnerValues((string)$c['id_type']);
-    $partnerCount = max(count($cNames), count($cPhones), 1);
+    $cNames = splitPartnerValues((string)($c['name'] ?? ''));
+    $partnerCount = max(count($cNames), 1);
 
     $attachments = json_decode($c['attachments'] ?? '[]', true);
     if (!is_array($attachments)) $attachments = [];
@@ -488,245 +484,234 @@ if (isset($_GET['customer'])) {
     <div class="flex items-center justify-between flex-wrap gap-3">
       <a 
         href="sales_portal.php" 
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white text-slate-950 font-black text-sm border-2 border-sky-300 hover:bg-sky-50 shadow-sm transition-all hover:-translate-x-1"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white text-slate-950 font-black text-sm border-2 border-sky-300 hover:bg-sky-50 shadow-sm transition-all hover:-translate-x-1"
       >
         <span>←</span>
         <span>الرجوع لجدول المبيعات</span>
       </a>
 
-      <div class="flex items-center gap-2">
-        <span class="inline-flex items-center gap-1.5 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200 text-xs font-black font-mono text-slate-950 shadow-2xs">
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- 8. تاريخ ووقت التسجيل -->
+        <span class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-sky-300 text-xs font-black font-mono text-slate-950 shadow-sm">
           <span>🕒</span>
-          <span>تاريخ ووقت التسجيل: <?= date('Y-m-d h:i A', strtotime($c['created_at'])) ?></span>
+          <span>تاريخ ووقت التسجيل:</span>
+          <span class="text-sky-950"><?= !empty($c['created_at']) ? date('Y-m-d h:i A', strtotime($c['created_at'])) : '—' ?></span>
         </span>
+        <?php if ($role === 'Admin'): ?>
+          <a href="view_clients.php" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-slate-900 text-sky-300 hover:text-white text-xs font-black border border-slate-700 shadow-sm transition-colors">
+            <span>🛡️</span>
+            <span>لوحة الإدارة الكاملة ↗</span>
+          </a>
+        <?php endif; ?>
       </div>
     </div>
 
-    <!-- البطاقة الرئيسية لتفاصيل العقد -->
+    <!-- البطاقة الرئيسية لتفاصيل العقد (مطابقة تماماً لبيانات جدول المبيعات) -->
     <div class="glass rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
       
       <?php if (!$c): ?>
         <p class="text-center text-slate-400 font-bold py-10">العميل أو العقد غير موجود أو لا تملك صلاحية عرضه.</p>
       <?php else: ?>
 
-        <!-- عنوان ملف العميل وكود العقد والوحدة -->
+        <!-- ترويسة تفاصيل العقد والوحدة -->
         <div class="flex items-center justify-between pb-4 border-b-2 border-sky-200 flex-wrap gap-3">
-          <div>
-            <h1 class="text-xl sm:text-2xl font-black text-slate-950 flex items-center gap-2.5">
-              <span>📋</span>
-              <span>تفاصيل عقد الوحدة:</span>
-              <span class="font-mono text-sky-900 bg-sky-100 px-3 py-0.5 rounded-xl border-2 border-sky-300"><?= h($c['eoi_number']) ?></span>
-            </h1>
-            <p class="text-xs text-slate-600 font-bold mt-1">
-              المشروع: <span class="text-slate-900 font-black"><?= h($c['project'] ?: '—') ?></span> • كود العقد: <span class="font-mono text-slate-900 font-black">#<?= (int)$c['id'] ?></span>
-            </p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-sky-100 border-2 border-sky-300 flex items-center justify-center text-2xl shadow-inner">
+              🏢
+            </div>
+            <div>
+              <h1 class="text-lg sm:text-xl font-black text-slate-950 flex items-center gap-2 flex-wrap">
+                <span>تفاصيل عقد الوحدة:</span>
+                <span class="font-mono text-sky-900 bg-sky-100 px-3 py-0.5 rounded-xl border-2 border-sky-300 shadow-2xs"><?= h($c['eoi_number']) ?></span>
+              </h1>
+              <p class="text-xs text-slate-600 font-bold mt-1">
+                المشروع: <span class="text-slate-900 font-black"><?= h($c['project'] ?: '—') ?></span>
+                • كود السجل: <span class="font-mono text-slate-900 font-black">#<?= (int)$c['id'] ?></span>
+              </p>
+            </div>
           </div>
+
           <div class="flex items-center gap-2">
-            <span class="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-950 border-2 border-purple-300 text-xs font-black shadow-2xs">
-              <?= h($c['period'] ?: $c['payment_period'] ?: '—') ?>
-              <?= !empty($c['final_rate']) ? ' (' . h($c['final_rate']) . ')' : '' ?>
-            </span>
+            <!-- شارة حالة السداد -->
+            <?php if ($isPaid): ?>
+              <span class="px-3.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 border-2 border-emerald-400 text-xs font-black shadow-2xs inline-flex items-center gap-1.5">
+                <span>✓</span>
+                <span>تم سداد الـ 5%</span>
+              </span>
+            <?php else: ?>
+              <span class="px-3.5 py-1.5 rounded-xl bg-red-100 text-red-950 border-2 border-red-300 text-xs font-black shadow-2xs inline-flex items-center gap-1.5">
+                <span>✕</span>
+                <span>لم يتم سداد الـ 5%</span>
+              </span>
+            <?php endif; ?>
           </div>
         </div>
 
-        <!-- ── 1. لوحة الملخص الرئيسية (مطابقة تماماً لأعمدة جدول المبيعات) ── -->
-        <div>
-          <h2 class="text-xs font-black text-slate-900 mb-2.5 flex items-center gap-1.5">
-            <span>⚡</span>
-            <span>البيانات الأساسية للتعاقد (مطابقة للجدول):</span>
-          </h2>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-            
-            <!-- 1. كود الوحدة -->
-            <div class="bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200 text-center">
-              <span class="text-[10px] text-slate-500 font-bold block mb-1">كود الوحدة:</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-100 border border-sky-300 text-slate-950 font-mono font-black text-xs shadow-2xs">
-                <span>🏢</span>
-                <span><?= h($c['eoi_number']) ?></span>
+        <!-- ── شبكة الحقول الأساسية الـ 8 (مطابقة لجدول المبيعات حصراً) ── -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          
+          <!-- 1. كود الوحدة (اليونت) -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-lg flex-shrink-0">
+              🏢
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] text-slate-500 font-bold block mb-0.5">كود الوحدة (اليونت):</span>
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-sky-100 border border-sky-300 text-slate-950 font-mono font-black text-xs shadow-2xs">
+                <?= h($c['eoi_number']) ?>
               </span>
             </div>
+          </div>
 
-            <!-- 2. مكان التعاقد -->
-            <div class="bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200 text-center">
-              <span class="text-[10px] text-slate-500 font-bold block mb-1">مكان التعاقد:</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black border-2 <?= ($c['contract_location'] === 'الإسكندرية') ? 'bg-sky-100 border-sky-300' : 'bg-amber-100 border-amber-300' ?> shadow-2xs">
+          <!-- 2. مكان التعاقد -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-lg flex-shrink-0">
+              📍
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] text-slate-500 font-bold block mb-0.5">مكان التعاقد:</span>
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-black border-2 <?= ($c['contract_location'] === 'الإسكندرية') ? 'bg-sky-100 border-sky-300 text-slate-950' : 'bg-amber-100 border-amber-300 text-amber-950' ?> shadow-2xs">
                 <?= ($c['contract_location'] === 'الإسكندرية') ? '🌊 ' : '🏛️ ' ?>
                 <?= h($c['contract_location']) ?>
               </span>
             </div>
+          </div>
 
-            <!-- 3. فترة السداد -->
-            <div class="bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200 text-center">
-              <span class="text-[10px] text-slate-500 font-bold block mb-1">فترة السداد:</span>
-              <div class="inline-block px-2.5 py-0.5 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 font-black text-xs shadow-2xs">
-                <?= h($c['period'] ?: $c['payment_period'] ?: '—') ?>
-              </div>
-              <?php if (!empty($c['final_rate'])): ?>
-                <div class="text-[10px] font-mono font-black text-slate-800 mt-0.5"><?= h($c['final_rate']) ?></div>
-              <?php endif; ?>
+          <!-- 3. فترة السداد -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-lg flex-shrink-0">
+              ⏳
             </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] text-slate-500 font-bold block mb-0.5">فترة السداد:</span>
+              <div class="inline-block px-3 py-1 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 font-black text-xs shadow-2xs">
+                <?= h($c['period'] ?: $c['payment_period'] ?: '—') ?>
+                <?= !empty($c['final_rate']) ? ' (' . h($c['final_rate']) . ')' : '' ?>
+              </div>
+            </div>
+          </div>
 
-            <!-- 4. حالة السداد (تم السداد؟) -->
-            <div class="bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200 text-center">
-              <span class="text-[10px] text-slate-500 font-bold block mb-1">حالة السداد:</span>
+          <!-- 4. سداد الـ 5% (حالة السداد) -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl <?= $isPaid ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200' ?> flex items-center justify-center text-lg flex-shrink-0">
+              <?= $isPaid ? '✅' : '❌' ?>
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] text-slate-500 font-bold block mb-0.5">سداد الـ 5% (حالة السداد):</span>
               <?php if ($isPaid): ?>
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-950 border border-emerald-400 shadow-2xs">
+                <span class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-950 border border-emerald-400 shadow-2xs">
                   ✓ تم السداد
                 </span>
                 <?php if (!empty($c['payment_date'])): ?>
-                  <div class="text-[10px] font-mono font-bold text-slate-800 mt-0.5">📅 <?= h($c['payment_date']) ?></div>
+                  <span class="text-[11px] font-mono font-bold text-slate-700 block mt-1">📅 <?= h($c['payment_date']) ?></span>
                 <?php endif; ?>
               <?php else: ?>
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-red-100 text-red-950 border border-red-300 shadow-2xs">
+                <span class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-black bg-red-100 text-red-950 border border-red-300 shadow-2xs">
                   ✕ لم يسدد
                 </span>
               <?php endif; ?>
             </div>
+          </div>
 
-            <!-- 5. بلد الإقامة -->
-            <div class="bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200 text-center">
-              <span class="text-[10px] text-slate-500 font-bold block mb-1">بلد الإقامة:</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-xl text-xs font-black border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300 text-blue-950' : 'bg-emerald-100 border-emerald-300 text-emerald-950' ?> shadow-2xs">
+          <!-- 5. بلد الإقامة -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-lg flex-shrink-0">
+              🌍
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] text-slate-500 font-bold block mb-0.5">بلد الإقامة:</span>
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-black border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300 text-blue-950' : 'bg-emerald-100 border-emerald-300 text-emerald-950' ?> shadow-2xs">
                 <?= $isOutside ? '🌍 ' . h($resCountry) : '🇪🇬 داخل مصر' ?>
               </span>
             </div>
+          </div>
 
-            <!-- 6. توتال اليونت -->
-            <div class="bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200 text-center">
-              <span class="text-[10px] text-slate-500 font-bold block mb-1">توتال اليونت:</span>
+          <!-- 6. توتال اليونت (إجمالي السعر) -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-lg flex-shrink-0">
+              💰
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] text-slate-500 font-bold block mb-0.5">توتال اليونت (إجمالي السعر):</span>
               <?php if (!empty($c['unit_price'])): ?>
-                <div class="text-xs font-black font-mono text-slate-950">💰 <?= number_format((float)$c['unit_price']) ?> ج.م</div>
+                <div class="text-sm font-black font-mono text-slate-950">
+                  <?= number_format((float)$c['unit_price']) ?> ج.م
+                </div>
                 <?php if (!empty($c['maintenance_deposit'])): ?>
-                  <div class="text-[10px] text-emerald-800 font-mono font-bold mt-0.5 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 inline-block">
-                    🛠️ <?= number_format((float)$c['maintenance_deposit']) ?> ج.م
+                  <div class="text-[10px] text-emerald-800 font-mono font-bold mt-0.5 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block">
+                    🛠️ وديعة صيانة: <?= number_format((float)$c['maintenance_deposit']) ?> ج.م
                   </div>
                 <?php endif; ?>
               <?php else: ?>
                 <span class="text-slate-400 font-bold text-xs">—</span>
               <?php endif; ?>
             </div>
-
           </div>
+
         </div>
 
-        <!-- ── 2. بطاقات بيانات الأطراف والشركاء (مفصولة ومنظمة بالكامل) ── -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+        <!-- ── 7. اسم العميل وأطراف التعاقد (الاسم فقط مع صفة الشريك دون أي بيانات حساسة) ── -->
+        <div class="p-5 rounded-3xl bg-white border-2 border-sky-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b-2 border-sky-100 flex-wrap gap-2">
+            <h2 class="text-sm font-black text-slate-950 flex items-center gap-2">
               <span>👥</span>
-              <span>بيانات أطراف التعاقد (<?= $partnerCount ?> طرف مسجل):</span>
+              <span>اسم العميل وأطراف التعاقد (<?= $partnerCount ?> طرف مسجل):</span>
             </h2>
             <?php if ($partnerCount > 1): ?>
-              <span class="text-[11px] text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300 font-black">
+              <span class="text-[11px] text-sky-900 bg-sky-100 px-3 py-1 rounded-xl border border-sky-300 font-black shadow-2xs">
                 يحتوي العقد على شركاء متضامنين
               </span>
             <?php endif; ?>
           </div>
 
-          <?php 
-          for ($i = 0; $i < $partnerCount; $i++):
-            $pName   = $cNames[$i] ?? ($cNames[0] ?? $c['name']);
-            $pPhone  = $cPhones[$i] ?? ($cPhones[0] ?? $c['phone']);
-            $pEmail  = $cEmails[$i] ?? ($cEmails[0] ?? $c['email']);
-            $pIdNum  = $cIdNums[$i] ?? ($cIdNums[0] ?? $c['id_number']);
-            $pIdType = $cIdTypes[$i] ?? ($cIdTypes[0] ?? ($c['id_type'] ?? 'national_id'));
-            $pAddrs  = getPartnerAddresses($c, $i);
-            $rawPhone = preg_replace('/[^0-9]/', '', (string)$pPhone);
-            $isFocused = ($selectedPartner > 0 && $selectedPartner === ($i + 1));
-          ?>
-            <div class="p-4 sm:p-5 rounded-3xl bg-white border-2 <?= $isFocused ? 'border-sky-500 ring-4 ring-sky-200' : 'border-sky-200' ?> shadow-sm space-y-4 transition-all">
-              
-              <div class="flex items-center justify-between pb-3 border-b-2 border-sky-100 flex-wrap gap-2">
-                <div class="flex items-center gap-2">
-                  <span class="text-xl">👤</span>
-                  <h3 class="text-sm sm:text-base font-black text-slate-950">
-                    <?= ($i === 0) ? 'الطرف الأساسي (العميل 1)' : 'الشريك (' . ($i + 1) . ')' ?>:
-                    <span class="text-sky-900"><?= h($pName) ?></span>
-                  </h3>
-                  <?php if ($partnerCount > 1): ?>
-                    <span class="px-2.5 py-0.5 rounded-lg text-[11px] bg-amber-100 text-amber-950 border border-amber-300 font-black whitespace-nowrap shadow-xs">
-                      شريك <?= ($i + 1) ?> من <?= $partnerCount ?>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <?php for ($i = 0; $i < $partnerCount; $i++):
+              $pName = $cNames[$i] ?? ($cNames[0] ?? $c['name']);
+              $isPrimary = ($i === 0);
+              $isFocused = ($selectedPartner > 0 && $selectedPartner === ($i + 1));
+            ?>
+              <div class="p-4 rounded-2xl bg-sky-50/70 border-2 <?= $isFocused ? 'border-sky-500 ring-4 ring-sky-200' : 'border-sky-200' ?> flex items-center justify-between gap-3 shadow-xs transition-all">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-white border-2 border-sky-300 flex items-center justify-center text-lg flex-shrink-0 shadow-xs">
+                    👤
+                  </div>
+                  <div class="min-w-0">
+                    <span class="text-[10px] text-slate-500 font-bold block mb-0.5">
+                      <?= $isPrimary ? 'الطرف الأساسي (العميل 1)' : 'الشريك (' . ($i + 1) . ')' ?>:
+                    </span>
+                    <span class="text-xs sm:text-sm font-black text-slate-950 block truncate">
+                      <?= h($pName) ?>
+                    </span>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span class="px-2.5 py-1 rounded-xl text-[10px] font-black <?= $isPrimary ? 'bg-sky-100 text-sky-950 border border-sky-300' : 'bg-amber-100 text-amber-950 border border-amber-300' ?> whitespace-nowrap shadow-2xs">
+                    <?= $isPrimary ? 'عميل أساسي' : 'شريك ' . ($i + 1) . ' من ' . $partnerCount ?>
+                  </span>
+                  <?php if ($isFocused): ?>
+                    <span class="px-2 py-0.5 rounded-lg bg-sky-500 text-white text-[9px] font-black shadow-2xs">
+                      ✓ محدد
                     </span>
                   <?php endif; ?>
                 </div>
-
-                <?php if ($isFocused): ?>
-                  <span class="px-3 py-1 rounded-xl bg-sky-500 text-white text-xs font-black shadow-xs">
-                    ✓ الشريك المحدد من الجدول
-                  </span>
-                <?php endif; ?>
               </div>
-
-              <!-- شبكة بيانات الشريك التفصيلية -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                
-                <!-- الاسم -->
-                <div class="bg-sky-50/70 p-3 rounded-2xl border border-sky-200">
-                  <span class="text-[11px] text-slate-500 font-bold block mb-0.5">اسم العميل في البطاقة:</span>
-                  <span class="font-black text-slate-950 text-xs sm:text-sm block"><?= h($pName) ?></span>
-                </div>
-
-                <!-- رقم الهاتف والتواصل مع واتساب السريع -->
-                <div class="bg-sky-50/70 p-3 rounded-2xl border border-sky-200">
-                  <span class="text-[11px] text-slate-500 font-bold block mb-0.5">رقم الهاتف والتواصل:</span>
-                  <div class="flex items-center gap-2">
-                    <span class="font-mono font-black text-slate-950 dir-ltr text-xs sm:text-sm"><?= h($pPhone) ?></span>
-                    <?php if (!empty($rawPhone)): ?>
-                      <a 
-                        href="https://wa.me/<?= $rawPhone ?>" 
-                        target="_blank" 
-                        class="px-2 py-0.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-950 border border-emerald-300 font-black text-[11px] inline-flex items-center gap-1 shadow-2xs"
-                        title="محادثة واتساب سريعة"
-                      >
-                        <span>💬</span>
-                        <span>واتساب</span>
-                      </a>
-                    <?php endif; ?>
-                  </div>
-                </div>
-
-                <!-- البريد الإلكتروني -->
-                <div class="bg-sky-50/70 p-3 rounded-2xl border border-sky-200">
-                  <span class="text-[11px] text-slate-500 font-bold block mb-0.5">البريد الإلكتروني:</span>
-                  <span class="font-mono font-bold text-slate-950 dir-ltr block truncate"><?= h($pEmail ?: '—') ?></span>
-                </div>
-
-                <!-- إثبات الشخصية -->
-                <div class="bg-sky-50/70 p-3 rounded-2xl border border-sky-200">
-                  <span class="text-[11px] text-slate-500 font-bold block mb-0.5">إثبات الشخصية:</span>
-                  <span class="font-mono font-black text-slate-950 block text-xs sm:text-sm"><?= h($pIdNum ?: '—') ?></span>
-                  <span class="text-[10px] text-slate-600 font-bold"><?= ($pIdType === 'passport') ? 'جواز سفر' : 'رقم قومي' ?></span>
-                </div>
-
-                <!-- عنوان الهوية -->
-                <div class="bg-sky-50/70 p-3 rounded-2xl border border-sky-200 md:col-span-2">
-                  <span class="text-[11px] text-slate-500 font-bold block mb-0.5">عنوان الهوية (المسجل بالبطاقة / الجواز):</span>
-                  <span class="font-bold text-slate-950 leading-relaxed block"><?= h($pAddrs['id_address']) ?></span>
-                </div>
-
-                <!-- عنوان المراسلات -->
-                <div class="bg-sky-50/70 p-3 rounded-2xl border border-sky-200 md:col-span-3">
-                  <span class="text-[11px] text-slate-500 font-bold block mb-0.5">عنوان المراسلات الرسمي المعتمد:</span>
-                  <span class="font-bold text-slate-950 leading-relaxed block"><?= h($pAddrs['corr_address']) ?></span>
-                </div>
-
-              </div>
-
-            </div>
-          <?php endfor; ?>
+            <?php endfor; ?>
+          </div>
         </div>
 
-        <!-- ── 3. قسم المستندات وإيصالات الدفع المرفوعة ── -->
-        <?php if (!empty($attachments)): ?>
-          <div class="p-5 rounded-3xl bg-white border-2 border-sky-200 shadow-sm space-y-3">
-            <div class="flex items-center justify-between pb-2.5 border-b-2 border-sky-100 flex-wrap gap-2">
-              <h3 class="text-sm sm:text-base font-black text-slate-950 flex items-center gap-2">
-                <span>📎</span>
-                <span>المستندات وإيصالات الدفع المرفوعة (<?= count($attachments) ?>)</span>
-              </h3>
-              <span class="text-xs text-slate-500 font-bold">اضغط لمعاينة وتحميل الإيصال</span>
-            </div>
+        <!-- ── 8. إيصالات الدفع المرفوعة (تتبع سداد الـ 5%) ── -->
+        <div class="p-5 rounded-3xl bg-white border-2 border-sky-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between pb-2.5 border-b-2 border-sky-100 flex-wrap gap-2">
+            <h3 class="text-sm font-black text-slate-950 flex items-center gap-2">
+              <span>🧾</span>
+              <span>إيصالات الدفع المرفوعة (سداد الـ 5%):</span>
+            </h3>
+            <span class="text-xs text-slate-500 font-bold">
+              <?= !empty($attachments) ? count($attachments) . ' إيصال مرفوع' : 'لم يتم رفع إيصالات' ?>
+            </span>
+          </div>
 
+          <?php if (!empty($attachments)): ?>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <?php foreach ($attachments as $aIdx => $att): 
                 $ext = strtolower(pathinfo($att, PATHINFO_EXTENSION));
@@ -739,58 +724,28 @@ if (isset($_GET['customer'])) {
                 >
                   <div class="w-12 h-12 rounded-xl bg-white border border-sky-200 flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden shadow-inner">
                     <?php if ($isImg): ?>
-                      <img src="<?= h($att) ?>" alt="مرفق" class="w-full h-full object-cover">
+                      <img src="<?= h($att) ?>" alt="إيصال" class="w-full h-full object-cover">
                     <?php else: ?>
                       <span>📄</span>
                     <?php endif; ?>
                   </div>
                   <div class="min-w-0 flex-1">
                     <div class="text-xs font-black text-slate-950 group-hover:text-sky-900 transition-colors">
-                      <?= ($ext === 'pdf') ? 'ملف مستند PDF' : 'إيصال / صورة مرفقة' ?>
+                      <?= ($ext === 'pdf') ? 'ملف إيصال PDF' : 'صورة إيصال الدفع' ?>
                     </div>
                     <div class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
                       إيصال #<?= $aIdx + 1 ?> (<?= strtoupper($ext) ?>)
                     </div>
                   </div>
-                  <span class="text-slate-400 group-hover:text-sky-600 font-mono text-sm">↗</span>
+                  <span class="text-sky-600 font-mono text-sm group-hover:translate-x-0.5 transition-transform">↗</span>
                 </a>
               <?php endforeach; ?>
             </div>
-          </div>
-        <?php endif; ?>
-
-        <!-- ── 4. الملاحظات ومعلومات المسؤول ── -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- الملاحظات والاستثناءات -->
-          <div class="p-4 rounded-3xl bg-white border-2 border-sky-200 shadow-sm">
-            <span class="text-xs font-black text-slate-950 block mb-1.5 flex items-center gap-1.5">
-              <span>📝</span>
-              <span>الملاحظات والاستثناءات:</span>
-            </span>
-            <div class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs font-bold text-slate-900 leading-relaxed min-h-[55px]">
-              <?= nl2br(h($c['general_notes'] ?: ($c['notes'] ?: 'لا توجد أي ملاحظات أو استثناءات مسجلة لهذا العقد.'))) ?>
+          <?php else: ?>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center text-xs font-bold text-slate-500">
+              لم يقم العميل برفع إيصال دفع حتى الآن.
             </div>
-          </div>
-
-          <!-- معلومات النظام والموظف -->
-          <div class="p-4 rounded-3xl bg-white border-2 border-sky-200 shadow-sm space-y-2 text-xs">
-            <span class="font-black text-slate-950 block mb-1 flex items-center gap-1.5">
-              <span>ℹ️</span>
-              <span>معلومات السجل والمسؤول:</span>
-            </span>
-            <div class="flex items-center justify-between p-2 rounded-xl bg-sky-50 border border-sky-100">
-              <span class="text-slate-600 font-bold">مسؤول المبيعات:</span>
-              <span class="font-black text-slate-950"><?= h($c['sales_name'] ?? 'مباشر') ?></span>
-            </div>
-            <div class="flex items-center justify-between p-2 rounded-xl bg-sky-50 border border-sky-100">
-              <span class="text-slate-600 font-bold">مكان التوثيق والتوقيع:</span>
-              <span class="font-black text-slate-950"><?= h($c['preferred_signing_location'] ?: $c['contract_location']) ?></span>
-            </div>
-            <div class="flex items-center justify-between p-2 rounded-xl bg-sky-50 border border-sky-100">
-              <span class="text-slate-600 font-bold">تاريخ ووقت التسجيل:</span>
-              <span class="font-mono font-black text-slate-950"><?= date('Y-m-d h:i A', strtotime($c['created_at'])) ?></span>
-            </div>
-          </div>
+          <?php endif; ?>
         </div>
 
       <?php endif; ?>
@@ -953,7 +908,7 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
 
   <!-- بحث / فلتر -->
   <form method="GET" action="sales_portal.php" class="glass rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 border-2 border-sky-300 shadow-xl">
-    <input type="text" name="q" value="<?= h($q) ?>" placeholder="ابحث بالاسم أو الهاتف أو كود الوحدة..."
+    <input type="text" name="q" value="<?= h($q) ?>" placeholder="ابحث باسم العميل أو كود الوحدة..."
            class="flex-1 px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-500 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
     <?php if ($role === 'Admin' && $teamRows): ?>
       <select name="sales_id" class="px-3 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm font-bold shadow-xs focus:outline-none focus:border-sky-500">

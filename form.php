@@ -675,9 +675,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
         <!-- 1. اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط) -->
         <div class="form-group w-full">
-          <label class="block text-xs font-black text-slate-950 mb-1.5">
-            <span data-i18n="labelPrimaryName">اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط)</span>
-            <span class="text-red-500 font-bold">*</span>
+          <label class="block text-xs font-black text-slate-950 mb-1.5 flex items-center justify-between flex-wrap gap-1">
+            <span>
+              <span data-i18n="labelPrimaryName">اسم العميل كما هو في البطاقة الشخصية (باللغة العربية فقط)</span>
+              <span class="text-red-500 font-bold">*</span>
+            </span>
+            <span class="name-lock-badge hidden inline-flex items-center gap-1 text-[10px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded-lg border border-slate-300 font-black shadow-2xs">
+              <span>🔒</span>
+              <span data-i18n="badgeLockedField">معتمد وغير قابل للتعديل</span>
+            </span>
           </label>
           <input
             type="text"
@@ -804,9 +810,15 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
           <div class="sm:col-span-7 space-y-2.5">
             <!-- الحقل الأول: بطاقة الرقم القومي أو الحقل الفردي -->
             <div class="form-group client-single-id-group">
-              <label class="block text-xs font-black text-slate-950 mb-1.5">
-                <span class="client-id-label-text" data-i18n="labelIdNumber">رقم بطاقة الرقم القومي أو جواز السفر</span>
-                <span class="text-red-500 font-bold">*</span>
+              <label class="block text-xs font-black text-slate-950 mb-1.5 flex items-center justify-between flex-wrap gap-1">
+                <span>
+                  <span class="client-id-label-text" data-i18n="labelIdNumber">رقم بطاقة الرقم القومي أو جواز السفر</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </span>
+                <span class="id-lock-badge hidden inline-flex items-center gap-1 text-[10px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded-lg border border-slate-300 font-black shadow-2xs">
+                  <span>🔒</span>
+                  <span data-i18n="badgeLockedField">معتمد وغير قابل للتعديل</span>
+                </span>
               </label>
               <input
                 type="text"
@@ -7218,15 +7230,35 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         const primaryName = data.primary_name || partnersList[0] || data.name || '';
         const partnerNames = data.partner_names || (partnersList.length > 1 ? partnersList.slice(1) : []);
 
-        // ملء اسم العميل الأساسي في كارت العميل (الطرف الأساسي)
+        // ملء اسم العميل الأساسي وتجميده وقفله نهائياً (ممنوع التعديل)
         const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById(`clientCard_1`);
         if (card) {
           const nameInput = card.querySelector('.client-name-input');
           if (nameInput && primaryName) {
             nameInput.value = primaryName;
+            nameInput.readOnly = true;
+            nameInput.setAttribute('readonly', 'readonly');
+            nameInput.classList.remove('bg-white');
+            nameInput.classList.add('bg-slate-100', 'border-slate-300', 'text-slate-900', 'cursor-not-allowed', 'font-black', 'select-none');
+            nameInput.style.pointerEvents = 'none';
+            const nameBadge = card.querySelector('.name-lock-badge');
+            if (nameBadge) nameBadge.classList.remove('hidden');
             if (typeof handleClientNameInput === 'function') {
               handleClientNameInput(nameInput);
             }
+          }
+
+          // قفل وتجميد حقل الرقم القومي أيضاً نهائياً (ممنوع التعديل)
+          const idInput = card.querySelector('.client-id-number') || document.getElementById('national_id');
+          if (idInput) {
+            if (normId) idInput.value = normId;
+            idInput.readOnly = true;
+            idInput.setAttribute('readonly', 'readonly');
+            idInput.classList.remove('bg-white');
+            idInput.classList.add('bg-slate-100', 'border-slate-300', 'text-slate-900', 'cursor-not-allowed', 'font-black', 'select-none');
+            idInput.style.pointerEvents = 'none';
+            const idBadge = card.querySelector('.id-lock-badge');
+            if (idBadge) idBadge.classList.remove('hidden');
           }
         }
 
@@ -9547,21 +9579,31 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       const kycModal = document.getElementById('kycWelcomeModal');
       if (kycModal) kycModal.classList.add('hidden');
 
-      // 2. Populate and Freeze Name Field (Readonly + Gray Style)
+      // 2. Populate and Freeze Name Field (Readonly + Gray Style + No Pointer Events)
       const nameInput = document.querySelector('.client-name-input');
       if (nameInput) {
         nameInput.value = kycExtractedData.name;
         nameInput.readOnly = true;
-        nameInput.classList.add('bg-slate-200', 'border-slate-400', 'text-slate-900', 'cursor-not-allowed', 'font-black');
+        nameInput.setAttribute('readonly', 'readonly');
+        nameInput.classList.remove('bg-white');
+        nameInput.classList.add('bg-slate-100', 'border-slate-300', 'text-slate-900', 'cursor-not-allowed', 'font-black', 'select-none');
+        nameInput.style.pointerEvents = 'none';
+        const nameBadge = document.querySelector('.name-lock-badge');
+        if (nameBadge) nameBadge.classList.remove('hidden');
         if (typeof handleClientNameInput === 'function') handleClientNameInput(nameInput);
       }
 
-      // 3. Populate and Freeze ID Field (Readonly + Gray Style)
+      // 3. Populate and Freeze ID Field (Readonly + Gray Style + No Pointer Events)
       const idInput = document.querySelector('.client-id-number') || document.getElementById('national_id');
       if (idInput) {
         idInput.value = kycExtractedData.id_number;
         idInput.readOnly = true;
-        idInput.classList.add('bg-slate-200', 'border-slate-400', 'text-slate-900', 'cursor-not-allowed', 'font-black');
+        idInput.setAttribute('readonly', 'readonly');
+        idInput.classList.remove('bg-white');
+        idInput.classList.add('bg-slate-100', 'border-slate-300', 'text-slate-900', 'cursor-not-allowed', 'font-black', 'select-none');
+        idInput.style.pointerEvents = 'none';
+        const idBadge = document.querySelector('.id-lock-badge');
+        if (idBadge) idBadge.classList.remove('hidden');
       }
 
       // 4. Set Residency Choice
