@@ -524,14 +524,23 @@ if (isset($_GET['customer'])) {
                 <span>تفاصيل عقد الوحدة:</span>
                 <span class="font-mono text-sky-900 bg-sky-100 px-3 py-0.5 rounded-xl border-2 border-sky-300 shadow-2xs"><?= h($c['eoi_number']) ?></span>
               </h1>
-              <p class="text-xs text-slate-600 font-bold mt-1">
-                المشروع: <span class="text-slate-900 font-black"><?= h($c['project'] ?: '—') ?></span>
-                • كود السجل: <span class="font-mono text-slate-900 font-black">#<?= (int)$c['id'] ?></span>
+              <p class="text-xs text-slate-600 font-bold mt-1 flex items-center gap-2 flex-wrap">
+                <span>المشروع: <span class="text-slate-900 font-black"><?= h($c['project'] ?: '—') ?></span></span>
+                <span>• كود السجل: <span class="font-mono text-slate-900 font-black">#<?= (int)$c['id'] ?></span></span>
+                <?php if ($role !== 'Sales'): ?>
+                  <span>• مسؤول المبيعات (السيلز): <span class="text-sky-950 bg-sky-100 px-2.5 py-0.5 rounded-lg border border-sky-300 font-black"><?= h($c['sales_name'] ?? 'مباشر') ?></span></span>
+                <?php endif; ?>
               </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <?php if ($role !== 'Sales'): ?>
+              <span class="px-3.5 py-1.5 rounded-xl bg-sky-100 text-sky-950 border-2 border-sky-300 text-xs font-black shadow-2xs inline-flex items-center gap-1.5">
+                <span>👔</span>
+                <span>السيلز المسؤول: <?= h($c['sales_name'] ?? 'مباشر') ?></span>
+              </span>
+            <?php endif; ?>
             <!-- شارة حالة السداد -->
             <?php if ($isPaid): ?>
               <span class="px-3.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-950 border-2 border-emerald-400 text-xs font-black shadow-2xs inline-flex items-center gap-1.5">
@@ -647,6 +656,22 @@ if (isset($_GET['customer'])) {
               <?php endif; ?>
             </div>
           </div>
+
+          <!-- كارت مسؤول المبيعات (السيلز) - يظهر لقسم المديرين والإدارة فقط -->
+          <?php if ($role !== 'Sales'): ?>
+            <div class="p-4 rounded-2xl bg-sky-50/90 border-2 border-sky-300 shadow-sm flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-sky-200/80 border border-sky-400 flex items-center justify-center text-lg flex-shrink-0">
+                👔
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="text-[11px] text-slate-600 font-bold block mb-0.5">مسؤول المبيعات (السيلز):</span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border border-sky-300 text-slate-950 font-black text-xs shadow-2xs">
+                  <span>👤</span>
+                  <span><?= h($c['sales_name'] ?? 'مباشر (بدون سيلز)') ?></span>
+                </span>
+              </div>
+            </div>
+          <?php endif; ?>
 
         </div>
 
@@ -774,12 +799,12 @@ if ($view === 'customers') {
     }
     if ($q !== '') {
         $like = '%' . addcslashes($q, '%_\\') . '%';
-        $where[] = '(c.name LIKE :q1 OR c.phone LIKE :q2 OR c.eoi_number LIKE :q3 OR c.email LIKE :q4)';
-        $params += [':q1' => $like, ':q2' => $like, ':q3' => $like, ':q4' => $like];
+        $where[] = '(c.name LIKE :q1 OR c.eoi_number LIKE :q2 OR u.name LIKE :q3)';
+        $params += [':q1' => $like, ':q2' => $like, ':q3' => $like];
     }
     $whereSql = implode(' AND ', $where);
 
-    $cs = $pdo->prepare("SELECT COUNT(*) FROM clients c WHERE {$whereSql}");
+    $cs = $pdo->prepare("SELECT COUNT(*) FROM clients c LEFT JOIN users u ON u.id = c.sales_id WHERE {$whereSql}");
     $cs->execute($params);
     $total = (int)$cs->fetchColumn();
     $pages = max(1, (int)ceil($total / PORTAL_PAGE_SIZE));
@@ -894,12 +919,16 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
 
   <?php if ($role === 'Manager' && $teamRows): ?>
   <div class="glass rounded-3xl p-4 sm:p-5">
-    <p class="text-sm font-black text-white mb-3">فريقي</p>
+    <p class="text-sm font-black text-slate-950 mb-3 flex items-center gap-2">
+      <span>👥</span>
+      <span>فريق المبيعات (السيلز) التابع لإدارتي:</span>
+    </p>
     <div class="flex flex-wrap gap-2">
-      <a href="<?= h(pageUrl(['sales_id' => null, 'page' => null])) ?>" class="px-3 py-1.5 rounded-xl text-xs font-black border-2 <?= $filterId ? 'bg-white text-slate-950 border-sky-300 shadow-xs' : 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' ?>">الكل</a>
+      <a href="<?= h(pageUrl(['sales_id' => null, 'page' => null])) ?>" class="px-3.5 py-1.5 rounded-xl text-xs font-black border-2 <?= $filterId ? 'bg-white text-slate-950 border-sky-300 shadow-xs' : 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' ?>">الكل (جميع السيلز)</a>
       <?php foreach ($teamRows as $t): ?>
-        <a href="sales_portal.php?sales_id=<?= (int)$t['id'] ?>" class="px-3 py-1.5 rounded-xl text-xs font-black border-2 <?= $filterId === (int)$t['id'] ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white text-slate-950 border-sky-300 shadow-xs' ?>">
-          <?= h($t['name']) ?> <span class="font-mono opacity-80">(<?= (int)$t['cnt'] ?>)</span>
+        <a href="sales_portal.php?sales_id=<?= (int)$t['id'] ?>" class="px-3.5 py-1.5 rounded-xl text-xs font-black border-2 <?= $filterId === (int)$t['id'] ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white text-slate-950 border-sky-300 shadow-xs' ?>">
+          <span>👔</span>
+          <span><?= h($t['name']) ?></span> <span class="font-mono opacity-80">(<?= (int)$t['cnt'] ?>)</span>
         </a>
       <?php endforeach; ?>
     </div>
@@ -908,7 +937,7 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
 
   <!-- بحث / فلتر -->
   <form method="GET" action="sales_portal.php" class="glass rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 border-2 border-sky-300 shadow-xl">
-    <input type="text" name="q" value="<?= h($q) ?>" placeholder="ابحث باسم العميل أو كود الوحدة..."
+    <input type="text" name="q" value="<?= h($q) ?>" placeholder="<?= ($role !== 'Sales') ? 'ابحث باسم العميل أو كود الوحدة أو اسم السيلز...' : 'ابحث باسم العميل أو كود الوحدة...' ?>"
            class="flex-1 px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 placeholder-slate-500 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
     <?php if ($role === 'Admin' && $teamRows): ?>
       <select name="sales_id" class="px-3 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm font-bold shadow-xs focus:outline-none focus:border-sky-500">
@@ -938,7 +967,7 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
             <th class="p-3.5 text-center min-w-[130px]">بلد الإقامة</th>
             <th class="p-3.5 text-center min-w-[150px]">تاريخ ووقت التسجيل</th>
             <th class="p-3.5 text-center min-w-[140px]">توتال اليونت</th>
-            <?php if ($role !== 'Sales'): ?><th class="p-3.5 text-center min-w-[120px]">السيلز</th><?php endif; ?>
+            <?php if ($role !== 'Sales'): ?><th class="p-3.5 text-center min-w-[150px]">مسؤول المبيعات (السيلز)</th><?php endif; ?>
             <th class="p-3.5 text-center min-w-[90px]">الإجراءات</th>
           </tr>
         </thead>
@@ -1082,8 +1111,11 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
 
             <!-- عمود السيلز للأدمن والمدير فقط -->
             <?php if ($role !== 'Sales'): ?>
-              <td class="p-3.5 text-center font-bold text-slate-950 text-xs min-w-[120px]">
-                <?= h($c['sales_name'] ?? '—') ?>
+              <td class="p-3.5 text-center font-black text-slate-950 text-xs min-w-[150px]">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-100 border border-sky-300 text-sky-950 font-black text-xs shadow-2xs">
+                  <span>👔</span>
+                  <span><?= h($c['sales_name'] ?? 'مباشر') ?></span>
+                </span>
               </td>
             <?php endif; ?>
 
