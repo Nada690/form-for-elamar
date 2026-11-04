@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم وإدارة عقود شورز الساحلية | مجموعة العمار</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      color: #020617;
+    }
+    html {
+      font-family: 'Cairo', sans-serif;
+    }
+    html[lang="en"] {
+      font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'Plus Jakarta Sans', monospace;
+    }
+    body {
+      background: radial-gradient(135% 125% at 50% 0%, #e0f2fe 0%, #bae6fd 45%, #f0f9ff 100%);
+      min-height: 100vh;
+      color: #020617 !important;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 2px solid rgba(56, 189, 248, 0.4);
+    }
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.94);
+      border: 2px solid rgba(56, 189, 248, 0.5);
+    }
+    #clientsTable {
+      table-layout: auto !important;
+      width: 100% !important;
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+    }
+    #clientsTable th, #clientsTable td {
+      white-space: normal !important;
+      word-break: break-word !important;
+      vertical-align: middle !important;
+    }
+    .sticky-header th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    @media print {
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .glass { box-shadow: none !important; border: 1px solid #ccc !important; }
+      #clientsTable { font-size: 9px !important; }
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-5 lg:p-7">
+
+  <div class="max-w-[1700px] mx-auto space-y-5">
+
+    <!-- ── Header ── -->
+    <header class="glass rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+        <div class="p-2.5 rounded-2xl bg-white border-2 border-sky-300 shadow-md">
+          <img src="logo.png" alt="El Amar Logo" class="h-14 object-contain">
+        </div>
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-sky-100 text-sky-950 text-xs font-black border border-sky-300 shadow-2xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span data-i18n="dashBadge">الإدارة المركزية</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-950 mt-1" data-i18n="dashTitle">لوحة التحكم وإدارة عقود شورز الساحلية</h1>
+          <p class="text-xs text-slate-700 font-bold" data-i18n="dashSub">متابعة ومراجعة تسجيلات عملاء الساحل الشمالي وتوزيعات مسؤولي المبيعات</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 flex-wrap justify-end">
+        <button type="button" onclick="toggleLanguage()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-950 text-xs font-black border-2 border-sky-300 shadow-xs cursor-pointer flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95">
+          <span>🌐</span>
+          <span id="langBtnText">English</span>
+        </button>
+
+        <a href="sales_portal.html" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-black shadow-md flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95">
+          <span>👔</span>
+          <span data-i18n="btnSalesPortal">بوابة المبيعات</span>
+        </a>
+
+        <a href="/" class="px-3.5 py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-950 text-xs font-black border-2 border-sky-300 shadow-xs flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95">
+          <span>➕</span>
+          <span data-i18n="btnNewForm">استمارة تعاقد جديدة</span>
+        </a>
+
+        <button type="button" onclick="exportToCSV()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95">
+          <span>📥</span>
+          <span data-i18n="btnExportCsv">تصدير إكسيل (CSV)</span>
+        </button>
+
+        <button type="button" onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-950 text-xs font-black border-2 border-sky-300 shadow-xs flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95">
+          <span>🖨️</span>
+          <span data-i18n="btnPrint">طباعة</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── KPI Cards ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="kpi-card rounded-3xl p-5 shadow-xl border-t-4 border-t-sky-500">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-black text-slate-600" data-i18n="kpiTotal">إجمالي العقود المسجلة</span>
+          <span class="text-2xl">📋</span>
+        </div>
+        <div class="text-3xl font-black text-slate-950 font-mono count-up" id="kpiTotalVal">0</div>
+        <p class="text-[11px] text-sky-800 font-bold mt-1" data-i18n="kpiTotalSub">عقد معتمد ومسجل بالمنظومة</p>
+      </div>
+
+      <div class="kpi-card rounded-3xl p-5 shadow-xl border-t-4 border-t-emerald-500">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-black text-slate-600" data-i18n="kpi5Percent">سداد مقدم أكتوبر (5%)</span>
+          <span class="text-2xl">💰</span>
+        </div>
+        <div class="text-3xl font-black text-emerald-700 font-mono count-up" id="kpiPaidVal">0</div>
+        <p class="text-[11px] text-emerald-800 font-bold mt-1" data-i18n="kpi5PercentSub">تم تأكيد سداد الـ 5% ورفع الإيصال</p>
+      </div>
+
+      <div class="kpi-card rounded-3xl p-5 shadow-xl border-t-4 border-t-blue-500">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-black text-slate-600" data-i18n="kpiOutside">مقيمين خارج مصر</span>
+          <span class="text-2xl">🌍</span>
+        </div>
+        <div class="text-3xl font-black text-blue-700 font-mono count-up" id="kpiOutsideVal">0</div>
+        <p class="text-[11px] text-blue-800 font-bold mt-1" data-i18n="kpiOutsideSub">عملاء مقيمين بالخارج</p>
+      </div>
+
+      <div class="kpi-card rounded-3xl p-5 shadow-xl border-t-4 border-t-purple-500">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-black text-slate-600" data-i18n="kpiTotalValue">إجمالي مبيعات الوحدات</span>
+          <span class="text-2xl">💎</span>
+        </div>
+        <div class="text-2xl font-black text-purple-900 font-mono" id="kpiTotalValueVal">0 ج.م</div>
+        <p class="text-[11px] text-purple-800 font-bold mt-1" data-i18n="kpiTotalValueSub">إجمالي القيمة التعاقدية للوحدات</p>
+      </div>
+    </div>
+
+    <!-- ── Search & Filter Controls ── -->
+    <div class="glass rounded-3xl p-4 sm:p-5 shadow-xl no-print">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+        <!-- Search Input -->
+        <div class="md:col-span-5 relative">
+          <span class="absolute inset-y-0 right-3 flex items-center text-slate-400 pointer-events-none">🔍</span>
+          <input 
+            type="text" 
+            id="tableSearchInput" 
+            oninput="handleSearch(this.value)" 
+            data-i18n-placeholder="phSearchClients" 
+            placeholder="بحث سريع: اسم العميل، الهاتف، كود الوحدة، مسؤول المبيعات..."
+            class="w-full pr-10 pl-4 py-2.5 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 font-bold text-xs sm:text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500"
+          >
+        </div>
+
+        <!-- Sales Filter -->
+        <div class="md:col-span-3">
+          <select 
+            id="filterSales" 
+            onchange="applyFilters()" 
+            class="w-full px-3 py-2.5 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 font-bold text-xs sm:text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
+          >
+            <option value="" data-i18n="optAllSales">جميع مسؤولي المبيعات (عرض الكل)</option>
+            <option value="مباشر">🌐 مباشر (بدون سيلز)</option>
+          </select>
+        </div>
+
+        <!-- Contract Location Filter -->
+        <div class="md:col-span-2">
+          <select 
+            id="filterLocation" 
+            onchange="applyFilters()" 
+            class="w-full px-3 py-2.5 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 font-bold text-xs sm:text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
+          >
+            <option value="" data-i18n="optAllBranches">جميع أماكن التوثيق</option>
+            <option value="الإسكندرية">🌊 الإسكندرية</option>
+            <option value="القاهرة">🏛️ القاهرة</option>
+          </select>
+        </div>
+
+        <!-- Payment Status Filter -->
+        <div class="md:col-span-2">
+          <select 
+            id="filterPayment" 
+            onchange="applyFilters()" 
+            class="w-full px-3 py-2.5 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 font-bold text-xs sm:text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
+          >
+            <option value="" data-i18n="optAllPayments">حالة سداد الـ 5% (الكل)</option>
+            <option value="نعم">✓ تم السداد</option>
+            <option value="لا">✕ لم يسدد</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main Contracts Table ── -->
+    <div class="glass rounded-3xl overflow-hidden shadow-2xl">
+      <div class="p-4 bg-sky-100/90 border-b-2 border-sky-300 flex items-center justify-between flex-wrap gap-2">
+        <h2 class="text-sm sm:text-base font-black text-slate-950 flex items-center gap-2" data-i18n="tblTitle">
+          <span>📜</span>
+          <span>سجل عقود واستمارات العملاء المسجلة</span>
+        </h2>
+        <div class="text-xs font-black text-sky-950 bg-white px-3 py-1 rounded-xl border border-sky-300 shadow-2xs">
+          <span data-i18n="lblShowing">عرض</span>: <span id="displayedCount" class="font-mono text-sm">0</span> <span data-i18n="lblFrom">من إجمالي</span> <span id="totalContractsCount" class="font-mono text-sm">0</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto max-h-[75vh]">
+        <table class="w-full text-xs text-right border-collapse" id="clientsTable">
+          <thead class="sticky top-0 z-20 bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-400 text-[11px] sm:text-xs uppercase tracking-wider backdrop-blur-md">
+            <tr>
+              <th class="p-3 w-12 text-center col-seq">#</th>
+              <th class="p-3 text-center col-sales min-w-[130px]" data-i18n="thSales">مسؤول المبيعات</th>
+              <th class="p-3 text-center col-unit min-w-[130px]" data-i18n="thUnit">كود الوحدة</th>
+              <th class="p-3 text-center col-residence min-w-[120px]" data-i18n="thResidence">مكان الإقامة</th>
+              <th class="p-3 text-center col-branch min-w-[120px]" data-i18n="thBranch">مكان التوثيق</th>
+              <th class="p-3 col-name min-w-[200px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
+              <th class="p-3 text-center col-phone min-w-[140px]" data-i18n="thPhone">أرقام التواصل</th>
+              <th class="p-3 text-center col-email min-w-[150px]" data-i18n="thEmail">البريد الإلكتروني</th>
+              <th class="p-3 text-center col-doc min-w-[140px]" data-i18n="thIdDoc">إثبات الشخصية</th>
+              <th class="p-3 text-center col-plan min-w-[120px]" data-i18n="thPlan">فترة السداد</th>
+              <th class="p-3 text-center col-payment min-w-[140px]" data-i18n="th5Percent">مقدم أكتوبر</th>
+              <th class="p-3 col-id-addr min-w-[180px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
+              <th class="p-3 col-corr-addr min-w-[180px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
+              <th class="p-3 col-notes min-w-[140px] text-right" data-i18n="thNotes">الملاحظات والاستثناءات</th>
+              <th class="p-3 text-center col-docs min-w-[110px]" data-i18n="thDocs">المستندات</th>
+              <th class="p-3 text-center col-date min-w-[140px]" data-i18n="thDate">تاريخ ووقت التسجيل</th>
+              <th class="p-3 text-center col-price min-w-[140px]" data-i18n="thTotalPrice">إجمالي سعر الوحدة</th>
+              <th class="p-3 text-center col-actions min-w-[90px] no-print" data-i18n="thActions">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-sky-100 text-slate-950 font-bold bg-white" id="clientsTableBody">
+            <!-- Populated dynamically via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── View Details Modal ── -->
+  <div id="viewModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="glass w-full max-w-3xl max-h-[90vh] rounded-3xl p-6 shadow-2xl flex flex-col overflow-hidden bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-sky-200">
+        <h3 class="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2">
+          <span>📋</span>
+          <span data-i18n="modalTitle">تفاصيل العقد والعميل الكاملة</span>
+        </h3>
+        <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-sky-100 hover:bg-sky-200 text-slate-950 font-black flex items-center justify-center text-sm cursor-pointer shadow-xs">✕</button>
+      </div>
+      <div class="flex-1 overflow-y-auto py-4 space-y-4" id="modalContent">
+        <!-- Injected via JS -->
+      </div>
+      <div class="pt-3 border-t-2 border-sky-200 flex justify-end">
+        <button type="button" onclick="closeModal()" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-black text-xs shadow-md" data-i18n="btnClose">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="clients_seed.js"></script>
+  <script src="data_manager.js"></script>
+  <script>
+    // ── Translations Dictionary ──
+    const translations = {
+      ar: {
+        dashBadge: "الإدارة المركزية",
+        dashTitle: "لوحة التحكم وإدارة عقود شورز الساحلية",
+        dashSub: "متابعة ومراجعة تسجيلات عملاء الساحل الشمالي وتوزيعات مسؤولي المبيعات",
+        btnSalesPortal: "بوابة المبيعات",
+        btnNewForm: "استمارة تعاقد جديدة",
+        btnExportCsv: "تصدير إكسيل (CSV)",
+        btnPrint: "طباعة",
+        kpiTotal: "إجمالي العقود المسجلة",
+        kpiTotalSub: "عقد معتمد ومسجل بالمنظومة",
+        kpi5Percent: "سداد مقدم أكتوبر (5%)",
+        kpi5PercentSub: "تم تأكيد سداد الـ 5% ورفع الإيصال",
+        kpiOutside: "مقيمين خارج مصر",
+        kpiOutsideSub: "عملاء مقيمين بالخارج",
+        kpiTotalValue: "إجمالي مبيعات الوحدات",
+        kpiTotalValueSub: "إجمالي القيمة التعاقدية للوحدات",
+        phSearchClients: "بحث سريع: اسم العميل، الهاتف، كود الوحدة، مسؤول المبيعات...",
+        optAllSales: "جميع مسؤولي المبيعات (عرض الكل)",
+        optAllBranches: "جميع أماكن التوثيق",
+        optAllPayments: "حالة سداد الـ 5% (الكل)",
+        tblTitle: "سجل عقود واستمارات العملاء المسجلة",
+        lblShowing: "عرض",
+        lblFrom: "من إجمالي",
+        thSales: "مسؤول المبيعات",
+        thUnit: "كود الوحدة",
+        thResidence: "مكان الإقامة",
+        thBranch: "مكان التوثيق",
+        thName: "اسم العميل في البطاقة / الشركاء",
+        thPhone: "أرقام التواصل",
+        thEmail: "البريد الإلكتروني",
+        thIdDoc: "إثبات الشخصية",
+        thPlan: "فترة السداد",
+        th5Percent: "مقدم أكتوبر",
+        thIdAddress: "عنوان الهوية",
+        thCorrAddress: "عنوان المراسلات",
+        thNotes: "الملاحظات والاستثناءات",
+        thDocs: "المستندات",
+        thDate: "تاريخ ووقت التسجيل",
+        thTotalPrice: "إجمالي سعر الوحدة",
+        thActions: "الإجراءات",
+        modalTitle: "تفاصيل العقد والعميل الكاملة",
+        btnClose: "إغلاق",
+        noClientsFound: "لا توجد أي بيانات أو عقود مسجلة تطابق معايير البحث الحالية.",
+        paidBadge: "✓ تم السداد",
+        unpaidBadge: "✕ لم يسدد",
+        insideEgypt: " داخل مصر",
+        outsideEgypt: "🌍 خارج مصر",
+        directSales: "🌐 مباشر"
+      },
+      en: {
+        dashBadge: "Central Management",
+        dashTitle: "Shores Coastal Contracts Management Dashboard",
+        dashSub: "Track and review North Coast client registrations and sales consultant allocations",
+        btnSalesPortal: "Sales Portal",
+        btnNewForm: "New Contract Form",
+        btnExportCsv: "Export Excel (CSV)",
+        btnPrint: "Print",
+        kpiTotal: "Total Registered Contracts",
+        kpiTotalSub: "certified contracts recorded",
+        kpi5Percent: "October Advance (5%)",
+        kpi5PercentSub: "5% down payment confirmed",
+        kpiOutside: "Outside Egypt",
+        kpiOutsideSub: "clients residing abroad",
+        kpiTotalValue: "Total Units Value",
+        kpiTotalValueSub: "aggregate contract value",
+        phSearchClients: "Quick search: Client Name, Phone, Unit Code, Sales...",
+        optAllSales: "All Sales Consultants (Show All)",
+        optAllBranches: "All Contract Locations",
+        optAllPayments: "5% Payment Status (All)",
+        tblTitle: "Client Contracts & Applications Directory",
+        lblShowing: "Showing",
+        lblFrom: "of total",
+        thSales: "Sales Consultant",
+        thUnit: "Unit Code",
+        thResidence: "Residence",
+        thBranch: "Contract Location",
+        thName: "Client Name / Partners",
+        thPhone: "Phone Numbers",
+        thEmail: "Email Address",
+        thIdDoc: "ID / Passport",
+        thPlan: "Payment Plan",
+        th5Percent: "October Advance",
+        thIdAddress: "Identity Address",
+        thCorrAddress: "Correspondence Address",
+        thNotes: "Notes & Exceptions",
+        thDocs: "Documents",
+        thDate: "Registration Date & Time",
+        thTotalPrice: "Total Unit Price",
+        thActions: "Actions",
+        modalTitle: "Contract & Client Complete Details",
+        btnClose: "Close",
+        noClientsFound: "No clients or contracts match the current search filters.",
+        paidBadge: "✓ Paid",
+        unpaidBadge: "✕ Unpaid",
+        insideEgypt: " Inside Egypt",
+        outsideEgypt: "🌍 Abroad",
+        directSales: "🌐 Direct"
+      }
+    };
+
+    let allClients = [];
+    let filteredClients = [];
+    let currentLang = localStorage.getItem('elamar_lang') || 'ar';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('elamar_lang', lang);
+      document.documentElement.lang = lang;
+      document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+
+      document.getElementById('langBtnText').innerText = (lang === 'ar') ? 'English' : 'العربية';
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.innerText = translations[lang][key];
+        }
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang] && translations[lang][key]) {
+          el.setAttribute('placeholder', translations[lang][key]);
+        }
+      });
+
+      renderTable();
+    }
+
+    function toggleLanguage() {
+      setLanguage(currentLang === 'ar' ? 'en' : 'ar');
+    }
+
+    // ── Load Data & Populate ──
+    document.addEventListener('DOMContentLoaded', () => {
+      allClients = ElamarData.getClients();
+      populateSalesDropdown();
+      applyFilters();
+      updateKPIs();
+      setLanguage(currentLang);
+    });
+
+    function populateSalesDropdown() {
+      const salesSelect = document.getElementById('filterSales');
+      const salesSet = new Set();
+      allClients.forEach(c => {
+        const s = (c.sales_name || '').trim();
+        if (s && s !== 'مباشر') salesSet.add(s);
+      });
+      salesSet.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.innerText = '👔 ' + s;
+        salesSelect.appendChild(opt);
+      });
+    }
+
+    function updateKPIs() {
+      const total = allClients.length;
+      const paid = allClients.filter(c => c.paid_5_percent === 'نعم').length;
+      const outside = allClients.filter(c => (c.residence_country || '').includes('خارج')).length;
+      
+      let totalVal = 0;
+      allClients.forEach(c => {
+        const p = parseFloat(c.unit_price) || 0;
+        totalVal += p;
+      });
+
+      document.getElementById('kpiTotalVal').innerText = total;
+      document.getElementById('kpiPaidVal').innerText = paid;
+      document.getElementById('kpiOutsideVal').innerText = outside;
+      document.getElementById('kpiTotalValueVal').innerText = (totalVal > 0) ? ElamarData.formatNumber(totalVal) + ' EGP' : '—';
+      document.getElementById('totalContractsCount').innerText = total;
+    }
+
+    function handleSearch(val) {
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const q = (document.getElementById('tableSearchInput')?.value || '').trim().toLowerCase();
+      const sales = document.getElementById('filterSales')?.value || '';
+      const loc = document.getElementById('filterLocation')?.value || '';
+      const pay = document.getElementById('filterPayment')?.value || '';
+
+      filteredClients = allClients.filter(c => {
+        if (sales && (c.sales_name || 'مباشر') !== sales) return false;
+        if (loc && (c.contract_location || '') !== loc) return false;
+        if (pay && (c.paid_5_percent || 'لا') !== pay) return false;
+
+        if (q) {
+          const haystack = [
+            c.name, c.phone, c.eoi_number, c.sales_name, c.email,
+            c.id_number, c.contract_location, c.addresses, c.id_address
+          ].join(' ').toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+        return true;
+      });
+
+      document.getElementById('displayedCount').innerText = filteredClients.length;
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('clientsTableBody');
+      tbody.innerHTML = '';
+
+      if (filteredClients.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="18" class="p-12 text-center text-slate-700 font-black text-sm">
+              <div class="text-3xl mb-2">🏖️</div>
+              ${translations[currentLang].noClientsFound}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let seq = 1;
+      filteredClients.forEach(c => {
+        const partners = ElamarData.splitPartners(c.name);
+        const pCount = partners.length;
+        const isPaid = (c.paid_5_percent === 'نعم');
+        const isOutside = (c.residence_country || '').includes('خارج');
+        const locIsAlex = (c.contract_location === 'الإسكندرية');
+
+        partners.forEach((pName, pIdx) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-sky-50/90 transition-colors border-b border-sky-100';
+
+          // Format attachments
+          let atts = [];
+          try {
+            atts = typeof c.attachments === 'string' ? JSON.parse(c.attachments || '[]') : (c.attachments || []);
+          } catch(e) { atts = []; }
+
+          // Clean addresses
+          const idAddr = c.id_address || (c.addresses ? c.addresses.split('---')[0] : '—');
+          const corrAddr = c.correspondence_address || (c.addresses && c.addresses.includes('---') ? c.addresses.split('---')[1] : '—');
+
+          tr.innerHTML = `
+            <!-- 1. # -->
+            <td class="p-3 text-center font-mono font-black text-slate-950 bg-sky-50/50">${seq++}</td>
+
+            <!-- 2. مسؤول المبيعات -->
+            <td class="p-3 text-center">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black border ${c.sales_name && c.sales_name !== 'مباشر' ? 'bg-sky-100 text-sky-950 border-sky-300' : 'bg-slate-100 text-slate-800 border-slate-300'} shadow-2xs">
+                <span>${c.sales_name && c.sales_name !== 'مباشر' ? '👔' : '🌐'}</span>
+                <span>${c.sales_name || translations[currentLang].directSales}</span>
+              </span>
+            </td>
+
+            <!-- 3. كود الوحدة -->
+            <td class="p-3 text-center font-mono font-black text-slate-950">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-100 border-2 border-sky-300 text-slate-950 text-xs shadow-2xs">
+                <span>🏢</span>
+                <span>${c.eoi_number || '—'}</span>
+              </span>
+            </td>
+
+            <!-- 4. مكان الإقامة -->
+            <td class="p-3 text-center font-black">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-xl text-[11px] font-black border ${isOutside ? 'bg-blue-100 text-blue-950 border-blue-300' : 'bg-emerald-100 text-emerald-950 border-emerald-300'} shadow-2xs">
+                ${isOutside ? translations[currentLang].outsideEgypt : translations[currentLang].insideEgypt}
+              </span>
+            </td>
+
+            <!-- 5. مكان التوثيق -->
+            <td class="p-3 text-center font-black">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black border-2 ${locIsAlex ? 'bg-sky-100 border-sky-300' : 'bg-amber-100 border-amber-300'} shadow-2xs">
+                ${locIsAlex ? '🌊 ' : '🏛️ '}${c.contract_location || '—'}
+              </span>
+            </td>
+
+            <!-- 6. اسم العميل في البطاقة / الشركاء -->
+            <td class="p-3 font-black text-slate-950 min-w-[200px] text-right">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs sm:text-sm font-black leading-snug">${pName}</span>
+                ${pCount > 1 ? `
+                  <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] bg-amber-100 text-amber-950 border border-amber-300 font-black shadow-2xs">
+                    ${currentLang === 'en' ? `Partner ${pIdx + 1} of ${pCount}` : `شريك ${pIdx + 1} من ${pCount}`}
+                  </span>
+                ` : ''}
+              </div>
+            </td>
+
+            <!-- 7. أرقام التواصل -->
+            <td class="p-3 text-center font-mono text-xs">
+              <div class="flex items-center justify-center gap-1.5">
+                <span class="font-bold">${c.phone || '—'}</span>
+                ${c.phone ? `
+                  <a href="https://wa.me/${c.phone.replace(/[^0-9]/g, '')}" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-sm" title="WhatsApp">💬</a>
+                ` : ''}
+              </div>
+            </td>
+
+            <!-- 8. البريد الإلكتروني -->
+            <td class="p-3 text-center font-mono text-xs text-slate-800">${c.email || '—'}</td>
+
+            <!-- 9. إثبات الشخصية -->
+            <td class="p-3 text-center font-mono text-xs font-black">
+              <div class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200 inline-block">
+                ${c.id_number || '—'}
+              </div>
+            </td>
+
+            <!-- 10. فترة السداد -->
+            <td class="p-3 text-center">
+              <span class="inline-block px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 font-black text-xs shadow-2xs">
+                ${c.period || c.payment_period || '—'}
+              </span>
+              ${c.final_rate ? `<div class="text-[10px] text-slate-700 font-mono mt-0.5">${c.final_rate}</div>` : ''}
+            </td>
+
+            <!-- 11. مقدم أكتوبر (سداد الـ 5%) -->
+            <td class="p-3 text-center">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black border ${isPaid ? 'bg-emerald-100 text-emerald-950 border-emerald-400' : 'bg-red-100 text-red-950 border-red-300'} shadow-2xs">
+                ${isPaid ? translations[currentLang].paidBadge : translations[currentLang].unpaidBadge}
+              </span>
+              ${c.payment_date ? `<div class="text-[10px] text-slate-600 font-mono mt-0.5">📅 ${c.payment_date}</div>` : ''}
+            </td>
+
+            <!-- 12. عنوان الهوية -->
+            <td class="p-3 text-right text-xs font-bold min-w-[180px] leading-relaxed">${idAddr}</td>
+
+            <!-- 13. عنوان المراسلات -->
+            <td class="p-3 text-right text-xs font-bold min-w-[180px] leading-relaxed">${corrAddr}</td>
+
+            <!-- 14. الملاحظات -->
+            <td class="p-3 text-right text-xs text-slate-700 font-medium">${c.notes || c.general_notes || '—'}</td>
+
+            <!-- 15. المستندات -->
+            <td class="p-3 text-center font-black">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-sky-100 text-sky-950 border border-sky-300 text-[10px]">
+                📎 ${atts.length}
+              </span>
+            </td>
+
+            <!-- 16. تاريخ ووقت التسجيل -->
+            <td class="p-3 text-center font-mono text-xs whitespace-nowrap">
+              <div class="bg-sky-50 px-2 py-1 rounded border border-sky-200 inline-block font-black">
+                ${c.created_at || '—'}
+              </div>
+            </td>
+
+            <!-- 17. إجمالي سعر الوحدة -->
+            <td class="p-3 text-center font-mono font-black text-xs whitespace-nowrap">
+              ${c.unit_price ? `💰 ${ElamarData.formatNumber(c.unit_price)} EGP` : '—'}
+            </td>
+
+            <!-- 18. الإجراءات -->
+            <td class="p-3 text-center no-print">
+              <button 
+                type="button" 
+                onclick="viewClientModal(${c.id})" 
+                class="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white font-black rounded-xl shadow-xs text-xs cursor-pointer inline-flex items-center gap-1 transition-transform hover:scale-105 active:scale-95"
+              >
+                <span>👁️</span>
+                <span>${currentLang === 'en' ? 'View' : 'عرض'}</span>
+              </button>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function viewClientModal(id) {
+      const client = allClients.find(c => Number(c.id) === Number(id));
+      if (!client) return;
+
+      const modal = document.getElementById('viewModal');
+      const content = document.getElementById('modalContent');
+      const partners = ElamarData.splitPartners(client.name);
+
+      let atts = [];
+      try {
+        atts = typeof client.attachments === 'string' ? JSON.parse(client.attachments || '[]') : (client.attachments || []);
+      } catch(e) { atts = []; }
+
+      content.innerHTML = `
+        <div class="space-y-4 text-xs sm:text-sm">
+          <!-- Unit & Contract Header -->
+          <div class="p-4 rounded-2xl bg-sky-100 border-2 border-sky-300 flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <div class="text-[11px] text-sky-900 font-bold">${currentLang === 'en' ? 'Unit Code & Location' : 'كود الوحدة ومكان التوثيق'}:</div>
+              <div class="text-lg font-black text-slate-950 font-mono">🏢 ${client.eoi_number || '—'} • ${client.contract_location || '—'}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[11px] text-sky-900 font-bold">${currentLang === 'en' ? 'Registration Date' : 'تاريخ التسجيل'}:</div>
+              <div class="text-xs font-black font-mono">${client.created_at || '—'}</div>
+            </div>
+          </div>
+
+          <!-- Partners -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-xs">
+            <h4 class="font-black text-slate-950 mb-2 flex items-center gap-1.5">
+              <span>👥</span>
+              <span>${currentLang === 'en' ? 'Contract Parties / Partners' : 'أطراف التعاقد والشركاء'} (${partners.length}):</span>
+            </h4>
+            <div class="space-y-2">
+              ${partners.map((p, idx) => `
+                <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-between">
+                  <span class="font-black text-slate-950">${p}</span>
+                  <span class="text-[10px] font-black px-2 py-0.5 rounded bg-sky-200 text-sky-950">
+                    ${idx === 0 ? (currentLang === 'en' ? 'Primary Client' : 'العميل الأساسي') : (currentLang === 'en' ? `Partner ${idx + 1}` : `شريك ${idx + 1}`)}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Specifications -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-500 font-bold block">${currentLang === 'en' ? 'Payment Period' : 'فترة السداد'}:</span>
+              <span class="font-black text-slate-950">${client.period || client.payment_period || '—'}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-500 font-bold block">${currentLang === 'en' ? '5% Advance' : 'سداد الـ 5%'}:</span>
+              <span class="font-black ${client.paid_5_percent === 'نعم' ? 'text-emerald-700' : 'text-red-700'}">${client.paid_5_percent === 'نعم' ? translations[currentLang].paidBadge : translations[currentLang].unpaidBadge}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-500 font-bold block">${currentLang === 'en' ? 'Total Unit Price' : 'توتال اليونت'}:</span>
+              <span class="font-black text-slate-950 font-mono">${client.unit_price ? ElamarData.formatNumber(client.unit_price) + ' EGP' : '—'}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-500 font-bold block">${currentLang === 'en' ? 'Phone Number' : 'رقم الهاتف'}:</span>
+              <span class="font-black font-mono">${client.phone || '—'}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-500 font-bold block">${currentLang === 'en' ? 'ID / Passport' : 'إثبات الشخصية'}:</span>
+              <span class="font-black font-mono">${client.id_number || '—'}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-500 font-bold block">${currentLang === 'en' ? 'Sales Consultant' : 'مسؤول المبيعات'}:</span>
+              <span class="font-black">${client.sales_name || translations[currentLang].directSales}</span>
+            </div>
+          </div>
+
+          <!-- Addresses -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 space-y-2">
+            <div>
+              <span class="text-[11px] text-slate-500 font-bold block">${currentLang === 'en' ? 'Identity Address' : 'عنوان الهوية'}:</span>
+              <div class="font-bold text-slate-950">${client.id_address || '—'}</div>
+            </div>
+            <div class="pt-2 border-t border-slate-100">
+              <span class="text-[11px] text-slate-500 font-bold block">${currentLang === 'en' ? 'Correspondence Address' : 'عنوان المراسلات'}:</span>
+              <div class="font-bold text-slate-950">${client.correspondence_address || '—'}</div>
+            </div>
+          </div>
+
+          <!-- Attachments -->
+          ${atts.length > 0 ? `
+            <div class="p-4 rounded-2xl bg-white border-2 border-sky-200">
+              <span class="text-[11px] text-slate-500 font-bold block mb-2">${currentLang === 'en' ? 'Uploaded Files & Receipts' : 'الملفات والإيصالات المرفوعة'}:</span>
+              <div class="flex flex-wrap gap-2">
+                ${atts.map((att, idx) => `
+                  <a href="${att}" target="_blank" class="px-3 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 border border-sky-300 font-black text-xs text-sky-950 inline-flex items-center gap-1">
+                    <span>📄</span>
+                    <span>${currentLang === 'en' ? 'Receipt' : 'إيصال'} #${idx + 1}</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('viewModal').classList.add('hidden');
+    }
+
+    function exportToCSV() {
+      if (filteredClients.length === 0) {
+        alert(currentLang === 'en' ? 'No records to export.' : 'لا توجد بيانات للتصدير.');
+        return;
+      }
+
+      const headers = [
+        '#',
+        currentLang === 'en' ? 'Sales' : 'مسؤول المبيعات',
+        currentLang === 'en' ? 'Unit Code' : 'كود الوحدة',
+        currentLang === 'en' ? 'Residence' : 'مكان الإقامة',
+        currentLang === 'en' ? 'Contract Branch' : 'مكان التوثيق',
+        currentLang === 'en' ? 'Client Name' : 'اسم العميل',
+        currentLang === 'en' ? 'Phone' : 'الهاتف',
+        currentLang === 'en' ? 'Email' : 'البريد',
+        currentLang === 'en' ? 'ID Number' : 'الرقم القومي / الوثيقة',
+        currentLang === 'en' ? 'Payment Period' : 'فترة السداد',
+        currentLang === 'en' ? '5% Status' : 'سداد الـ 5%',
+        currentLang === 'en' ? 'Identity Address' : 'عنوان الهوية',
+        currentLang === 'en' ? 'Correspondence Address' : 'عنوان المراسلات',
+        currentLang === 'en' ? 'Registration Date' : 'تاريخ التسجيل',
+        currentLang === 'en' ? 'Total Price' : 'إجمالي سعر الوحدة'
+      ];
+
+      const rows = [headers];
+      filteredClients.forEach((c, idx) => {
+        rows.push([
+          idx + 1,
+          c.sales_name || 'مباشر',
+          c.eoi_number || '',
+          c.residence_country || '',
+          c.contract_location || '',
+          c.name || '',
+          c.phone || '',
+          c.email || '',
+          c.id_number || '',
+          c.period || c.payment_period || '',
+          c.paid_5_percent || '',
+          (c.id_address || '').replace(/[\r\n]+/g, ' '),
+          (c.correspondence_address || '').replace(/[\r\n]+/g, ' '),
+          c.created_at || '',
+          c.unit_price || ''
+        ]);
+      });
+
+      const csvContent = '\uFEFF' + rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Shores_Contracts_${new Date().toISOString().substring(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

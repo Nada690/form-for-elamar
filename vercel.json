@@ -2,7 +2,17 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/dashboard", "destination": "/public/dashboard.html" },
+    { "source": "/view_clients", "destination": "/public/view_clients.html" },
+    { "source": "/view_clients.html", "destination": "/public/view_clients.html" },
+    { "source": "/view_clients.php", "destination": "/public/view_clients.html" },
+    { "source": "/sales_portal", "destination": "/public/sales_portal.html" },
+    { "source": "/sales_portal.html", "destination": "/public/sales_portal.html" },
+    { "source": "/sales_portal.php", "destination": "/public/sales_portal.html" },
+    { "source": "/portal", "destination": "/public/sales_portal.html" },
+    { "source": "/admin", "destination": "/public/dashboard.html" },
     { "source": "/", "destination": "/public/index.html" },
+    { "source": "/index.html", "destination": "/public/index.html" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [

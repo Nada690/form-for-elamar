@@ -25,7 +25,18 @@ session_start();
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store');
 
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['ar', 'en'], true)) {
+    $_SESSION['portal_lang'] = $_GET['lang'];
+}
+$portalLang = $_SESSION['portal_lang'] ?? 'ar';
+$isEn = ($portalLang === 'en');
+
 require_once __DIR__ . '/db.php';
+
+function pt(string $ar, string $en): string {
+    global $isEn;
+    return $isEn ? $en : $ar;
+}
 
 const PORTAL_PAGE_SIZE   = 25;
 const PORTAL_MAX_FAILS   = 5;   // محاولات فاشلة
@@ -348,16 +359,19 @@ $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
 // ───────────────────────── HTML head ─────────────────────────
-function pageHead(string $title): void { ?>
+function pageHead(string $title): void { 
+    global $portalLang, $isEn;
+?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<?= $portalLang ?>" dir="<?= $isEn ? 'ltr' : 'rtl' ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title><?= h($title) ?> | مجموعة العمار</title>
+  <title><?= h($title) ?> | <?= $isEn ? 'El Amar Group' : 'مجموعة العمار' ?></title>
+  <link rel="icon" type="image/png" href="logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * {
       transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -372,7 +386,7 @@ function pageHead(string $title): void { ?>
       color: #000000 !important;
       font-weight: 700 !important;
     }
-    html { font-family: 'Cairo', sans-serif; }
+    html { font-family: <?= $isEn ? "'Inter', 'Plus Jakarta Sans', sans-serif" : "'Cairo', sans-serif" ?>; }
     .font-mono { font-family: 'Plus Jakarta Sans', monospace; }
     
     h1, h2, h3, h4, h5, h6, label, p, span, input, select, textarea, button, a, div, th, td {
@@ -402,6 +416,24 @@ function pageHead(string $title): void { ?>
       box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35) !important;
     }
   </style>
+  <script>
+    function toggleLanguage() {
+      const current = '<?= $portalLang ?>';
+      const next = (current === 'ar') ? 'en' : 'ar';
+      localStorage.setItem('elamar_lang', next);
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', next);
+      window.location.href = url.toString();
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('elamar_lang');
+      if (saved && saved !== '<?= $portalLang ?>' && !window.location.search.includes('lang=')) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', saved);
+        window.location.replace(url.toString());
+      }
+    });
+  </script>
 </head>
 <body class="min-h-screen text-slate-950 p-3 sm:p-6 lg:p-8">
 <?php }
@@ -414,30 +446,36 @@ function flashBox(?array $flash): void {
 
 // ───────────────────────── صفحة تسجيل الدخول ─────────────────────────
 if (!$user) {
-    pageHead('تسجيل الدخول'); ?>
+    pageHead(pt('تسجيل الدخول', 'Sign In')); ?>
   <div class="min-h-screen flex items-center justify-center p-4">
-    <div class="glass w-full max-w-md rounded-3xl p-7 shadow-2xl">
+    <div class="glass w-full max-w-md rounded-3xl p-7 shadow-2xl relative">
+      <div class="absolute top-5 <?= $isEn ? 'right-5' : 'left-5' ?>">
+        <button type="button" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-sky-50 text-slate-950 text-xs font-black border-2 border-sky-300 shadow-xs cursor-pointer flex items-center gap-1">
+          <span>🌐</span>
+          <span><?= $isEn ? 'العربية' : 'English' ?></span>
+        </button>
+      </div>
       <div class="text-center mb-6">
         <img src="logo.png" alt="Logo" class="h-16 mx-auto mb-3 object-contain">
-        <h1 class="text-xl font-black text-slate-950">بوابة المبيعات</h1>
-        <p class="text-xs text-sky-950 font-black mt-1">دخول السيلز والمديرين</p>
+        <h1 class="text-xl font-black text-slate-950"><?= pt('بوابة المبيعات', 'Sales Portal') ?></h1>
+        <p class="text-xs text-sky-950 font-black mt-1"><?= pt('دخول السيلز والمديرين', 'Sales & Management Access') ?></p>
       </div>
       <?php flashBox($flash); ?>
       <form method="POST" action="sales_portal.php" autocomplete="on" class="space-y-4">
         <input type="hidden" name="action" value="login">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1.5">البريد الإلكتروني</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5"><?= pt('البريد الإلكتروني', 'Email Address') ?></label>
           <input type="email" name="email" required autofocus dir="ltr"
                  class="w-full px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1.5">كلمة المرور</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5"><?= pt('كلمة المرور', 'Password') ?></label>
           <input type="password" name="password" required dir="ltr"
                  class="w-full px-4 py-3 rounded-2xl bg-white border-2 border-sky-300 text-slate-950 text-sm focus:outline-none focus:border-sky-500 font-bold shadow-xs">
         </div>
         <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 font-black text-sm hover:from-sky-500 hover:to-blue-600 border-2 border-sky-400 shadow-md cursor-pointer">
-          دخول
+          <?= pt('دخول', 'Sign In') ?>
         </button>
       </form>
     </div>
@@ -451,7 +489,7 @@ if (!$user) {
 $role    = $user['role'];
 $isAdmin = ($role === 'Admin');
 $view    = ($isAdmin && ($_GET['view'] ?? '') === 'users') ? 'users' : 'customers';
-$roleLabel = ['Admin' => 'أدمن', 'Manager' => 'مدير مبيعات', 'Sales' => 'مستشار مبيعات'][$role] ?? $role;
+$roleLabel = ['Admin' => pt('أدمن', 'Admin'), 'Manager' => pt('مدير مبيعات', 'Sales Manager'), 'Sales' => pt('مستشار مبيعات', 'Sales Consultant')][$role] ?? $role;
 
 [$scopeSql, $scopeParams] = customerScope($user);
 
@@ -858,22 +896,33 @@ pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء
         <img src="logo.png" alt="Logo" class="h-12 object-contain">
       </div>
       <div>
-        <h1 class="text-xl sm:text-2xl font-black text-slate-950">بوابة المبيعات</h1>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-950"><?= pt('بوابة المبيعات', 'Sales Portal') ?></h1>
         <p class="text-xs text-slate-800 font-bold mt-1">
           <span class="font-black text-slate-950">👤 <?= h($user['name']) ?></span> •
           <span class="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-950 border border-sky-300 font-black"><?= h($roleLabel) ?></span>
         </p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Language Toggle Button -->
+      <button 
+        type="button" 
+        onclick="toggleLanguage()" 
+        class="px-3.5 py-2 bg-white hover:bg-sky-50 text-slate-950 text-xs sm:text-sm font-black rounded-2xl transition-all border-2 border-sky-300 flex items-center gap-1.5 cursor-pointer shadow-sm"
+      >
+        <span>🌐</span>
+        <span><?= $isEn ? 'العربية' : 'English' ?></span>
+      </button>
+
       <?php if ($isAdmin): ?>
-        <a href="sales_portal.php" class="px-4 py-2 rounded-2xl text-sm font-black border-2 <?= $view === 'customers' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white hover:bg-sky-50 text-slate-950 border-sky-300 shadow-xs' ?>">العملاء</a>
-        <a href="sales_portal.php?view=users" class="px-4 py-2 rounded-2xl text-sm font-black border-2 <?= $view === 'users' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white hover:bg-sky-50 text-slate-950 border-sky-300 shadow-xs' ?>">المستخدمون</a>
+        <a href="sales_portal.php" class="px-4 py-2 rounded-2xl text-xs sm:text-sm font-black border-2 <?= $view === 'customers' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white hover:bg-sky-50 text-slate-950 border-sky-300 shadow-xs' ?>"><?= pt('العملاء', 'Clients') ?></a>
+        <a href="sales_portal.php?view=users" class="px-4 py-2 rounded-2xl text-xs sm:text-sm font-black border-2 <?= $view === 'users' ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 border-sky-400 shadow-md' : 'bg-white hover:bg-sky-50 text-slate-950 border-sky-300 shadow-xs' ?>"><?= pt('المستخدمون', 'Users') ?></a>
+        <a href="view_clients.php" target="_blank" class="px-4 py-2 rounded-2xl text-xs sm:text-sm font-black bg-slate-900 text-sky-300 hover:text-white border-2 border-slate-700 shadow-xs"><?= pt('لوحة الإدارة ↗', 'Master Admin ↗') ?></a>
       <?php endif; ?>
       <form method="POST" action="sales_portal.php">
         <input type="hidden" name="action" value="logout">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <button class="px-4 py-2 rounded-2xl text-sm font-black bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-300 shadow-xs cursor-pointer">خروج</button>
+        <button class="px-4 py-2 rounded-2xl text-xs sm:text-sm font-black bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-300 shadow-xs cursor-pointer"><?= pt('خروج', 'Logout') ?></button>
       </form>
     </div>
   </header>

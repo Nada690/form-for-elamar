@@ -119,6 +119,7 @@ if (!$isAuthenticated):
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تسجيل دخول المسؤول | مجموعة العمار</title>
+  <link rel="icon" type="image/png" href="logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -794,6 +795,7 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة التحكم وإدارة عقود شورز الساحلية | مجموعة العمار</title>
+  <link rel="icon" type="image/png" href="logo.png">
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1004,13 +1006,11 @@ try {
 
       /* Precise column widths in landscape printing for all 18 printable columns */
       #clientsTable th.col-seq          { width: 2.5% !important; text-align: center !important; }
-      #clientsTable th.col-id           { width: 3.0% !important; text-align: center !important; }
-      #clientsTable th.col-sales        { width: 5.0% !important; text-align: center !important; }
+            #clientsTable th.col-sales        { width: 5.0% !important; text-align: center !important; }
       #clientsTable th.col-unit         { width: 5.5% !important; text-align: center !important; }
       #clientsTable th.col-residence    { width: 5.0% !important; text-align: center !important; }
       #clientsTable th.col-branch       { width: 5.0% !important; text-align: center !important; }
-      #clientsTable th.col-signing-loc  { width: 5.5% !important; text-align: center !important; }
-      #clientsTable th.col-name         { width: 11.0% !important; text-align: right !important; }
+            #clientsTable th.col-name         { width: 11.0% !important; text-align: right !important; }
       #clientsTable th.col-phone        { width: 6.5% !important; text-align: center !important; }
       #clientsTable th.col-email        { width: 6.5% !important; text-align: center !important; }
       #clientsTable th.col-doc          { width: 6.5% !important; text-align: center !important; }
@@ -1370,13 +1370,11 @@ try {
           <thead class="sticky top-0 z-20 bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-400 text-[11px] sm:text-xs uppercase tracking-wider backdrop-blur-md">
             <tr>
               <th class="p-3.5 w-12 text-center col-seq">#</th>
-              <th class="p-3.5 w-16 text-center col-id">ID</th>
-              <th class="p-3.5 text-center col-sales min-w-[130px]" data-i18n="thSales">مسؤول المبيعات</th>
+                            <th class="p-3.5 text-center col-sales min-w-[130px]" data-i18n="thSales">مسؤول المبيعات</th>
               <th class="p-3.5 text-center col-unit min-w-[140px]" data-i18n="thUnit">كود الوحدة</th>
               <th class="p-3.5 text-center col-residence min-w-[120px]" data-i18n="thResidence">مكان الإقامة</th>
               <th class="p-3.5 text-center col-branch min-w-[120px]" data-i18n="thBranch">مكان التوثيق</th>
-              <th class="p-3.5 text-center col-signing-loc min-w-[130px]" data-i18n="thSigningLoc">المكان الأقرب للتوقيع</th>
-              <th class="p-3.5 col-name min-w-[210px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
+                            <th class="p-3.5 col-name min-w-[210px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
               <th class="p-3.5 text-center col-phone min-w-[150px]" data-i18n="thPhone">أرقام التواصل</th>
               <th class="p-3.5 text-center col-email min-w-[160px]" data-i18n="thEmail">البريد الإلكتروني</th>
               <th class="p-3.5 text-center col-doc min-w-[140px]" data-i18n="thIdDoc">إثبات الشخصية</th>
@@ -1393,7 +1391,7 @@ try {
           <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="clientsTableBody">
             <?php if (empty($clients)): ?>
               <tr>
-                <td colspan="19" class="p-14 text-center text-slate-950 font-black text-sm" data-i18n="noClientsFound">
+                <td colspan="17" class="p-14 text-center text-slate-950 font-black text-sm" data-i18n="noClientsFound">
                   <div class="text-4xl mb-2">🏖️</div>
                   لا توجد أي بيانات أو عقود مسجلة تطابق معايير البحث الحالية.
                 </td>
@@ -1451,14 +1449,6 @@ try {
                   <!-- 1. # (الترقيم التسلسلي) -->
                   <td class="p-3.5 text-center font-black text-slate-950 font-mono col-seq">
                     <?= $seq++ ?>
-                  </td>
-
-                  <!-- 2. ID -->
-                  <td class="p-3.5 text-center text-slate-950 font-mono text-xs font-black whitespace-nowrap col-id">
-                    #<?= htmlspecialchars($client['id']) ?>
-                    <?php if ($partnerCount > 1): ?>
-                      <div class="text-[10px] text-amber-800 font-black mt-0.5">شريك <?= ($pIdx + 1) ?> من <?= $partnerCount ?></div>
-                    <?php endif; ?>
                   </td>
 
                   <!-- 3. مسؤول المبيعات -->
@@ -1523,13 +1513,6 @@ try {
                         <?= htmlspecialchars($loc) ?>
                       </span>
                     <?php endif; ?>
-                  </td>
-
-                  <!-- 7. المكان الأقرب لتوقيع العقد -->
-                  <td class="p-3.5 text-xs font-black text-slate-950 text-center col-signing-loc min-w-[130px]">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-50 border-2 border-sky-300 text-slate-950 font-black shadow-2xs">
-                      <?= htmlspecialchars($client['preferred_signing_location'] ?? '-') ?>
-                    </span>
                   </td>
 
                   <!-- 8. اسم العميل في البطاقة / الشركاء -->
