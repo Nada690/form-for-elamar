@@ -478,6 +478,28 @@ if (empty($primaryClientName)) {
 $partnerNamesOnly = array_values(array_filter($allExtractedNames, fn($n) => $n !== $primaryClientName));
 
 // ── فحص منع إعادة التسجيل: هل تم تسجيل واستيفاء بيانات هذا العقد مسبقاً؟ ──
+// ── تحديد نوع الوثائق المسجلة للعميل (رقم قومي / جواز سفر / كلاهما) ──
+$hasNationalId = (strlen($cleanId) === 14 && ctype_digit($cleanId));
+$hasPassport = (strlen($cleanId) >= 6 && !ctype_digit($cleanId));
+
+if (!empty($unitCodes) && !empty($pdo)) {
+    try {
+        $inQ = implode(',', array_fill(0, count($unitCodes), '?'));
+        $chkOtherStmt = $pdo->prepare("SELECT DISTINCT national_id FROM customer_units WHERE unit_code IN ($inQ)");
+        $chkOtherStmt->execute($unitCodes);
+        $allIds = $chkOtherStmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($allIds as $aid) {
+            $aidClean = strtoupper(preg_replace('/[\s\-_–—]/u', '', trim((string)$aid)));
+            if (strlen($aidClean) === 14 && ctype_digit($aidClean)) {
+                $hasNationalId = true;
+            } elseif (strlen($aidClean) >= 6) {
+                $hasPassport = true;
+            }
+        }
+    } catch (Exception $eDoc) {}
+}
+$docMode = ($hasNationalId && $hasPassport) ? 'both' : ($hasPassport ? 'passport' : 'national_id');
+
 $alreadyRegistered = false;
 $registeredClientInfo = null;
 
@@ -510,6 +532,7 @@ if (!empty($pdo)) {
 
 echo json_encode([
     'found'              => true,
+    'doc_mode'           => $docMode,
     'already_registered' => $alreadyRegistered,
     'registered_info'    => $registeredClientInfo,
     'unit_code'          => $unitsList[0]['code'] ?? '',

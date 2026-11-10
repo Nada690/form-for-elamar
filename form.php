@@ -1763,6 +1763,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
     function initApp() {
       initPrimaryClientCard();
+      if (typeof updateClientIdTypeOptions === 'function') {
+        updateClientIdTypeOptions(1, 'national_id');
+      }
       setLanguage(currentLang);
     }
 
@@ -1806,6 +1809,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       }
       if (typeof updateClientsCountBadge === 'function') {
         updateClientsCountBadge();
+      }
+      if (typeof updateAllDocTypeSelectsLanguage === 'function') {
+        updateAllDocTypeSelectsLanguage(lang);
       }
       if (typeof updateAllExtraUnitsLanguage === 'function') {
         updateAllExtraUnitsLanguage(lang);
@@ -6742,7 +6748,7 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
     // ── Client ID and Residence Handlers ──
     function handleClientIdTypeChange(clientId, type) {
-      const card = document.getElementById(`clientCard_${clientId}`);
+      const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById('clientCard_1');
       if (!card) return;
       const input = card.querySelector('.client-id-number');
       const errEl = card.querySelector('.client-id-error');
@@ -6753,22 +6759,113 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
       if (type === 'both') {
         if (bothGroup) bothGroup.classList.remove('hidden');
         if (lblText) lblText.textContent = (currentLang === 'en') ? 'National ID (14 digits)' : 'رقم بطاقة الرقم القومي (14 رقم)';
-        input.setAttribute('maxlength', '14');
-        input.setAttribute('placeholder', (currentLang === 'en') ? 'Enter exactly 14 digits' : 'أدخل 14 رقماً للبطاقة الشخصية');
+        if (input) {
+          input.setAttribute('maxlength', '14');
+          input.setAttribute('placeholder', (currentLang === 'en') ? 'Enter exactly 14 digits' : 'أدخل 14 رقماً بالضبط للبطاقة الشخصية');
+        }
       } else if (type === 'passport') {
         if (bothGroup) bothGroup.classList.add('hidden');
         if (lblText) lblText.textContent = (currentLang === 'en') ? 'Passport Number' : 'رقم جواز السفر';
-        input.setAttribute('maxlength', '15');
-        input.setAttribute('placeholder', (currentLang === 'en') ? 'Enter Passport Number (e.g. A1234567)' : 'أدخل رقم جواز السفر (مثال: A1234567)');
+        if (input) {
+          input.setAttribute('maxlength', '15');
+          input.setAttribute('placeholder', (currentLang === 'en') ? 'Enter Passport Number (e.g. A1234567)' : 'أدخل رقم جواز السفر (مثال: A1234567)');
+        }
       } else {
         // national_id
         if (bothGroup) bothGroup.classList.add('hidden');
-        if (lblText) lblText.textContent = (currentLang === 'en') ? 'National ID or Passport Number' : 'رقم بطاقة الرقم القومي أو جواز السفر';
-        input.setAttribute('maxlength', '15');
-        input.setAttribute('placeholder', (currentLang === 'en') ? 'Enter 14 digits or Passport Number' : 'أدخل 14 رقماً للبطاقة أو رقم جواز السفر');
+        if (lblText) lblText.textContent = (currentLang === 'en') ? 'National ID (14 digits)' : 'رقم بطاقة الرقم القومي';
+        if (input) {
+          input.setAttribute('maxlength', '14');
+          input.setAttribute('placeholder', (currentLang === 'en') ? 'Enter exactly 14 digits' : 'أدخل 14 رقماً بالضبط للبطاقة الشخصية');
+        }
       }
-      validateClientIdNumber(input, clientId);
     }
+
+    // دالة الكشف الذكي عن نوع الوثائق المسجلة للعميل (رقم قومي / باسبور / كلاهما)
+    function detectClientDocTypes(searchId, data) {
+      const clean = (searchId || '').trim().toUpperCase();
+      let hasNid = false;
+      let hasPass = false;
+
+      if (clean.length === 14 && /^\d+$/.test(clean)) {
+        hasNid = true;
+      } else if (clean.length >= 6) {
+        hasPass = true;
+      }
+
+      const lookup = window.customerUnitsLookup || {};
+      let clientName = (data && data.name) ? data.name.trim() : '';
+      let clientUnits = (data && data.units) ? data.units : [];
+
+      if (!clientName && lookup[clean]) {
+        clientName = (lookup[clean][0] && lookup[clean][0].name) ? lookup[clean][0].name.trim() : '';
+        clientUnits = lookup[clean].map(m => m.unit);
+      }
+
+      if (clientName || (clientUnits && clientUnits.length > 0)) {
+        Object.keys(lookup).forEach(otherId => {
+          if (otherId === clean) return;
+          const matches = lookup[otherId] || [];
+          const isSame = matches.some(m => {
+            const mName = (m.name || '').trim();
+            const mUnit = (m.unit || '').trim();
+            return (clientName && mName && (mName === clientName || clientName.includes(mName) || mName.includes(clientName))) ||
+                   (mUnit && clientUnits.includes(mUnit));
+          });
+          if (isSame) {
+            if (otherId.length === 14 && /^\d+$/.test(otherId)) {
+              hasNid = true;
+            } else if (otherId.length >= 6) {
+              hasPass = true;
+            }
+          }
+        });
+      }
+
+      // التحقق من ملفات KYC إن كانت مرفوعة
+      if (typeof kycUploadedFiles !== 'undefined') {
+        if (kycUploadedFiles.front || kycUploadedFiles.back) hasNid = true;
+        if (kycUploadedFiles.passport) hasPass = true;
+      }
+
+      if (hasNid && hasPass) return 'both';
+      if (hasPass) return 'passport';
+      return 'national_id';
+    }
+    window.detectClientDocTypes = detectClientDocTypes;
+
+    // دالة تحديث خيارات نوع الوثيقة: لو عنده رقم قومي لا تظهر باقي الخيارات، لو باسبور لا تظهر باقي الخيارات، لو كلاهما يظهر الخياران
+    function updateClientIdTypeOptions(clientId, mode) {
+      const card = document.getElementById(`clientCard_${clientId}`) || document.getElementById('clientCard_1');
+      if (!card) return;
+      const select = card.querySelector('.client-id-type');
+      if (!select) return;
+
+      const isEn = (currentLang === 'en');
+      const natText = isEn ? 'National ID (14 digits)' : 'بطاقة الرقم القومي (14 رقم)';
+      const passText = isEn ? 'Passport (Passport)' : 'جواز السفر (Passport)';
+      const bothText = isEn ? 'Both (National ID + Passport)' : 'كلاهما (بطاقة الرقم القومي + جواز السفر)';
+
+      if (mode === 'national_id') {
+        select.innerHTML = `<option value="national_id" data-i18n="optNatId">${natText}</option>`;
+        select.value = 'national_id';
+        handleClientIdTypeChange(clientId, 'national_id');
+      } else if (mode === 'passport') {
+        select.innerHTML = `<option value="passport" data-i18n="optPassport">${passText}</option>`;
+        select.value = 'passport';
+        handleClientIdTypeChange(clientId, 'passport');
+      } else if (mode === 'both') {
+        const curVal = select.value || 'national_id';
+        select.innerHTML = `
+          <option value="national_id" data-i18n="optNatId">${natText}</option>
+          <option value="passport" data-i18n="optPassport">${passText}</option>
+          <option value="both" data-i18n="optBothId">${bothText}</option>
+        `;
+        select.value = curVal;
+        handleClientIdTypeChange(clientId, curVal);
+      }
+    }
+    window.updateClientIdTypeOptions = updateClientIdTypeOptions;
 
     // دالة التحقق من كود الوحدة الكامل بدون أي نقص
     function validateCompleteUnitCode(input) {
@@ -7326,6 +7423,10 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
             const idBadge = card.querySelector('.id-lock-badge');
             if (idBadge) idBadge.classList.remove('hidden');
           }
+
+          // ضبط خيارات الوثيقة وفقاً لبيانات العميل (لو رقم قومي فقط، لو باسبور فقط، لو كلاهما)
+          const detectedMode = (data && data.doc_mode) ? data.doc_mode : detectClientDocTypes(normId, data);
+          updateClientIdTypeOptions(clientId || 1, detectedMode);
         }
 
         // توليد كونتينرات بيانات الشركاء في القسم المخصص المباشر قبل بيانات الوحدة
@@ -7476,6 +7577,17 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       input.classList.toggle('valid', isValid);
       input.classList.toggle('invalid', !isValid);
+
+      // تفاعل ديناميكي فوري أثناء كتابة الرقم القومي أو الباسبور
+      if (typeof updateClientIdTypeOptions === 'function') {
+        const cleanVal = (val || '').trim().toUpperCase();
+        if (cleanVal.length === 14 && /^\d+$/.test(cleanVal)) {
+          updateClientIdTypeOptions(clientId, 'national_id');
+        } else if (cleanVal.length >= 6 && /[A-Z]/.test(cleanVal)) {
+          updateClientIdTypeOptions(clientId, 'passport');
+        }
+      }
+
       if (typeof lookupUnitByNationalId === 'function') lookupUnitByNationalId(val, clientId);
       return isValid;
     }
@@ -7506,6 +7618,10 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
 
       const noticeText = card.querySelector('.client-doc-notice-text');
       const dropSubtitle = card.querySelector('.client-drop-subtitle');
+
+      if (typeof updateClientIdTypeOptions === 'function') {
+        updateClientIdTypeOptions(clientId, isOutside ? 'passport' : 'national_id');
+      }
 
       if (isOutside) {
         if (noticeText) noticeText.innerText = (currentLang === 'en')
@@ -9672,6 +9788,12 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
         if (idBadge) idBadge.classList.remove('hidden');
       }
 
+      // ضبط خيارات نوع الوثيقة وفقاً لوثيقة KYC المستخرجة
+      const kycMode = (kycExtractedData && kycExtractedData.id_type === 'passport') ? 'passport' : 'national_id';
+      if (typeof updateClientIdTypeOptions === 'function') {
+        updateClientIdTypeOptions(1, kycMode);
+      }
+
       // 4. Set Residency Choice
       if (typeof setClientResidence === 'function') {
         setClientResidence(1, kycExtractedData.residence);
@@ -9694,6 +9816,9 @@ $embeddedInventoryJson = file_exists($inventoryJsonFile) ? file_get_contents($in
     function proceedWithManualForm() {
       const kycModal = document.getElementById('kycWelcomeModal');
       if (kycModal) kycModal.classList.add('hidden');
+      if (typeof updateClientIdTypeOptions === 'function') {
+        updateClientIdTypeOptions(1, (currentKycResidency === 'outside') ? 'passport' : 'national_id');
+      }
     }
     window.proceedWithManualForm = proceedWithManualForm;
 
