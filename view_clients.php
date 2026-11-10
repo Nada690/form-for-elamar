@@ -839,11 +839,14 @@ try {
       max-height: 76vh;
       position: relative;
       border-radius: 1.25rem;
+      width: 100% !important;
     }
     #clientsTable {
       border-collapse: separate !important;
       border-spacing: 0 !important;
-      width: 100%;
+      width: 100% !important;
+      min-width: 100% !important;
+      table-layout: auto !important;
     }
     #clientsTable thead th {
       position: sticky !important;
@@ -1083,13 +1086,13 @@ try {
     }
   </style>
 </head>
-<body class="min-h-screen p-3 sm:p-6 lg:p-8 text-slate-950 selection:bg-sky-200 selection:text-slate-950">
+<body class="min-h-screen p-2 sm:p-3 lg:p-4 text-slate-950 selection:bg-sky-200 selection:text-slate-950 w-full overflow-x-hidden">
 
   <!-- Ambient light -->
   <div class="ambient-light fixed top-0 right-10 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none no-print"></div>
   <div class="ambient-light fixed bottom-0 left-10 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none no-print"></div>
 
-  <div class="max-w-[1700px] mx-auto space-y-6 relative z-10">
+  <div class="w-full max-w-none space-y-4 sm:space-y-5 relative z-10">
 
     <!-- ═══════════════ TOP HEADER ═══════════════ -->
     <header class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl border-2 border-sky-300 no-print">
@@ -1369,23 +1372,23 @@ try {
         <table class="w-full text-xs sm:text-sm text-right border-collapse" id="clientsTable">
           <thead class="sticky top-0 z-20 bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-400 text-[11px] sm:text-xs uppercase tracking-wider backdrop-blur-md">
             <tr>
-              <th class="p-3.5 w-12 text-center col-seq">#</th>
-                            <th class="p-3.5 text-center col-sales min-w-[130px]" data-i18n="thSales">مسؤول المبيعات</th>
-              <th class="p-3.5 text-center col-unit min-w-[140px]" data-i18n="thUnit">كود الوحدة</th>
-              <th class="p-3.5 text-center col-residence min-w-[120px]" data-i18n="thResidence">مكان الإقامة</th>
-              <th class="p-3.5 text-center col-branch min-w-[120px]" data-i18n="thBranch">مكان التوثيق</th>
-                            <th class="p-3.5 col-name min-w-[210px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
-              <th class="p-3.5 text-center col-phone min-w-[150px]" data-i18n="thPhone">أرقام التواصل</th>
-              <th class="p-3.5 text-center col-email min-w-[160px]" data-i18n="thEmail">البريد الإلكتروني</th>
-              <th class="p-3.5 text-center col-doc min-w-[140px]" data-i18n="thIdDoc">إثبات الشخصية</th>
-              <th class="p-3.5 text-center col-plan min-w-[110px]" data-i18n="thPlan">فترة السداد</th>
-              <th class="p-3.5 text-center col-october min-w-[135px]" data-i18n="th5Percent">مقدم أكتوبر</th>
-              <th class="p-3.5 col-id-address min-w-[200px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
-              <th class="p-3.5 col-corr-address min-w-[200px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
-              <th class="p-3.5 col-notes min-w-[190px] text-right" data-i18n="thNotes">الملاحظات والاستثناءات</th>
-              <th class="p-3.5 text-center col-files min-w-[110px]" data-i18n="thDocs">المستندات</th>
-              <th class="p-3.5 text-center col-date min-w-[135px]" data-i18n="thDate">التاريخ</th>
-              <th class="p-3.5 text-center no-print col-actions min-w-[110px]" data-i18n="thActions">إجراءات</th>
+              <th class="py-3 px-2 w-10 min-w-[36px] text-center col-seq">#</th>
+              <th class="py-3 px-2 text-center col-sales min-w-[105px]" data-i18n="thSales">مسؤول المبيعات</th>
+              <th class="py-3 px-2 text-center col-unit min-w-[105px]" data-i18n="thUnit">كود الوحدة</th>
+              <th class="py-3 px-2 text-center col-residence min-w-[90px]" data-i18n="thResidence">مكان الإقامة</th>
+              <th class="py-3 px-2 text-center col-branch min-w-[90px]" data-i18n="thBranch">مكان التوثيق</th>
+              <th class="py-3 px-2.5 col-name min-w-[160px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
+              <th class="py-3 px-2 text-center col-phone min-w-[115px]" data-i18n="thPhone">أرقام التواصل</th>
+              <th class="py-3 px-2 text-center col-email min-w-[125px]" data-i18n="thEmail">البريد الإلكتروني</th>
+              <th class="py-3 px-2 text-center col-doc min-w-[110px]" data-i18n="thIdDoc">إثبات الشخصية</th>
+              <th class="py-3 px-2 text-center col-plan min-w-[90px]" data-i18n="thPlan">فترة السداد</th>
+              <th class="py-3 px-2 text-center col-october min-w-[100px]" data-i18n="th5Percent">مقدم أكتوبر</th>
+              <th class="py-3 px-2.5 col-id-address min-w-[140px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
+              <th class="py-3 px-2.5 col-corr-address min-w-[140px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
+              <th class="py-3 px-2.5 col-notes min-w-[120px] text-right" data-i18n="thNotes">الملاحظات والاستثناءات</th>
+              <th class="py-3 px-2 text-center col-files min-w-[80px]" data-i18n="thDocs">المستندات</th>
+              <th class="py-3 px-2 text-center col-date min-w-[95px]" data-i18n="thDate">التاريخ</th>
+              <th class="py-3 px-2 text-center no-print col-actions min-w-[80px]" data-i18n="thActions">إجراءات</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-sky-100 text-slate-950 font-bold" id="clientsTableBody">
@@ -1447,12 +1450,12 @@ try {
                 >
                   
                   <!-- 1. # (الترقيم التسلسلي) -->
-                  <td class="p-3.5 text-center font-black text-slate-950 font-mono col-seq">
+                  <td class="py-2.5 px-2 text-center font-black text-slate-950 font-mono col-seq">
                     <?= $seq++ ?>
                   </td>
 
                   <!-- 3. مسؤول المبيعات -->
-                  <td class="p-3.5 text-center col-sales min-w-[130px]">
+                  <td class="py-2.5 px-2 text-center col-sales min-w-[105px]">
                     <?php if (!empty($client['sales_name'])): ?>
                       <a 
                         href="view_clients.php?sales_id=<?= $client['sales_id'] ?>" 
@@ -1470,7 +1473,7 @@ try {
                   </td>
 
                   <!-- 4. كود الوحدة مع السعر إن وجد -->
-                  <td class="p-3.5 text-center font-mono font-black text-slate-950 col-unit min-w-[140px]">
+                  <td class="py-2.5 px-2 text-center font-mono font-black text-slate-950 col-unit min-w-[105px]">
                     <button 
                       type="button"
                       onclick="copyText('<?= htmlspecialchars($client['eoi_number']) ?>')" 
@@ -1495,14 +1498,14 @@ try {
                   </td>
 
                   <!-- 5. مكان الإقامة الحالي -->
-                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-residence min-w-[120px]">
+                  <td class="py-2.5 px-2 text-center text-xs font-black text-slate-950 col-residence min-w-[90px]">
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-black text-slate-950 border-2 <?= $isOutside ? 'bg-blue-100 border-blue-300 text-blue-950' : 'bg-emerald-100 border-emerald-300 text-emerald-950' ?> shadow-2xs">
                       <?= $isOutside ? '🌍 خارج مصر' : '🇪🇬 داخل مصر' ?>
                     </span>
                   </td>
 
                   <!-- 6. مكان توثيق العقد -->
-                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-branch min-w-[120px]">
+                  <td class="py-2.5 px-2 text-center text-xs font-black text-slate-950 col-branch min-w-[90px]">
                     <?php if ($isOutside): ?>
                       <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-50 text-slate-950 border-2 border-sky-200 font-black shadow-2xs">
                         مستثنى (خارج مصر)
@@ -1516,7 +1519,7 @@ try {
                   </td>
 
                   <!-- 8. اسم العميل في البطاقة / الشركاء -->
-                  <td class="p-3.5 font-black text-slate-950 col-name min-w-[210px] whitespace-normal break-words text-right">
+                  <td class="py-2.5 px-2.5 font-black text-slate-950 col-name min-w-[160px] whitespace-normal break-words text-right">
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="text-slate-950 font-black text-xs sm:text-sm leading-tight"><?= htmlspecialchars($pName, ENT_QUOTES, 'UTF-8') ?></span>
                       <?php if ($partnerCount > 1): ?>
@@ -1558,7 +1561,7 @@ try {
                   </td>
 
                   <!-- 9. أرقام التواصل مع واتساب السريع -->
-                  <td class="p-3.5 text-center col-phone min-w-[150px]">
+                  <td class="py-2.5 px-2 text-center col-phone min-w-[115px]">
                     <div class="flex items-center justify-center gap-1.5 dir-ltr">
                       <?php if (!empty($rawPhone)): ?>
                         <a 
@@ -1575,18 +1578,18 @@ try {
                   </td>
 
                   <!-- 10. البريد الإلكتروني للمراسلات -->
-                  <td class="p-3.5 font-mono text-xs text-slate-950 font-black text-center col-email min-w-[160px] dir-ltr">
+                  <td class="py-2.5 px-2 font-mono text-xs text-slate-950 font-black text-center col-email min-w-[125px] dir-ltr">
                     <span class="text-slate-950 font-black"><?= htmlspecialchars($pEmail ?: '-') ?></span>
                   </td>
 
                   <!-- 11. إثبات الشخصية -->
-                  <td class="p-3.5 text-center text-xs font-mono font-black text-slate-950 col-doc min-w-[140px]">
+                  <td class="py-2.5 px-2 text-center text-xs font-mono font-black text-slate-950 col-doc min-w-[110px]">
                     <div class="text-slate-950 font-black font-mono"><?= htmlspecialchars($pIdNum ?: ($client['id_number'] ?: '-')) ?></div>
                     <div class="text-[10px] text-slate-600 font-black mt-0.5"><?= ($client['id_type'] === 'passport') ? 'جواز سفر' : 'رقم قومي' ?></div>
                   </td>
 
                   <!-- 12. فترة السداد والنسبة -->
-                  <td class="p-3.5 text-center text-xs font-black text-slate-950 col-plan min-w-[110px]">
+                  <td class="py-2.5 px-2 text-center text-xs font-black text-slate-950 col-plan min-w-[90px]">
                     <div class="inline-block px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border-2 border-purple-300 font-black shadow-2xs">
                       <?= htmlspecialchars($client['period'] ?: $client['payment_period'] ?: '-') ?>
                     </div>
@@ -1596,7 +1599,7 @@ try {
                   </td>
 
                   <!-- 13. سداد مقدم أكتوبر + تاريخ الدفع -->
-                  <td class="p-3.5 text-center font-black text-slate-950 col-october min-w-[135px]">
+                  <td class="py-2.5 px-2 text-center font-black text-slate-950 col-october min-w-[100px]">
                     <?php if ($client['paid_5_percent'] === 'نعم'): ?>
                       <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-950 border-2 border-emerald-400 shadow-2xs mb-1">
                         ✓ تم الاستكمال
@@ -1614,7 +1617,7 @@ try {
                   </td>
 
                   <!-- 14. عنوان الهوية (عمود مستقل كامل بدون اقتطاع) -->
-                  <td class="p-3.5 text-right font-bold text-slate-950 col-id-address min-w-[200px] whitespace-normal break-words text-xs leading-relaxed">
+                  <td class="py-2.5 px-2.5 text-right font-bold text-slate-950 col-id-address min-w-[140px] whitespace-normal break-words text-xs leading-relaxed">
                     <?php 
                       $idAddr = !empty($client['id_address']) ? $client['id_address'] : (!empty($client['governorate']) ? $client['governorate'] : (!empty($client['addresses']) ? $client['addresses'] : '-'));
                     ?>
@@ -1622,7 +1625,7 @@ try {
                   </td>
 
                   <!-- 15. عنوان المراسلات (عمود مستقل كامل بدون اقتطاع) -->
-                  <td class="p-3.5 text-right font-bold text-slate-950 col-corr-address min-w-[200px] whitespace-normal break-words text-xs leading-relaxed">
+                  <td class="py-2.5 px-2.5 text-right font-bold text-slate-950 col-corr-address min-w-[140px] whitespace-normal break-words text-xs leading-relaxed">
                     <?php 
                       $corrAddr = !empty($client['correspondence_address']) ? $client['correspondence_address'] : (!empty($client['addresses']) ? $client['addresses'] : '-');
                     ?>
@@ -1630,7 +1633,7 @@ try {
                   </td>
 
                   <!-- 16. الملاحظات والاستثناءات (كاملة بدون اقتطاع) -->
-                  <td class="p-3.5 text-right text-xs font-bold text-slate-950 col-notes min-w-[190px] whitespace-normal break-words leading-relaxed">
+                  <td class="py-2.5 px-2.5 text-right text-xs font-bold text-slate-950 col-notes min-w-[120px] whitespace-normal break-words leading-relaxed">
                     <?php if (!empty($client['general_notes'])): ?>
                       <div class="text-slate-950 font-bold text-[11px] mb-1">
                         <span class="font-black text-slate-900">عامة:</span> <?= htmlspecialchars($client['general_notes']) ?>
@@ -1647,7 +1650,7 @@ try {
                   </td>
 
                   <!-- 17. المستندات والمرفقات -->
-                  <td class="p-3.5 text-center col-files min-w-[110px]">
+                  <td class="py-2.5 px-2 text-center col-files min-w-[80px]">
                     <?php if (!empty($attachments)): ?>
                       <div class="flex items-center justify-center flex-wrap gap-1">
                         <?php foreach ($attachments as $fIdx => $f): 
@@ -1670,14 +1673,14 @@ try {
                   </td>
 
                   <!-- 18. التاريخ -->
-                  <td class="p-3.5 text-center font-mono text-xs font-black text-slate-950 col-date min-w-[135px]">
+                  <td class="py-2.5 px-2 text-center font-mono text-xs font-black text-slate-950 col-date min-w-[95px]">
                     <div class="bg-sky-50 px-2 py-1 rounded-xl border border-sky-200 inline-block font-mono">
                       <?= date('Y-m-d H:i', strtotime($client['created_at'])) ?>
                     </div>
                   </td>
 
                   <!-- 19. إجراءات -->
-                  <td class="p-3.5 text-center no-print col-actions min-w-[110px]">
+                  <td class="py-2.5 px-2 text-center no-print col-actions min-w-[80px]">
                     <div class="flex items-center justify-center gap-1">
                       <!-- زر عرض التفاصيل الكاملة -->
                       <button 

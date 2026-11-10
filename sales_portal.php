@@ -435,7 +435,7 @@ function pageHead(string $title): void {
     });
   </script>
 </head>
-<body class="min-h-screen text-slate-950 p-3 sm:p-6 lg:p-8">
+<body class="min-h-screen text-slate-950 p-2 sm:p-3 lg:p-4 w-full overflow-x-hidden">
 <?php }
 
 function flashBox(?array $flash): void {
@@ -887,7 +887,7 @@ function pageUrl(array $over = []): string {
 }
 
 pageHead($view === 'users' ? 'إدارة المستخدمين' : 'العملاء'); ?>
-<div class="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 space-y-5">
+<div class="w-full max-w-none p-2 sm:p-4 space-y-4">
 
   <!-- Header -->
   <header class="glass rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl">

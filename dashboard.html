@@ -40,6 +40,7 @@
     #clientsTable {
       table-layout: auto !important;
       width: 100% !important;
+      min-width: 100% !important;
       border-collapse: separate !important;
       border-spacing: 0 !important;
     }
@@ -61,9 +62,9 @@
     }
   </style>
 </head>
-<body class="p-3 sm:p-5 lg:p-7">
+<body class="p-2 sm:p-3 lg:p-4 w-full overflow-x-hidden">
 
-  <div class="max-w-[1700px] mx-auto space-y-5">
+  <div class="w-full max-w-none space-y-4">
 
     <!-- ── Header ── -->
     <header class="glass rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-4">
@@ -220,24 +221,24 @@
         <table class="w-full text-xs text-right border-collapse" id="clientsTable">
           <thead class="sticky top-0 z-20 bg-sky-200/95 text-slate-950 font-black border-b-2 border-sky-400 text-[11px] sm:text-xs uppercase tracking-wider backdrop-blur-md">
             <tr>
-              <th class="p-3 w-12 text-center col-seq">#</th>
-              <th class="p-3 text-center col-sales min-w-[130px]" data-i18n="thSales">مسؤول المبيعات</th>
-              <th class="p-3 text-center col-unit min-w-[130px]" data-i18n="thUnit">كود الوحدة</th>
-              <th class="p-3 text-center col-residence min-w-[120px]" data-i18n="thResidence">مكان الإقامة</th>
-              <th class="p-3 text-center col-branch min-w-[120px]" data-i18n="thBranch">مكان التوثيق</th>
-              <th class="p-3 col-name min-w-[200px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
-              <th class="p-3 text-center col-phone min-w-[140px]" data-i18n="thPhone">أرقام التواصل</th>
-              <th class="p-3 text-center col-email min-w-[150px]" data-i18n="thEmail">البريد الإلكتروني</th>
-              <th class="p-3 text-center col-doc min-w-[140px]" data-i18n="thIdDoc">إثبات الشخصية</th>
-              <th class="p-3 text-center col-plan min-w-[120px]" data-i18n="thPlan">فترة السداد</th>
-              <th class="p-3 text-center col-payment min-w-[140px]" data-i18n="th5Percent">مقدم أكتوبر</th>
-              <th class="p-3 col-id-addr min-w-[180px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
-              <th class="p-3 col-corr-addr min-w-[180px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
-              <th class="p-3 col-notes min-w-[140px] text-right" data-i18n="thNotes">الملاحظات والاستثناءات</th>
-              <th class="p-3 text-center col-docs min-w-[110px]" data-i18n="thDocs">المستندات</th>
-              <th class="p-3 text-center col-date min-w-[140px]" data-i18n="thDate">تاريخ ووقت التسجيل</th>
-              <th class="p-3 text-center col-price min-w-[140px]" data-i18n="thTotalPrice">إجمالي سعر الوحدة</th>
-              <th class="p-3 text-center col-actions min-w-[90px] no-print" data-i18n="thActions">الإجراءات</th>
+              <th class="py-2.5 px-2 w-10 min-w-[36px] text-center col-seq">#</th>
+              <th class="py-2.5 px-2 text-center col-sales min-w-[105px]" data-i18n="thSales">مسؤول المبيعات</th>
+              <th class="py-2.5 px-2 text-center col-unit min-w-[105px]" data-i18n="thUnit">كود الوحدة</th>
+              <th class="py-2.5 px-2 text-center col-residence min-w-[90px]" data-i18n="thResidence">مكان الإقامة</th>
+              <th class="py-2.5 px-2 text-center col-branch min-w-[90px]" data-i18n="thBranch">مكان التوثيق</th>
+              <th class="py-2.5 px-2.5 col-name min-w-[160px] text-right" data-i18n="thName">اسم العميل في البطاقة / الشركاء</th>
+              <th class="py-2.5 px-2 text-center col-phone min-w-[115px]" data-i18n="thPhone">أرقام التواصل</th>
+              <th class="py-2.5 px-2 text-center col-email min-w-[125px]" data-i18n="thEmail">البريد الإلكتروني</th>
+              <th class="py-2.5 px-2 text-center col-doc min-w-[110px]" data-i18n="thIdDoc">إثبات الشخصية</th>
+              <th class="py-2.5 px-2 text-center col-plan min-w-[90px]" data-i18n="thPlan">فترة السداد</th>
+              <th class="py-2.5 px-2 text-center col-payment min-w-[100px]" data-i18n="th5Percent">مقدم أكتوبر</th>
+              <th class="py-2.5 px-2.5 col-id-addr min-w-[140px] text-right" data-i18n="thIdAddress">عنوان الهوية</th>
+              <th class="py-2.5 px-2.5 col-corr-addr min-w-[140px] text-right" data-i18n="thCorrAddress">عنوان المراسلات</th>
+              <th class="py-2.5 px-2.5 col-notes min-w-[120px] text-right" data-i18n="thNotes">الملاحظات والاستثناءات</th>
+              <th class="py-2.5 px-2 text-center col-docs min-w-[80px]" data-i18n="thDocs">المستندات</th>
+              <th class="py-2.5 px-2 text-center col-date min-w-[95px]" data-i18n="thDate">تاريخ ووقت التسجيل</th>
+              <th class="py-2.5 px-2 text-center col-price min-w-[100px]" data-i18n="thTotalPrice">إجمالي سعر الوحدة</th>
+              <th class="py-2.5 px-2 text-center col-actions min-w-[80px] no-print" data-i18n="thActions">الإجراءات</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-sky-100 text-slate-950 font-bold bg-white" id="clientsTableBody">
@@ -518,10 +519,10 @@
 
           tr.innerHTML = `
             <!-- 1. # -->
-            <td class="p-3 text-center font-mono font-black text-slate-950 bg-sky-50/50">${seq++}</td>
+            <td class="py-2.5 px-2 text-center font-mono font-black text-slate-950 bg-sky-50/50">${seq++}</td>
 
             <!-- 2. مسؤول المبيعات -->
-            <td class="p-3 text-center">
+            <td class="py-2.5 px-2 text-center">
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black border ${c.sales_name && c.sales_name !== 'مباشر' ? 'bg-sky-100 text-sky-950 border-sky-300' : 'bg-slate-100 text-slate-800 border-slate-300'} shadow-2xs">
                 <span>${c.sales_name && c.sales_name !== 'مباشر' ? '👔' : '🌐'}</span>
                 <span>${c.sales_name || translations[currentLang].directSales}</span>
@@ -551,7 +552,7 @@
             </td>
 
             <!-- 6. اسم العميل في البطاقة / الشركاء -->
-            <td class="p-3 font-black text-slate-950 min-w-[200px] text-right">
+            <td class="py-2.5 px-2.5 font-black text-slate-950 min-w-[160px] text-right">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs sm:text-sm font-black leading-snug">${pName}</span>
                 ${pCount > 1 ? `
@@ -583,7 +584,7 @@
             </td>
 
             <!-- 10. فترة السداد -->
-            <td class="p-3 text-center">
+            <td class="py-2.5 px-2 text-center">
               <span class="inline-block px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 font-black text-xs shadow-2xs">
                 ${c.period || c.payment_period || '—'}
               </span>
@@ -591,7 +592,7 @@
             </td>
 
             <!-- 11. مقدم أكتوبر (سداد الـ 5%) -->
-            <td class="p-3 text-center">
+            <td class="py-2.5 px-2 text-center">
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black border ${isPaid ? 'bg-emerald-100 text-emerald-950 border-emerald-400' : 'bg-red-100 text-red-950 border-red-300'} shadow-2xs">
                 ${isPaid ? translations[currentLang].paidBadge : translations[currentLang].unpaidBadge}
               </span>
@@ -599,13 +600,13 @@
             </td>
 
             <!-- 12. عنوان الهوية -->
-            <td class="p-3 text-right text-xs font-bold min-w-[180px] leading-relaxed">${idAddr}</td>
+            <td class="py-2.5 px-2.5 text-right text-xs font-bold min-w-[140px] leading-relaxed">${idAddr}</td>
 
             <!-- 13. عنوان المراسلات -->
-            <td class="p-3 text-right text-xs font-bold min-w-[180px] leading-relaxed">${corrAddr}</td>
+            <td class="py-2.5 px-2.5 text-right text-xs font-bold min-w-[140px] leading-relaxed">${corrAddr}</td>
 
             <!-- 14. الملاحظات -->
-            <td class="p-3 text-right text-xs text-slate-700 font-medium">${c.notes || c.general_notes || '—'}</td>
+            <td class="py-2.5 px-2.5 text-right text-xs text-slate-700 font-medium min-w-[120px]">${c.notes || c.general_notes || '—'}</td>
 
             <!-- 15. المستندات -->
             <td class="p-3 text-center font-black">
@@ -615,19 +616,19 @@
             </td>
 
             <!-- 16. تاريخ ووقت التسجيل -->
-            <td class="p-3 text-center font-mono text-xs whitespace-nowrap">
+            <td class="py-2.5 px-2 text-center font-mono text-xs whitespace-nowrap min-w-[95px]">
               <div class="bg-sky-50 px-2 py-1 rounded border border-sky-200 inline-block font-black">
                 ${c.created_at || '—'}
               </div>
             </td>
 
             <!-- 17. إجمالي سعر الوحدة -->
-            <td class="p-3 text-center font-mono font-black text-xs whitespace-nowrap">
+            <td class="py-2.5 px-2 text-center font-mono font-black text-xs whitespace-nowrap min-w-[100px]">
               ${c.unit_price ? `💰 ${ElamarData.formatNumber(c.unit_price)} EGP` : '—'}
             </td>
 
             <!-- 18. الإجراءات -->
-            <td class="p-3 text-center no-print">
+            <td class="py-2.5 px-2 text-center no-print min-w-[80px]">
               <button 
                 type="button" 
                 onclick="viewClientModal(${c.id})" 
